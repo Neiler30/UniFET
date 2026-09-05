@@ -1,4 +1,4 @@
-# UniFET
+<img width="733" height="271" alt="ChatGPT Image 5 sept 2026, 03_51_59 p m" src="https://github.com/user-attachments/assets/2b7f79f7-bd51-42eb-877c-6b47cf36a3d9" />
 
 ### Sistema Inteligente de Agenda y Gestión de Quehaceres
 
