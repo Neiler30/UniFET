@@ -219,13 +219,13 @@ posteriormente:
 -   Aplicación móvil nativa
 
 ------------------------------------------------------------------------
-<div align="center">
+
 # 6. Actores del sistema
-
+<div align="center">
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/c8ade79a-ae7d-4876-b581-8d1ee4aa166a" />
-
-UniFET tendrá únicamente **dos roles de usuario final**.
 </div>
+UniFET tendrá únicamente **dos roles de usuario final**.
+
 ## 6.1 Administrador
 
 Tiene acceso total al sistema.
@@ -283,34 +283,32 @@ El líder **no puede modificar un horario después de cerrarlo**.
 
 ------------------------------------------------------------------------
 
-# 7. Modelo de permisos
+## 7. Modelo de permisos
 
-  Funcionalidad                   Administrador         Líder de Programa
-  ----------------------------- --------------- -------------------------
-  Configuración institucional                Sí                        No
-  Personalización visual                     Sí                        No
-  Facultades                                 Sí                  Consulta
-  Programas                                  Sí               Su programa
-  Sedes                                      Sí                  Consulta
-  Bloques                                    Sí                  Consulta
-  Espacios                                   Sí                  Consulta
-  Docentes                                   Sí                  Consulta
-  Asignaturas                                Sí                  Consulta
-  Créditos                                   Sí                  Consulta
-  Periodos                                   Sí                  Consulta
-  Asignación docente                         Sí   Sí, dentro de su ámbito
-  Restricciones                              Sí            Consulta / uso
-  Crear horario manual                       Sí                        Sí
-  Generar con FET                            Sí                        Sí
-  Modificar propuesta FET                    Sí                        Sí
-  Cerrar horario                             Sí                        Sí
-  Modificar horario cerrado                  Sí                        No
-  Auditoría                                  Sí   Sí, dentro de su ámbito
-  Reportes                                   Sí            Según permisos
-  Importar Excel                             Sí                        No
-  Usuarios                                   Sí                        No
-
-------------------------------------------------------------------------
+| Funcionalidad                | Administrador | Líder de Programa        |
+|-------------------------------|:--------------:|---------------------------|
+| Configuración institucional   | Sí             | No                        |
+| Personalización visual        | Sí             | No                        |
+| Facultades                    | Sí             | Consulta                  |
+| Programas                     | Sí             | Su programa               |
+| Sedes                          | Sí             | Consulta                  |
+| Bloques                        | Sí             | Consulta                  |
+| Espacios                       | Sí             | Consulta                  |
+| Docentes                       | Sí             | Consulta                  |
+| Asignaturas                    | Sí             | Consulta                  |
+| Créditos                       | Sí             | Consulta                  |
+| Periodos                       | Sí             | Consulta                  |
+| Asignación docente             | Sí             | Sí, dentro de su ámbito   |
+| Restricciones                  | Sí             | Consulta / uso            |
+| Crear horario manual           | Sí             | Sí                        |
+| Generar con FET                | Sí             | Sí                        |
+| Modificar propuesta FET        | Sí             | Sí                        |
+| Cerrar horario                 | Sí             | Sí                        |
+| Modificar horario cerrado      | Sí             | No                        |
+| Auditoría                      | Sí             | Sí, dentro de su ámbito   |
+| Reportes                       | Sí             | Según permisos            |
+| Importar Excel                 | Sí             | No                        |
+| Usuarios                       | Sí             | No                        |
 
 # 8. Conceptos fundamentales del dominio
 <div align="center">
@@ -507,8 +505,9 @@ Al crear un nuevo periodo, el sistema debe permitir:
 Los datos históricos de periodos anteriores deben conservarse.
 
 ------------------------------------------------------------------------
-<div align="center">
+
 # 9. Datos maestros y datos del periodo
+<div align="center">
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/6c77cca3-976d-4940-81d3-6b55e1237684" />
 </div>
 
