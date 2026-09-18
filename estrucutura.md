@@ -77,7 +77,7 @@
 │   │   │   └── 🖼️ logotipo-vertical-oscuro.png
 │   │   └── 📁 js
 │   └── 🐘 index.php
-├── 🖼️ ChatGPT Image 12 sept 2026, 10_50_14 p.m..png
+├── 🖼️ wireframe..png
 ├── 📝 README.md
 ├── 📄 seed_data.sql
 └── 📄 unifet.sql
