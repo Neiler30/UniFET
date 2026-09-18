@@ -1,0 +1,16 @@
+:root {
+    --color-primario: #3B0D8F;
+    --color-secundario: #0F9D58;
+    --color-acento: #F5B301;
+    --color-oscuro: #0B1F33;
+    --color-superficie: #F4F6F8;
+    
+    --color-texto-principal: #333333;
+    --color-texto-secundario: #666666;
+    --color-blanco: #FFFFFF;
+    
+    --fuente-principal: 'Poppins', sans-serif;
+    
+    --radio-borde: 8px;
+    --sombra-tarjeta: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
