@@ -1,25 +1,8 @@
--- --------------------------------------------------------
--- Host:                         127.0.0.1
--- Versión del servidor:         10.4.32-MariaDB - mariadb.org binary distribution
--- SO del servidor:              Win64
--- HeidiSQL Versión:             12.17.0.7270
--- --------------------------------------------------------
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8 */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
-
--- Volcando estructura de base de datos para unifet
-CREATE DATABASE IF NOT EXISTS `unifet` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
+CREATE DATABASE IF NOT EXISTS `unifet` ;
 USE `unifet`;
 
--- Volcando estructura para tabla unifet.asignacion_docente
+-- estructura para tabla unifet.asignacion_docente
 CREATE TABLE IF NOT EXISTS `asignacion_docente` (
   `id_asignacion` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_periodo` int(10) unsigned NOT NULL,
@@ -38,9 +21,9 @@ CREATE TABLE IF NOT EXISTS `asignacion_docente` (
   CONSTRAINT `fk_asig_programa` FOREIGN KEY (`id_programa`) REFERENCES `programa` (`id_programa`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.asignacion_docente: ~0 rows (aproximadamente)
+-- datos para la tabla unifet.asignacion_docente: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.asignatura
+--  estructura para tabla unifet.asignatura
 CREATE TABLE IF NOT EXISTS `asignatura` (
   `id_asignatura` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_institucion` int(10) unsigned NOT NULL,
@@ -54,9 +37,9 @@ CREATE TABLE IF NOT EXISTS `asignatura` (
   CONSTRAINT `fk_asignatura_institucion` FOREIGN KEY (`id_institucion`) REFERENCES `institucion` (`id_institucion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.asignatura: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.asignatura: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.asignatura_programa
+--  estructura para tabla unifet.asignatura_programa
 CREATE TABLE IF NOT EXISTS `asignatura_programa` (
   `id_asignatura_programa` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_asignatura` int(10) unsigned NOT NULL,
@@ -68,9 +51,9 @@ CREATE TABLE IF NOT EXISTS `asignatura_programa` (
   CONSTRAINT `fk_ap_programa` FOREIGN KEY (`id_programa`) REFERENCES `programa` (`id_programa`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.asignatura_programa: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.asignatura_programa: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.auditoria_clase
+--  estructura para tabla unifet.auditoria_clase
 CREATE TABLE IF NOT EXISTS `auditoria_clase` (
   `id_auditoria` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_horario` int(10) unsigned NOT NULL COMMENT 'Siempre apunta al horario definitivo, nunca a una propuesta FET',
@@ -88,9 +71,9 @@ CREATE TABLE IF NOT EXISTS `auditoria_clase` (
   CONSTRAINT `fk_auditoria_usuario` FOREIGN KEY (`id_usuario_auditor`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.auditoria_clase: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.auditoria_clase: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.bloque
+--  estructura para tabla unifet.bloque
 CREATE TABLE IF NOT EXISTS `bloque` (
   `id_bloque` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_sede` int(10) unsigned NOT NULL,
@@ -102,9 +85,9 @@ CREATE TABLE IF NOT EXISTS `bloque` (
   CONSTRAINT `fk_bloque_sede` FOREIGN KEY (`id_sede`) REFERENCES `sede` (`id_sede`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.bloque: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.bloque: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.docente
+--  estructura para tabla unifet.docente
 CREATE TABLE IF NOT EXISTS `docente` (
   `id_docente` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_institucion` int(10) unsigned NOT NULL,
@@ -121,9 +104,9 @@ CREATE TABLE IF NOT EXISTS `docente` (
   CONSTRAINT `fk_docente_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.docente: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.docente: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.docente_asignatura
+--  estructura para tabla unifet.docente_asignatura
 CREATE TABLE IF NOT EXISTS `docente_asignatura` (
   `id_docente_asignatura` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_docente` int(10) unsigned NOT NULL,
@@ -135,9 +118,9 @@ CREATE TABLE IF NOT EXISTS `docente_asignatura` (
   CONSTRAINT `fk_da_docente` FOREIGN KEY (`id_docente`) REFERENCES `docente` (`id_docente`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.docente_asignatura: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.docente_asignatura: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.docente_programa
+--  estructura para tabla unifet.docente_programa
 CREATE TABLE IF NOT EXISTS `docente_programa` (
   `id_docente_programa` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_docente` int(10) unsigned NOT NULL,
@@ -149,9 +132,9 @@ CREATE TABLE IF NOT EXISTS `docente_programa` (
   CONSTRAINT `fk_dp_programa` FOREIGN KEY (`id_programa`) REFERENCES `programa` (`id_programa`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.docente_programa: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.docente_programa: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.espacio
+--  estructura para tabla unifet.espacio
 CREATE TABLE IF NOT EXISTS `espacio` (
   `id_espacio` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_bloque` int(10) unsigned NOT NULL,
@@ -166,9 +149,9 @@ CREATE TABLE IF NOT EXISTS `espacio` (
   CONSTRAINT `fk_espacio_bloque` FOREIGN KEY (`id_bloque`) REFERENCES `bloque` (`id_bloque`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.espacio: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.espacio: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.facultad
+--  estructura para tabla unifet.facultad
 CREATE TABLE IF NOT EXISTS `facultad` (
   `id_facultad` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_institucion` int(10) unsigned NOT NULL,
@@ -180,9 +163,9 @@ CREATE TABLE IF NOT EXISTS `facultad` (
   CONSTRAINT `fk_facultad_institucion` FOREIGN KEY (`id_institucion`) REFERENCES `institucion` (`id_institucion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.facultad: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.facultad: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.horario
+--  estructura para tabla unifet.horario
 CREATE TABLE IF NOT EXISTS `horario` (
   `id_horario` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_periodo` int(10) unsigned NOT NULL,
@@ -220,9 +203,9 @@ CREATE TABLE IF NOT EXISTS `horario` (
   CONSTRAINT `chk_horario_horas` CHECK (`hora_fin` > `hora_inicio`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.horario: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.horario: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.horario_historial
+--  estructura para tabla unifet.horario_historial
 CREATE TABLE IF NOT EXISTS `horario_historial` (
   `id_historial` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `id_horario` int(10) unsigned NOT NULL,
@@ -239,9 +222,9 @@ CREATE TABLE IF NOT EXISTS `horario_historial` (
   CONSTRAINT `fk_hh_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.horario_historial: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.horario_historial: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.importacion_excel
+--  estructura para tabla unifet.importacion_excel
 CREATE TABLE IF NOT EXISTS `importacion_excel` (
   `id_importacion` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_institucion` int(10) unsigned NOT NULL,
@@ -261,9 +244,9 @@ CREATE TABLE IF NOT EXISTS `importacion_excel` (
   CONSTRAINT `fk_import_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.importacion_excel: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.importacion_excel: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.institucion
+--  estructura para tabla unifet.institucion
 CREATE TABLE IF NOT EXISTS `institucion` (
   `id_institucion` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `codigo` varchar(20) NOT NULL,
@@ -282,9 +265,9 @@ CREATE TABLE IF NOT EXISTS `institucion` (
   UNIQUE KEY `uq_institucion_codigo` (`codigo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.institucion: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.institucion: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.oferta_academica
+--  estructura para tabla unifet.oferta_academica
 CREATE TABLE IF NOT EXISTS `oferta_academica` (
   `id_oferta` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_periodo` int(10) unsigned NOT NULL,
@@ -300,9 +283,9 @@ CREATE TABLE IF NOT EXISTS `oferta_academica` (
   CONSTRAINT `fk_oferta_programa` FOREIGN KEY (`id_programa`) REFERENCES `programa` (`id_programa`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.oferta_academica: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.oferta_academica: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.periodo_academico
+--  estructura para tabla unifet.periodo_academico
 CREATE TABLE IF NOT EXISTS `periodo_academico` (
   `id_periodo` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_institucion` int(10) unsigned NOT NULL,
@@ -320,9 +303,9 @@ CREATE TABLE IF NOT EXISTS `periodo_academico` (
   CONSTRAINT `fk_periodo_institucion` FOREIGN KEY (`id_institucion`) REFERENCES `institucion` (`id_institucion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.periodo_academico: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.periodo_academico: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.programa
+--  estructura para tabla unifet.programa
 CREATE TABLE IF NOT EXISTS `programa` (
   `id_programa` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_facultad` int(10) unsigned NOT NULL,
@@ -334,9 +317,9 @@ CREATE TABLE IF NOT EXISTS `programa` (
   CONSTRAINT `fk_programa_facultad` FOREIGN KEY (`id_facultad`) REFERENCES `facultad` (`id_facultad`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.programa: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.programa: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.programa_lider
+--  estructura para tabla unifet.programa_lider
 CREATE TABLE IF NOT EXISTS `programa_lider` (
   `id_programa_lider` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_programa` int(10) unsigned NOT NULL,
@@ -349,9 +332,9 @@ CREATE TABLE IF NOT EXISTS `programa_lider` (
   CONSTRAINT `fk_pl_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.programa_lider: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.programa_lider: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.propuesta_fet
+--  estructura para tabla unifet.propuesta_fet
 CREATE TABLE IF NOT EXISTS `propuesta_fet` (
   `id_propuesta` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_periodo` int(10) unsigned NOT NULL,
@@ -370,9 +353,9 @@ CREATE TABLE IF NOT EXISTS `propuesta_fet` (
   CONSTRAINT `fk_pf_usuario` FOREIGN KEY (`id_usuario_solicitante`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.propuesta_fet: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.propuesta_fet: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.propuesta_fet_detalle
+--  estructura para tabla unifet.propuesta_fet_detalle
 CREATE TABLE IF NOT EXISTS `propuesta_fet_detalle` (
   `id_detalle` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_propuesta` int(10) unsigned NOT NULL,
@@ -396,9 +379,9 @@ CREATE TABLE IF NOT EXISTS `propuesta_fet_detalle` (
   CONSTRAINT `fk_pfd_propuesta` FOREIGN KEY (`id_propuesta`) REFERENCES `propuesta_fet` (`id_propuesta`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.propuesta_fet_detalle: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.propuesta_fet_detalle: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.restriccion
+--  estructura para tabla unifet.restriccion
 CREATE TABLE IF NOT EXISTS `restriccion` (
   `id_restriccion` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_institucion` int(10) unsigned NOT NULL,
@@ -422,9 +405,9 @@ CREATE TABLE IF NOT EXISTS `restriccion` (
   CONSTRAINT `fk_restriccion_periodo` FOREIGN KEY (`id_periodo`) REFERENCES `periodo_academico` (`id_periodo`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.restriccion: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.restriccion: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.sede
+--  estructura para tabla unifet.sede
 CREATE TABLE IF NOT EXISTS `sede` (
   `id_sede` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_institucion` int(10) unsigned NOT NULL,
@@ -437,9 +420,9 @@ CREATE TABLE IF NOT EXISTS `sede` (
   CONSTRAINT `fk_sede_institucion` FOREIGN KEY (`id_institucion`) REFERENCES `institucion` (`id_institucion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.sede: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.sede: ~0 rows (aproximadamente)
 
--- Volcando estructura para tabla unifet.usuario
+--  estructura para tabla unifet.usuario
 CREATE TABLE IF NOT EXISTS `usuario` (
   `id_usuario` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_institucion` int(10) unsigned NOT NULL,
@@ -457,9 +440,9 @@ CREATE TABLE IF NOT EXISTS `usuario` (
   CONSTRAINT `fk_usuario_institucion` FOREIGN KEY (`id_institucion`) REFERENCES `institucion` (`id_institucion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla unifet.usuario: ~0 rows (aproximadamente)
+--  datos para la tabla unifet.usuario: ~0 rows (aproximadamente)
 
--- Volcando estructura para vista unifet.vista_auditoria_pendiente
+--  estructura para vista unifet.vista_auditoria_pendiente
 -- Creando tabla temporal para superar errores de dependencia de VIEW
 CREATE TABLE `vista_auditoria_pendiente` (
 	`id_auditoria` INT(10) UNSIGNED NOT NULL,
@@ -477,7 +460,7 @@ CREATE TABLE `vista_auditoria_pendiente` (
 	`observacion` TEXT NULL COLLATE 'utf8mb4_unicode_ci'
 );
 
--- Volcando estructura para vista unifet.vista_horario_completo
+--  estructura para vista unifet.vista_horario_completo
 -- Creando tabla temporal para superar errores de dependencia de VIEW
 CREATE TABLE `vista_horario_completo` (
 	`id_horario` INT(10) UNSIGNED NOT NULL,
@@ -498,7 +481,7 @@ CREATE TABLE `vista_horario_completo` (
 	`origen` ENUM('MANUAL','FET','HIBRIDO') NOT NULL COLLATE 'utf8mb4_unicode_ci'
 );
 
--- Volcando estructura para disparador unifet.trg_horario_after_insert
+--  estructura para disparador unifet.trg_horario_after_insert
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER trg_horario_after_insert
@@ -524,7 +507,7 @@ END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;
 
--- Volcando estructura para disparador unifet.trg_horario_after_update
+--  estructura para disparador unifet.trg_horario_after_update
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER trg_horario_after_update
