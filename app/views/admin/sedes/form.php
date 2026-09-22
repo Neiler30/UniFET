@@ -1,7 +1,7 @@
 <?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Sede']);
-$this->render('shared/sidebar_admin');
 $esEdicion = !empty($sede['id_sede']);
+$this->render('shared/header', ['titulo' => ($esEdicion ? 'Editar Sede' : 'Nueva Sede') . ' - UniFET']);
+$this->render('shared/sidebar_admin');
 
 $tabs = [
     ['etiqueta' => 'Sedes', 'ruta' => 'admin/espacios/sedes', 'activa' => true],
@@ -12,15 +12,29 @@ $this->render('shared/tabs', ['tabs' => $tabs]);
 ?>
 
 <div class="header-acciones">
-    <h1><?= $esEdicion ? 'Editar Sede' : 'Nueva Sede' ?></h1>
-    <a href="?ruta=admin/espacios/sedes" class="btn-demo" style="text-decoration:none;">← Volver</a>
+    <div>
+        <h1 style="font-size: 22px; font-weight: 700; color: var(--color-oscuro);"><?= $esEdicion ? 'Editar Sede' : 'Nueva Sede Institucional' ?></h1>
+        <p style="color: var(--color-texto-secundario); font-size: 13.5px; margin-top: 4px;">
+            <?= $esEdicion ? 'Modifica la información física de la sede.' : 'Registra una nueva sede o campus para la universidad.' ?>
+        </p>
+    </div>
+    <a href="?ruta=admin/espacios/sedes" class="btn-demo">
+        <i class="fa-solid fa-arrow-left"></i> Volver al listado
+    </a>
 </div>
 
-<div class="panel" style="max-width: 600px;">
+<div class="panel" style="max-width: 640px; margin-top: 10px;">
     <?php if (!empty($error)): ?>
-        <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
-            <?= htmlspecialchars($error) ?>
-        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                Swal.fire({
+                    title: 'No se pudo guardar',
+                    text: <?= json_encode($error) ?>,
+                    icon: 'error',
+                    confirmButtonColor: '#3B0D8F'
+                });
+            });
+        </script>
     <?php endif; ?>
 
     <form action="?ruta=admin/espacios/sedes/<?= $esEdicion ? 'actualizar' : 'guardar' ?>" method="POST">
@@ -29,29 +43,34 @@ $this->render('shared/tabs', ['tabs' => $tabs]);
         <?php endif; ?>
         
         <div class="form-group">
-            <label for="codigo">Código</label>
-            <input type="text" id="codigo" name="codigo" class="form-control" value="<?= htmlspecialchars($sede['codigo'] ?? '') ?>" required>
+            <label for="codigo" style="font-weight: 600; font-size: 13.5px; color: var(--color-oscuro);">Código de la Sede <span style="color:red;">*</span></label>
+            <input type="text" id="codigo" name="codigo" class="form-control" value="<?= htmlspecialchars($sede['codigo'] ?? '') ?>" placeholder="Ej: SEDE-P, SEDE-SUR..." required autofocus>
         </div>
         
         <div class="form-group">
-            <label for="nombre">Nombre</label>
-            <input type="text" id="nombre" name="nombre" class="form-control" value="<?= htmlspecialchars($sede['nombre'] ?? '') ?>" required>
+            <label for="nombre" style="font-weight: 600; font-size: 13.5px; color: var(--color-oscuro);">Nombre de la Sede <span style="color:red;">*</span></label>
+            <input type="text" id="nombre" name="nombre" class="form-control" value="<?= htmlspecialchars($sede['nombre'] ?? '') ?>" placeholder="Ej: Sede Principal Norte" required>
         </div>
 
         <div class="form-group">
-            <label for="direccion">Dirección</label>
-            <input type="text" id="direccion" name="direccion" class="form-control" value="<?= htmlspecialchars($sede['direccion'] ?? '') ?>">
+            <label for="direccion" style="font-weight: 600; font-size: 13.5px; color: var(--color-oscuro);">Dirección</label>
+            <input type="text" id="direccion" name="direccion" class="form-control" value="<?= htmlspecialchars($sede['direccion'] ?? '') ?>" placeholder="Ej: Calle 100 # 15-20">
         </div>
         
         <div class="form-group">
-            <label for="estado">Estado</label>
+            <label for="estado" style="font-weight: 600; font-size: 13.5px; color: var(--color-oscuro);">Estado</label>
             <select id="estado" name="estado" class="form-control" required>
                 <option value="ACTIVO" <?= ($sede['estado'] ?? 'ACTIVO') === 'ACTIVO' ? 'selected' : '' ?>>ACTIVO</option>
                 <option value="INACTIVO" <?= ($sede['estado'] ?? '') === 'INACTIVO' ? 'selected' : '' ?>>INACTIVO</option>
             </select>
         </div>
         
-        <button type="submit" class="btn-primario">Guardar</button>
+        <div style="margin-top: 25px; display: flex; gap: 12px;">
+            <button type="submit" class="btn-primario">
+                <i class="fa-solid fa-floppy-disk"></i> <?= $esEdicion ? 'Guardar Cambios' : 'Crear Sede' ?>
+            </button>
+            <a href="?ruta=admin/espacios/sedes" class="btn-demo">Cancelar</a>
+        </div>
     </form>
 </div>
 

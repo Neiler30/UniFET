@@ -23,9 +23,13 @@ class ProgramaController extends Controller {
     public function crear() {
         Auth::requerirRol('ADMINISTRADOR');
         $facultades = Facultad::obtenerTodas($this->id_institucion);
+        $programa = null;
+        if (!empty($_GET['facultad_id'])) {
+            $programa = ['id_facultad' => (int)$_GET['facultad_id']];
+        }
         $this->render('admin/programas/form', [
             'titulo' => 'Nuevo Programa',
-            'programa' => null,
+            'programa' => $programa,
             'facultades' => $facultades
         ]);
     }
@@ -34,16 +38,13 @@ class ProgramaController extends Controller {
         Auth::requerirRol('ADMINISTRADOR');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $datos = [
-                'id_facultad' => $_POST['id_facultad'] ?? 0,
-                'codigo' => $_POST['codigo'] ?? '',
-                'nombre' => $_POST['nombre'] ?? '',
+                'id_facultad' => (int)($_POST['id_facultad'] ?? 0),
+                'codigo' => trim($_POST['codigo'] ?? ''),
+                'nombre' => trim($_POST['nombre'] ?? ''),
                 'estado' => $_POST['estado'] ?? 'ACTIVO'
             ];
             
-            if (!empty($datos['id_facultad']) && !empty($datos['codigo']) && !empty($datos['nombre'])) {
-                Programa::crear($datos);
-                $this->redirect('?ruta=admin/institucion/programas');
-            } else {
+            if (empty($datos['id_facultad']) || empty($datos['codigo']) || empty($datos['nombre'])) {
                 $facultades = Facultad::obtenerTodas($this->id_institucion);
                 $this->render('admin/programas/form', [
                     'titulo' => 'Nuevo Programa',
@@ -51,7 +52,29 @@ class ProgramaController extends Controller {
                     'facultades' => $facultades,
                     'error' => 'Todos los campos son obligatorios.'
                 ]);
+                return;
             }
+
+            if (Programa::existeCodigo($datos['codigo'], $datos['id_facultad'])) {
+                $facultades = Facultad::obtenerTodas($this->id_institucion);
+                $this->render('admin/programas/form', [
+                    'titulo' => 'Nuevo Programa',
+                    'programa' => $datos,
+                    'facultades' => $facultades,
+                    'error' => 'Ese código ya existe para esta facultad.'
+                ]);
+                return;
+            }
+
+            $idCreado = Programa::crear($datos);
+            if ($idCreado) {
+                $_SESSION['swal_alerta'] = [
+                    'title' => 'Programa creado',
+                    'text' => 'El programa académico se registró con éxito.',
+                    'icon' => 'success'
+                ];
+            }
+            $this->redirect('?ruta=admin/institucion/programas');
         }
     }
 
@@ -85,6 +108,11 @@ class ProgramaController extends Controller {
             
             if (!empty($datos['id_facultad']) && !empty($datos['codigo']) && !empty($datos['nombre'])) {
                 Programa::actualizar($id, $datos);
+                $_SESSION['swal_alerta'] = [
+                    'title' => 'Programa actualizado',
+                    'text' => 'Los cambios se guardaron con éxito.',
+                    'icon' => 'success'
+                ];
                 $this->redirect('?ruta=admin/institucion/programas');
             } else {
                 $datos['id_programa'] = $id;
@@ -104,6 +132,11 @@ class ProgramaController extends Controller {
         $id = $_GET['id'] ?? 0;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Programa::desactivar($id);
+            $_SESSION['swal_alerta'] = [
+                'title' => 'Registro desactivado',
+                'text' => 'El programa ha sido desactivado.',
+                'icon' => 'success'
+            ];
         }
         $this->redirect('?ruta=admin/institucion/programas');
     }

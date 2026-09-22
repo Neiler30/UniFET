@@ -29,6 +29,22 @@ class Programa {
         return $stmt->fetch();
     }
 
+    public static function existeCodigo($codigo, $id_facultad, $id_excluir = null) {
+        $db = Database::getConexion();
+        $sql = "SELECT COUNT(*) FROM programa WHERE codigo = :codigo AND id_facultad = :id_facultad";
+        if ($id_excluir) {
+            $sql .= " AND id_programa != :id_excluir";
+        }
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+        $stmt->bindParam(':id_facultad', $id_facultad, PDO::PARAM_INT);
+        if ($id_excluir) {
+            $stmt->bindParam(':id_excluir', $id_excluir, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+
     public static function crear($datos) {
         $db = Database::getConexion();
         $stmt = $db->prepare("INSERT INTO programa (id_facultad, codigo, nombre, estado) VALUES (:id_facultad, :codigo, :nombre, :estado)");
@@ -37,7 +53,10 @@ class Programa {
         $stmt->bindParam(':nombre', $datos['nombre'], PDO::PARAM_STR);
         $estado = $datos['estado'] ?? 'ACTIVO';
         $stmt->bindParam(':estado', $estado, PDO::PARAM_STR);
-        return $stmt->execute();
+        if ($stmt->execute()) {
+            return $db->lastInsertId();
+        }
+        return false;
     }
 
     public static function actualizar($id_programa, $datos) {
@@ -54,7 +73,7 @@ class Programa {
 
     public static function desactivar($id_programa) {
         $db = Database::getConexion();
-        $stmt = $db->prepare("UPDATE programa SET estado = 'INACTIVO' WHERE id_programa = :id_programa");
+        $stmt = $db->prepare("UPDATE programa SET estado = IF(estado = 'ACTIVO', 'INACTIVO', 'ACTIVO') WHERE id_programa = :id_programa");
         $stmt->bindParam(':id_programa', $id_programa, PDO::PARAM_INT);
         return $stmt->execute();
     }

@@ -1,0 +1,5 @@
+<?php $this->render('shared/header', ['titulo' => $titulo ?? 'Preview']); $this->render('shared/sidebar_admin'); ?>
+<div class="header-acciones"><div><h1>Vista previa de importacion</h1><p style="color:var(--color-texto-secundario);font-size:13px;"><?= htmlspecialchars($mensaje) ?></p></div><a class="btn-demo" href="?ruta=admin/importar">Volver</a></div>
+<div class="panel"><table class="table"><thead><tr><th>Fila</th><th>Entidad</th><th>Datos</th><th>Estado</th><th>Errores</th></tr></thead><tbody>
+<?php foreach ($preview as $fila): ?><tr><td><?= (int)$fila['numero'] ?></td><td><?= htmlspecialchars($tipo) ?></td><td><code><?= htmlspecialchars(json_encode($fila['datos'], JSON_UNESCAPED_UNICODE)) ?></code></td><td><span class="badge <?= $fila['valida'] ? 'verificada' : 'no_realizada' ?>"><?= $fila['valida'] ? 'VALIDA' : 'CON ERRORES' ?></span></td><td><?= htmlspecialchars(implode(', ', $fila['errores'])) ?></td></tr><?php endforeach; ?>
+</tbody></table></div><?php $this->render('shared/footer'); ?>

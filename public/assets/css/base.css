@@ -10,6 +10,7 @@ body {
     font-family: var(--fuente-principal);
     background-color: var(--color-superficie);
     color: var(--color-texto-principal);
+    overflow-x: hidden;
 }
 
 a {
@@ -52,8 +53,538 @@ a:hover {
 
 .form-control {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
+    padding: 10px 14px;
+    border: 1px solid var(--color-borde, #E2E5E9);
     border-radius: var(--radio-borde);
     font-family: var(--fuente-principal);
+    font-size: 14px;
+    color: var(--color-texto-principal);
+    background-color: var(--color-blanco);
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 3px rgba(59, 13, 143, 0.15);
+}
+
+.btn-secundario {
+    display: inline-block;
+    background-color: var(--color-secundario);
+    color: var(--color-blanco);
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radio-borde);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: center;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-secundario:hover {
+    background-color: #0b8046;
+    text-decoration: none;
+}
+
+.btn-outline {
+    display: inline-block;
+    background-color: transparent;
+    color: var(--color-primario);
+    border: 1.5px solid var(--color-primario);
+    padding: 9px 18px;
+    border-radius: var(--radio-borde);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.btn-outline:hover {
+    background-color: rgba(59, 13, 143, 0.05);
+    text-decoration: none;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.btn-demo {
+    display: inline-block;
+    background-color: #f1f3f5;
+    color: var(--color-texto-principal);
+    padding: 8px 16px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-borde);
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.btn-demo:hover {
+    background-color: #e9ecef;
+    text-decoration: none;
+}
+
+/* SweetAlert2 personalizaciones institucionales */
+.swal2-popup {
+    font-family: var(--fuente-principal) !important;
+    border-radius: var(--radio-borde-lg, 12px) !important;
+    padding: 24px !important;
+}
+
+.swal2-title {
+    color: var(--color-oscuro) !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+}
+
+.swal2-html-container {
+    color: var(--color-texto-secundario) !important;
+    font-size: 14.5px !important;
+}
+
+.swal-btn-cancelar {
+    color: var(--color-texto-principal) !important;
+    background-color: var(--color-borde, #E2E5E9) !important;
+    font-weight: 500 !important;
+    border-radius: var(--radio-borde) !important;
+    border: none !important;
+    padding: 10px 22px !important;
+}
+
+.swal-btn-cancelar:hover {
+    background-color: #d3d7dc !important;
+}
+
+/* Estados vacíos con identidad visual */
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    background: #ffffff;
+    border-radius: var(--radio-borde);
+    border: 1px dashed var(--color-borde);
+    margin: 20px 0;
+}
+
+.empty-state-img {
+    width: 72px;
+    height: auto;
+    opacity: 0.85;
+    margin-bottom: 18px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-oscuro);
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: var(--color-texto-secundario);
+    max-width: 460px;
+    margin: 0 auto 20px auto;
+    line-height: 1.5;
+}
+
+/* Pulido de tablas institucionales */
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 10px;
+}
+
+.table thead th {
+    background-color: #fafbfc;
+    color: var(--color-texto-secundario);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 16px;
+    border-bottom: 2px solid var(--color-borde);
+}
+
+.table tbody tr {
+    transition: background-color 0.15s ease-in-out;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(59, 13, 143, 0.02);
+}
+
+.table tbody td {
+    padding: 14px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid #f0f2f5;
+    vertical-align: middle;
+}
+
+/* Badges modernos y sutiles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.badge.activo, .badge.disponible {
+    background-color: rgba(15, 157, 88, 0.12);
+    color: #0d8047;
+}
+
+.filter-grid,
+.assignment-grid,
+.brand-form-grid,
+.responsive-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+.filter-grid > *,
+.assignment-grid > *,
+.brand-form-grid > *,
+.responsive-form-grid > * {
+    min-width: 0;
+}
+
+.table-panel,
+.panel {
+    max-width: 100%;
+}
+
+.table-wrap,
+.table-panel {
+    overflow-x: auto;
+}
+
+.table {
+    min-width: 720px;
+}
+
+.badge.activa, .badge.aceptada {
+    background-color: rgba(15, 157, 88, 0.12);
+    color: #0d8047;
+}
+
+.badge.inactivo, .badge.mantenimiento {
+    background-color: rgba(220, 53, 69, 0.12);
+    color: #c82333;
+}
+
+.badge.inactiva {
+    background-color: rgba(220, 53, 69, 0.12);
+    color: #c82333;
+}
+
+.badge.borrador {
+    background-color: #f1f3f5;
+    color: #495057;
+}
+
+.badge.propuesta {
+    background-color: rgba(245, 179, 1, 0.15);
+    color: #b78103;
+}
+
+.badge.confirmado {
+    background-color: rgba(59, 13, 143, 0.12);
+    color: var(--color-primario);
+}
+
+.badge.cerrado {
+    background-color: #e9ecef;
+    color: #343a40;
+}
+
+.badge.proceso, .badge.generada {
+    background-color: rgba(185, 125, 2, 0.12);
+    color: #B97D02;
+}
+
+.badge.modificado {
+    background-color: rgba(59, 13, 143, 0.08);
+    color: #6c3fc7;
+}
+
+.badge.eliminado {
+    background-color: rgba(220, 53, 69, 0.08);
+    color: #dc3545;
+}
+
+.badge.planificacion {
+    background-color: rgba(245, 179, 1, 0.12);
+    color: #b78103;
+}
+
+.badge.historico {
+    background-color: #e9ecef;
+    color: #6c757d;
+}
+
+.badge.pendiente {
+    background-color: rgba(245, 179, 1, 0.12);
+    color: #b78103;
+}
+
+.badge.verificada {
+    background-color: rgba(15, 157, 88, 0.12);
+    color: #0d8047;
+}
+
+.badge.no_realizada {
+    background-color: rgba(220, 53, 69, 0.12);
+    color: #c82333;
+}
+
+.code-pill {
+    font-family: Consolas, Monaco, monospace;
+    background: #f1f3f5;
+    color: var(--color-oscuro);
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.module-tab {
+    text-decoration: none;
+}
+
+.module-tab:hover {
+    text-decoration: none;
+}
+
+/* ============================
+   Botones de acción unificados
+   ============================ */
+.acciones-grupo {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.acciones-menu {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.btn-accion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.15s;
+    padding: 0;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.btn-accion:hover {
+    transform: scale(1.08);
+    text-decoration: none;
+}
+
+/* Editar — morado */
+.btn-accion-editar {
+    color: var(--color-primario);
+}
+.btn-accion-editar:hover {
+    background: rgba(59, 13, 143, 0.08);
+}
+
+/* Desactivar — ámbar */
+.btn-accion-desactivar {
+    color: #B97D02;
+}
+.btn-accion-desactivar:hover {
+    background: rgba(185, 125, 2, 0.1);
+}
+
+/* Reactivar — verde */
+.btn-accion-reactivar {
+    color: var(--color-secundario);
+}
+.btn-accion-reactivar:hover {
+    background: rgba(15, 157, 88, 0.1);
+}
+
+/* Eliminar — rojo */
+.btn-accion-eliminar {
+    color: #D93636;
+}
+.btn-accion-eliminar:hover {
+    background: rgba(217, 54, 54, 0.1);
+}
+
+.btn-accion-kebab {
+    color: var(--color-texto-secundario);
+}
+
+.btn-accion-kebab:hover {
+    background: rgba(11, 31, 51, 0.08);
+}
+
+.acciones-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 50;
+    min-width: 170px;
+    display: none;
+    padding: 6px;
+    background: var(--color-blanco);
+    border: 1px solid var(--color-borde);
+    border-radius: 8px;
+    box-shadow: var(--sombra-hover);
+}
+
+.acciones-menu.open .acciones-dropdown {
+    display: block;
+}
+
+.accion-menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--fuente-principal);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    color: var(--color-texto-principal);
+}
+
+.accion-menu-item:hover {
+    background: #f7f8fa;
+}
+
+.accion-menu-warning { color: #B97D02; }
+.accion-menu-success { color: var(--color-secundario); }
+.accion-menu-danger { color: #D93636; }
+
+.form-shell {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.brand-form-card {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 28px;
+    border-radius: var(--radio-borde-lg);
+    background: var(--color-blanco);
+    box-shadow: var(--sombra-tarjeta);
+    overflow: hidden;
+}
+
+.brand-form-card::after {
+    content: "";
+    position: absolute;
+    right: -28px;
+    bottom: -28px;
+    width: 120px;
+    height: 120px;
+    background: url("../img/isotipo-color.png") center / contain no-repeat;
+    opacity: 0.045;
+    pointer-events: none;
+}
+
+.brand-form-card-wide {
+    max-width: 860px;
+}
+
+.form-entity-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    color: var(--color-primario);
+    background: rgba(59, 13, 143, 0.09);
+    font-size: 20px;
+}
+
+.brand-form-card h1 {
+    font-size: 22px;
+    color: var(--color-oscuro);
+    margin-bottom: 6px;
+}
+
+.brand-form-card p {
+    color: var(--color-texto-secundario);
+    font-size: 13.5px;
+    margin-bottom: 20px;
+}
+
+.input-icon {
+    position: relative;
+}
+
+.input-icon > i {
+    position: absolute;
+    left: 13px;
+    bottom: 13px;
+    color: var(--color-texto-secundario);
+    opacity: .75;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.input-icon .form-control {
+    padding-left: 38px;
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+/* Acción genérica (aceptar FET, etc.) */
+.btn-accion-aceptar {
+    color: var(--color-secundario);
+}
+.btn-accion-aceptar:hover {
+    background: rgba(15, 157, 88, 0.1);
+}
+
+.btn-accion-descartar {
+    color: #D93636;
+}
+.btn-accion-descartar:hover {
+    background: rgba(217, 54, 54, 0.1);
+}
+

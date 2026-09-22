@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="assets/css/base.css">
     <link rel="stylesheet" href="assets/css/login.css">
     <link rel="icon" type="image/png" href="assets/img/isotipo-color.png">
+    <!-- SweetAlert2 vía CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
@@ -25,9 +27,16 @@
             <p class="subtitle">Inicia sesión para continuar</p>
 
             <?php if (!empty($error)): ?>
-                <div class="alert-error">
-                    <?= htmlspecialchars($error) ?>
-                </div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Correo o contraseña incorrectos',
+                            text: <?= json_encode($error) ?>,
+                            confirmButtonColor: '#3B0D8F'
+                        });
+                    });
+                </script>
             <?php endif; ?>
 
             <form action="?ruta=login_post" method="POST">
@@ -53,13 +62,20 @@
             </form>
 
             <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+            <a href="?ruta=registro.lider" class="forgot-password">Solicitar acceso como lider de programa</a>
 
             <!-- Modo Demo: como se pedía en el prompt original -->
             <div class="demo-banner">
                 <p>Modo Demo (Atajos para revisión):</p>
                 <div class="demo-buttons">
-                    <a href="?ruta=admin/dashboard" class="btn-demo">Panel Admin</a>
-                    <a href="?ruta=lider/dashboard" class="btn-demo">Panel Líder</a>
+                    <form action="?ruta=login_post" method="POST" style="margin:0;">
+                        <input type="hidden" name="demo_rol" value="ADMINISTRADOR">
+                        <button type="submit" class="btn-demo">Panel Admin</button>
+                    </form>
+                    <form action="?ruta=login_post" method="POST" style="margin:0;">
+                        <input type="hidden" name="demo_rol" value="LIDER_PROGRAMA">
+                        <button type="submit" class="btn-demo">Panel Líder</button>
+                    </form>
                 </div>
             </div>
         </div>
