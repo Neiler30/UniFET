@@ -1,7 +1,7 @@
 <div class="sidebar">
-    <div class="sidebar-header">
-        <img src="assets/img/isotipo-blanco.png" alt="UniFET Logo">
-        <h3>Administrador</h3>
+    <div class="sidebar-header" style="padding: 24px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.12);">
+        <img src="assets/img/logotipo-horizontal-oscuro.png" alt="UniFET" style="width: 180px; height: auto; margin-bottom: 6px; display: block; margin-left: auto; margin-right: auto;">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); font-weight: 600;">Portal Académico</div>
     </div>
     <ul class="sidebar-menu">
         <li>
@@ -11,7 +11,7 @@
         </li>
         <li>
             <a href="?ruta=admin/institucion/facultades" class="nav-link-simple" data-prefix="admin/institucion">
-                <i class="fa-solid fa-building icon-left"></i> Institución
+                <i class="fa-solid fa-building-columns icon-left"></i> Institución
             </a>
         </li>
         <li>
@@ -20,7 +20,7 @@
             </a>
         </li>
         <li>
-            <a href="#" class="nav-link-simple proximamente" data-prefix="admin/academico">
+            <a href="?ruta=admin/academico/periodos" class="nav-link-simple" data-prefix="admin/academico">
                 <i class="fa-solid fa-book-open icon-left"></i> Académico
             </a>
         </li>
@@ -30,17 +30,17 @@
             </a>
         </li>
         <li>
-            <a href="#" class="nav-link-simple proximamente" data-prefix="admin/reportes">
+            <a href="?ruta=admin/reportes" class="nav-link-simple" data-prefix="admin/reportes">
                 <i class="fa-solid fa-chart-line icon-left"></i> Reportes
             </a>
         </li>
         <li>
-            <a href="#" class="nav-link-simple proximamente" data-prefix="admin/importar">
+            <a href="?ruta=admin/importar" class="nav-link-simple" data-prefix="admin/importar">
                 <i class="fa-solid fa-file-export icon-left"></i> Importar/Exportar
             </a>
         </li>
         <li>
-            <a href="#" class="nav-link-simple proximamente" data-prefix="admin/sistema">
+            <a href="?ruta=admin/sistema/personalizacion" class="nav-link-simple" data-prefix="admin/sistema/personalizacion">
                 <i class="fa-solid fa-server icon-left"></i> Sistema
             </a>
         </li>
@@ -53,6 +53,9 @@
     $periodo_activo = \App\Models\PeriodoAcademico::getActivo();
     ?>
     <div class="topbar">
+        <button type="button" class="sidebar-toggle" data-sidebar-toggle aria-label="Abrir menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
         <div class="topbar-periodo">
             Periodo Activo: <?= $periodo_activo ? htmlspecialchars($periodo_activo['codigo']) : 'Ninguno' ?>
         </div>

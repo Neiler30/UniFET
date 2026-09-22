@@ -30,6 +30,22 @@ class Espacio {
         return $stmt->fetch();
     }
 
+    public static function existeCodigo($codigo, $id_bloque, $id_excluir = null) {
+        $db = Database::getConexion();
+        $sql = "SELECT COUNT(*) FROM espacio WHERE codigo = :codigo AND id_bloque = :id_bloque";
+        if ($id_excluir) {
+            $sql .= " AND id_espacio != :id_excluir";
+        }
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+        $stmt->bindParam(':id_bloque', $id_bloque, PDO::PARAM_INT);
+        if ($id_excluir) {
+            $stmt->bindParam(':id_excluir', $id_excluir, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+
     public static function crear($datos) {
         $db = Database::getConexion();
         $stmt = $db->prepare("INSERT INTO espacio (id_bloque, codigo, nombre, tipo, capacidad, caracteristicas, estado) VALUES (:id_bloque, :codigo, :nombre, :tipo, :capacidad, :caracteristicas, 'DISPONIBLE')");
@@ -39,7 +55,10 @@ class Espacio {
         $stmt->bindParam(':tipo', $datos['tipo'], PDO::PARAM_STR);
         $stmt->bindParam(':capacidad', $datos['capacidad'], PDO::PARAM_INT);
         $stmt->bindParam(':caracteristicas', $datos['caracteristicas'], PDO::PARAM_STR);
-        return $stmt->execute();
+        if ($stmt->execute()) {
+            return $db->lastInsertId();
+        }
+        return false;
     }
 
     public static function actualizar($id_espacio, $datos) {

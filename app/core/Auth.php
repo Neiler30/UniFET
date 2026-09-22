@@ -43,6 +43,16 @@ class Auth {
         if (self::getRol() !== $rol_requerido) {
             die("Acceso denegado. Se requiere rol: " . $rol_requerido);
         }
+
+        if (!empty($_SESSION['debe_cambiar_password'])) {
+            $ruta = $_GET['ruta'] ?? '';
+            $permitidas = ['auth/cambiar_password_temporal', 'admin/dashboard', 'lider/dashboard'];
+            if (!in_array($ruta, $permitidas, true)) {
+                $destino = self::getRol() === 'ADMINISTRADOR' ? 'admin/dashboard' : 'lider/dashboard';
+                header('Location: ?ruta=' . $destino);
+                exit;
+            }
+        }
     }
 
     public static function getUsuarioActual() {

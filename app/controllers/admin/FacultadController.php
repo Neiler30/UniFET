@@ -37,17 +37,34 @@ class FacultadController extends Controller {
                 'estado' => $_POST['estado'] ?? 'ACTIVO'
             ];
             
-            // Validaciones simples
-            if (!empty($datos['codigo']) && !empty($datos['nombre'])) {
-                Facultad::crear($datos);
-                $this->redirect('?ruta=admin/institucion/facultades');
-            } else {
+            // Validaciones
+            if (empty($datos['codigo']) || empty($datos['nombre'])) {
                 $this->render('admin/facultades/form', [
                     'titulo' => 'Nueva Facultad',
                     'facultad' => $datos,
                     'error' => 'Todos los campos son obligatorios.'
                 ]);
+                return;
             }
+
+            if (Facultad::existeCodigo($datos['codigo'], $this->id_institucion)) {
+                $this->render('admin/facultades/form', [
+                    'titulo' => 'Nueva Facultad',
+                    'facultad' => $datos,
+                    'error' => 'Ese código ya existe para esta institución.'
+                ]);
+                return;
+            }
+
+            $idCreado = Facultad::crear($datos);
+            if ($idCreado) {
+                $_SESSION['swal_cadena'] = [
+                    'tipo' => 'facultad',
+                    'id' => $idCreado,
+                    'nombre' => $datos['nombre']
+                ];
+            }
+            $this->redirect('?ruta=admin/institucion/facultades');
         }
     }
 

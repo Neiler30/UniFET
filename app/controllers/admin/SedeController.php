@@ -38,16 +38,33 @@ class SedeController extends Controller {
                 'estado' => $_POST['estado'] ?? 'ACTIVO'
             ];
             
-            if (!empty($datos['codigo']) && !empty($datos['nombre'])) {
-                Sede::crear($datos);
-                $this->redirect('?ruta=admin/espacios/sedes');
-            } else {
+            if (empty($datos['codigo']) || empty($datos['nombre'])) {
                 $this->render('admin/sedes/form', [
                     'titulo' => 'Nueva Sede',
                     'sede' => $datos,
                     'error' => 'Código y Nombre son obligatorios.'
                 ]);
+                return;
             }
+
+            if (Sede::existeCodigo($datos['codigo'], $this->id_institucion)) {
+                $this->render('admin/sedes/form', [
+                    'titulo' => 'Nueva Sede',
+                    'sede' => $datos,
+                    'error' => 'Ese código ya existe para esta institución.'
+                ]);
+                return;
+            }
+
+            $idCreado = Sede::crear($datos);
+            if ($idCreado) {
+                $_SESSION['swal_cadena'] = [
+                    'tipo' => 'sede',
+                    'id' => $idCreado,
+                    'nombre' => $datos['nombre']
+                ];
+            }
+            $this->redirect('?ruta=admin/espacios/sedes');
         }
     }
 
@@ -97,7 +114,12 @@ class SedeController extends Controller {
         $id = $_GET['id'] ?? 0;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Sede::desactivar($id, $this->id_institucion);
+            $_SESSION['swal_alerta'] = [
+                'title' => 'Registro desactivado',
+                'text' => 'La sede ha sido desactivada.',
+                'icon' => 'success'
+            ];
         }
-        $this->redirect('?ruta=admin/sedes');
+        $this->redirect('?ruta=admin/espacios/sedes');
     }
 }

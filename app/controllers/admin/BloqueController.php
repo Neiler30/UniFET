@@ -23,9 +23,13 @@ class BloqueController extends Controller {
     public function crear() {
         Auth::requerirRol('ADMINISTRADOR');
         $sedes = Sede::obtenerTodas($this->id_institucion);
+        $bloque = null;
+        if (!empty($_GET['sede_id'])) {
+            $bloque = ['id_sede' => (int)$_GET['sede_id']];
+        }
         $this->render('admin/bloques/form', [
             'titulo' => 'Nuevo Bloque',
-            'bloque' => null,
+            'bloque' => $bloque,
             'sedes' => $sedes
         ]);
     }
@@ -34,16 +38,13 @@ class BloqueController extends Controller {
         Auth::requerirRol('ADMINISTRADOR');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $datos = [
-                'id_sede' => $_POST['id_sede'] ?? 0,
-                'codigo' => $_POST['codigo'] ?? '',
-                'nombre' => $_POST['nombre'] ?? '',
+                'id_sede' => (int)($_POST['id_sede'] ?? 0),
+                'codigo' => trim($_POST['codigo'] ?? ''),
+                'nombre' => trim($_POST['nombre'] ?? ''),
                 'estado' => $_POST['estado'] ?? 'ACTIVO'
             ];
             
-            if (!empty($datos['id_sede']) && !empty($datos['codigo']) && !empty($datos['nombre'])) {
-                Bloque::crear($datos);
-                $this->redirect('?ruta=admin/espacios/bloques');
-            } else {
+            if (empty($datos['id_sede']) || empty($datos['codigo']) || empty($datos['nombre'])) {
                 $sedes = Sede::obtenerTodas($this->id_institucion);
                 $this->render('admin/bloques/form', [
                     'titulo' => 'Nuevo Bloque',
@@ -51,7 +52,29 @@ class BloqueController extends Controller {
                     'sedes' => $sedes,
                     'error' => 'Todos los campos son obligatorios.'
                 ]);
+                return;
             }
+
+            if (Bloque::existeCodigo($datos['codigo'], $datos['id_sede'])) {
+                $sedes = Sede::obtenerTodas($this->id_institucion);
+                $this->render('admin/bloques/form', [
+                    'titulo' => 'Nuevo Bloque',
+                    'bloque' => $datos,
+                    'sedes' => $sedes,
+                    'error' => 'Ese código ya existe para esta sede.'
+                ]);
+                return;
+            }
+
+            $idCreado = Bloque::crear($datos);
+            if ($idCreado) {
+                $_SESSION['swal_cadena'] = [
+                    'tipo' => 'bloque',
+                    'id' => $idCreado,
+                    'nombre' => $datos['nombre']
+                ];
+            }
+            $this->redirect('?ruta=admin/espacios/bloques');
         }
     }
 
@@ -104,6 +127,11 @@ class BloqueController extends Controller {
         $id = $_GET['id'] ?? 0;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Bloque::desactivar($id);
+            $_SESSION['swal_alerta'] = [
+                'title' => 'Registro desactivado',
+                'text' => 'El bloque ha sido desactivado.',
+                'icon' => 'success'
+            ];
         }
         $this->redirect('?ruta=admin/espacios/bloques');
     }
