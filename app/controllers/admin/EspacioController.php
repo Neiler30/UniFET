@@ -46,15 +46,20 @@ class EspacioController extends Controller {
                 'caracteristicas' => $_POST['caracteristicas'] ?? '[]'
             ];
             
-            if (empty($datos['id_bloque']) || empty($datos['codigo']) || empty($datos['nombre'])) {
+            if (empty($datos['id_bloque']) || empty($datos['nombre'])) {
                 $bloques = Bloque::obtenerTodos($this->id_institucion);
                 $this->render('admin/espacios/form', [
                     'titulo' => 'Nuevo Espacio',
                     'espacio' => $datos,
                     'bloques' => $bloques,
-                    'error' => 'Bloque, Código y Nombre son obligatorios.'
+                    'error' => 'El bloque y el nombre del espacio son obligatorios.'
                 ]);
                 return;
+            }
+
+            // Auto-generar código si está vacío
+            if (empty($datos['codigo'])) {
+                $datos['codigo'] = Espacio::generarCodigo($datos['nombre'], $datos['id_bloque']);
             }
 
             if (Espacio::existeCodigo($datos['codigo'], $datos['id_bloque'])) {

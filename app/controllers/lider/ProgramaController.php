@@ -11,24 +11,30 @@ class ProgramaController extends Controller {
     public function index() {
         Auth::requerirRol('LIDER_PROGRAMA');
         $usuario = Auth::getUsuarioActual();
+        $programasLider = LiderPanel::programasDelLider($usuario['id_usuario']);
         $programaActivo = LiderPanel::resolverProgramaActivo($usuario['id_usuario'], $_GET['programa_id'] ?? null);
         $periodoActivo = PeriodoAcademico::getActivo();
-        $tab = $_GET['tab'] ?? 'resumen';
+
+        $kpis = $programaActivo ? LiderPanel::kpis($programaActivo['id_programa'], $periodoActivo['id_periodo'] ?? null) : [];
+        $docentes = $programaActivo ? LiderPanel::docentes($programaActivo['id_programa']) : [];
+        $asignaturas = $programaActivo ? LiderPanel::asignaturas($programaActivo['id_programa']) : [];
+        $asignaciones = $programaActivo ? LiderPanel::asignacionesDocente($programaActivo['id_programa'], $periodoActivo['id_periodo'] ?? null) : [];
 
         $this->render('lider/programa', [
-            'titulo' => 'Mi Programa',
+            'titulo'         => 'Mi Programa',
+            'programasLider' => $programasLider,
             'programaActivo' => $programaActivo,
-            'periodoActivo' => $periodoActivo,
-            'tab' => in_array($tab, ['resumen', 'docentes', 'asignaturas', 'asignaciones'], true) ? $tab : 'resumen',
-            'docentes' => $programaActivo ? LiderPanel::docentes($programaActivo['id_programa']) : [],
-            'asignaturas' => $programaActivo ? LiderPanel::asignaturas($programaActivo['id_programa']) : [],
-            'asignaciones' => $programaActivo ? LiderPanel::asignacionesDocente($programaActivo['id_programa'], $periodoActivo['id_periodo'] ?? null) : []
+            'periodoActivo'  => $periodoActivo,
+            'kpis'           => $kpis,
+            'docentes'       => $docentes,
+            'asignaturas'    => $asignaturas,
+            'asignaciones'   => $asignaciones
         ]);
     }
 
     public function asignarDocente() {
         Auth::requerirRol('LIDER_PROGRAMA');
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') $this->redirect('?ruta=lider/programa&tab=asignaciones');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') $this->redirect('?ruta=lider/programa');
 
         $usuario = Auth::getUsuarioActual();
         $programaActivo = LiderPanel::resolverProgramaActivo($usuario['id_usuario'], $_POST['programa_id'] ?? null);
@@ -45,8 +51,8 @@ class ProgramaController extends Controller {
         }
 
         $_SESSION['swal_alerta'] = $ok
-            ? ['icon' => 'success', 'title' => 'Asignacion registrada', 'text' => 'El docente quedo asociado a la asignatura dentro de tu programa.']
+            ? ['icon' => 'success', 'title' => 'Asignación registrada', 'text' => 'El docente quedó asociado a la asignatura dentro de tu programa.']
             : ['icon' => 'error', 'title' => 'No se pudo asignar', 'text' => 'Verifica que el docente y la asignatura pertenezcan a tu programa.'];
-        $this->redirect('?ruta=lider/programa&tab=asignaciones');
+        $this->redirect('?ruta=lider/programa');
     }
 }

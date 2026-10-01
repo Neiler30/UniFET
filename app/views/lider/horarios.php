@@ -1,6 +1,6 @@
 <?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Horarios']);
-$this->render('shared/sidebar_lider');
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Horarios']);
+$this->render('elementos_compartidos/sidebar_lider');
 $diasSemana = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'];
 $tabs = [
     'general' => ['Mi horario', 'fa-table-list'],
@@ -87,4 +87,4 @@ document.addEventListener('DOMContentLoaded', () => {
     periodo && periodo.addEventListener('change', loadAsignaturas); asignatura && asignatura.addEventListener('change', loadDocentes); [periodo,dia,inicio,fin].forEach(el => el && el.addEventListener('change', loadEspacios)); loadAsignaturas().then(loadEspacios);
 });
 </script>
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

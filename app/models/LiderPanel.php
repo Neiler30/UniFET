@@ -46,20 +46,59 @@ class LiderPanel {
 
     public static function kpis($id_programa, $id_periodo) {
         $db = Database::getConexion();
-        $kpis = ['asignaturas' => 0, 'docentes' => 0, 'clases' => 0, 'propuestas' => 0];
-        if (!$id_programa || !$id_periodo) return $kpis;
-        $stmt = $db->prepare("SELECT COUNT(*) FROM oferta_academica WHERE id_programa = :programa AND id_periodo = :periodo AND estado = 'ACTIVA'");
-        $stmt->execute([':programa' => $id_programa, ':periodo' => $id_periodo]);
-        $kpis['asignaturas'] = (int)$stmt->fetchColumn();
+        $kpis = [
+            'total_asignaturas'     => 0,
+            'asignaturas'           => 0, // ofertadas
+            'docentes'              => 0,
+            'asignaciones'          => 0,
+            'clases'                => 0,
+            'espacios'              => 0,
+            'propuestas'            => 0,
+            'docentes_con_clase'    => 0
+        ];
+        if (!$id_programa) return $kpis;
+
+        // Total asignaturas del programa
+        $stmt = $db->prepare("SELECT COUNT(*) FROM asignatura_programa WHERE id_programa = :programa");
+        $stmt->execute([':programa' => $id_programa]);
+        $kpis['total_asignaturas'] = (int)$stmt->fetchColumn();
+
+        // Total docentes asociados
         $stmt = $db->prepare("SELECT COUNT(DISTINCT id_docente) FROM docente_programa WHERE id_programa = :programa");
         $stmt->execute([':programa' => $id_programa]);
         $kpis['docentes'] = (int)$stmt->fetchColumn();
-        $stmt = $db->prepare("SELECT COUNT(*) FROM horario WHERE id_programa = :programa AND id_periodo = :periodo AND estado != 'ELIMINADO'");
-        $stmt->execute([':programa' => $id_programa, ':periodo' => $id_periodo]);
-        $kpis['clases'] = (int)$stmt->fetchColumn();
-        $stmt = $db->prepare("SELECT COUNT(*) FROM propuesta_fet WHERE id_programa = :programa AND id_periodo = :periodo AND estado = 'GENERADA'");
-        $stmt->execute([':programa' => $id_programa, ':periodo' => $id_periodo]);
-        $kpis['propuestas'] = (int)$stmt->fetchColumn();
+
+        if ($id_periodo) {
+            // Asignaturas ofertadas en el periodo
+            $stmt = $db->prepare("SELECT COUNT(*) FROM oferta_academica WHERE id_programa = :programa AND id_periodo = :periodo AND estado = 'ACTIVA'");
+            $stmt->execute([':programa' => $id_programa, ':periodo' => $id_periodo]);
+            $kpis['asignaturas'] = (int)$stmt->fetchColumn();
+
+            // Asignaciones docentes realizadas
+            $stmt = $db->prepare("SELECT COUNT(*) FROM asignacion_docente WHERE id_programa = :programa AND id_periodo = :periodo");
+            $stmt->execute([':programa' => $id_programa, ':periodo' => $id_periodo]);
+            $kpis['asignaciones'] = (int)$stmt->fetchColumn();
+
+            // Clases programadas
+            $stmt = $db->prepare("SELECT COUNT(*) FROM horario WHERE id_programa = :programa AND id_periodo = :periodo AND estado != 'ELIMINADO'");
+            $stmt->execute([':programa' => $id_programa, ':periodo' => $id_periodo]);
+            $kpis['clases'] = (int)$stmt->fetchColumn();
+
+            // Espacios distintos asignados
+            $stmt = $db->prepare("SELECT COUNT(DISTINCT id_espacio) FROM horario WHERE id_programa = :programa AND id_periodo = :periodo AND estado != 'ELIMINADO'");
+            $stmt->execute([':programa' => $id_programa, ':periodo' => $id_periodo]);
+            $kpis['espacios'] = (int)$stmt->fetchColumn();
+
+            // Docentes con clase
+            $stmt = $db->prepare("SELECT COUNT(DISTINCT id_docente) FROM horario WHERE id_programa = :programa AND id_periodo = :periodo AND estado != 'ELIMINADO'");
+            $stmt->execute([':programa' => $id_programa, ':periodo' => $id_periodo]);
+            $kpis['docentes_con_clase'] = (int)$stmt->fetchColumn();
+
+            // Propuestas FET generadas
+            $stmt = $db->prepare("SELECT COUNT(*) FROM propuesta_fet WHERE id_programa = :programa AND id_periodo = :periodo AND estado = 'GENERADA'");
+            $stmt->execute([':programa' => $id_programa, ':periodo' => $id_periodo]);
+            $kpis['propuestas'] = (int)$stmt->fetchColumn();
+        }
         return $kpis;
     }
 
@@ -98,7 +137,10 @@ class LiderPanel {
     public static function docentes($id_programa) {
         $db = Database::getConexion();
         $stmt = $db->prepare("
-            SELECT d.*
+            SELECT d.*,
+                   (SELECT COUNT(*) FROM docente_asignatura da
+                    JOIN asignatura_programa ap ON ap.id_asignatura = da.id_asignatura
+                    WHERE da.id_docente = d.id_docente AND ap.id_programa = :programa) AS total_compatibles
             FROM docente_programa dp
             JOIN docente d ON d.id_docente = dp.id_docente
             WHERE dp.id_programa = :programa
@@ -111,12 +153,12 @@ class LiderPanel {
     public static function asignaturas($id_programa) {
         $db = Database::getConexion();
         $stmt = $db->prepare("
-            SELECT a.*, aa.nombre AS area_nombre
+            SELECT a.*, aa.nombre AS area_nombre, ap.semestre
             FROM asignatura_programa ap
             JOIN asignatura a ON a.id_asignatura = ap.id_asignatura
             LEFT JOIN area_academica aa ON aa.id_area_academica = a.id_area_academica
             WHERE ap.id_programa = :programa
-            ORDER BY a.nombre
+            ORDER BY ap.semestre ASC, a.nombre ASC
         ");
         $stmt->execute([':programa' => $id_programa]);
         return $stmt->fetchAll();

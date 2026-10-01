@@ -1,7 +1,7 @@
 <?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Sistema']);
-$this->render('shared/sidebar_admin');
-$this->render('shared/tabs', ['tabs' => [
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Sistema']);
+$this->render('elementos_compartidos/sidebar_admin');
+$this->render('elementos_compartidos/tabs', ['tabs' => [
     ['etiqueta' => 'Personalizacion', 'ruta' => 'admin/sistema/personalizacion', 'activa' => true],
     ['etiqueta' => 'Usuarios', 'ruta' => 'admin/sistema/usuarios', 'activa' => false],
     ['etiqueta' => 'Lideres de Programa', 'ruta' => 'admin/sistema/lideres', 'activa' => false],
@@ -20,4 +20,4 @@ $this->render('shared/tabs', ['tabs' => [
 <div class="form-group"><label>Color acento</label><input type="color" class="form-control" name="color_acento" value="<?= htmlspecialchars($institucion['color_acento'] ?? '#F5B301') ?>"></div>
 <div class="form-group" style="grid-column:1/-1;"><button class="btn-primario">Guardar personalizacion</button></div>
 </form></div>
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

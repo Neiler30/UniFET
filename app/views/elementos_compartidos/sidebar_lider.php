@@ -8,6 +8,7 @@
         <li><a href="?ruta=lider/programa" class="nav-link-simple" data-prefix="lider/programa"><i class="fa-solid fa-graduation-cap icon-left"></i> Mi Programa</a></li>
         <li><a href="?ruta=lider/espacios" class="nav-link-simple" data-prefix="lider/espacios"><i class="fa-solid fa-door-open icon-left"></i> Espacios</a></li>
         <li><a href="?ruta=lider/horarios" class="nav-link-simple" data-prefix="lider/horarios"><i class="fa-solid fa-calendar-week icon-left"></i> Horarios</a></li>
+        <li><a href="?ruta=lider/auditoria" class="nav-link-simple" data-prefix="lider/auditoria"><i class="fa-solid fa-clipboard-check icon-left"></i> Auditoría</a></li>
         <li><a href="?ruta=lider/reportes" class="nav-link-simple" data-prefix="lider/reportes"><i class="fa-solid fa-chart-line icon-left"></i> Reportes</a></li>
     </ul>
 </div>

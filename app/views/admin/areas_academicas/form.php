@@ -1,7 +1,7 @@
 <?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Area Academica']);
-$this->render('shared/sidebar_admin');
-$this->render('shared/tabs_academico', ['activo' => 'areas']);
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Area Academica']);
+$this->render('elementos_compartidos/sidebar_admin');
+$this->render('elementos_compartidos/tabs_academico', ['activo' => 'areas']);
 $esEdicion = !empty($area['id_area_academica']);
 ?>
 <div class="form-shell">
@@ -32,4 +32,4 @@ $esEdicion = !empty($area['id_area_academica']);
         </form>
     </div>
 </div>
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

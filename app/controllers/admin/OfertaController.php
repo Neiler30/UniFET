@@ -7,8 +7,8 @@ use App\Core\Auth;
 use App\Models\OfertaAcademica;
 use App\Models\PeriodoAcademico;
 use App\Models\Programa;
-use App\Config\Database;
-use PDO;
+use App\Models\Asignatura;
+use App\Models\NivelAcademico;
 
 class OfertaController extends Controller {
 
@@ -26,12 +26,12 @@ class OfertaController extends Controller {
         $ofertas = $id_periodo ? OfertaAcademica::obtenerPorPeriodo($id_periodo, $id_programa) : [];
 
         $this->render('admin/oferta/index', [
-            'titulo' => 'Oferta Académica',
-            'periodos' => $periodos,
-            'programas' => $programas,
+            'titulo'               => 'Oferta Académica',
+            'periodos'             => $periodos,
+            'programas'            => $programas,
             'periodo_seleccionado' => $id_periodo,
-            'programa_seleccionado' => $id_programa,
-            'ofertas' => $ofertas
+            'programa_seleccionado'=> $id_programa,
+            'ofertas'              => $ofertas
         ]);
     }
 
@@ -39,6 +39,7 @@ class OfertaController extends Controller {
         Auth::requerirRol('ADMINISTRADOR');
         $periodos = PeriodoAcademico::obtenerTodos($this->id_institucion);
         $programas = Programa::obtenerTodos($this->id_institucion);
+        $niveles   = NivelAcademico::obtenerActivos();
 
         $periodo_id = (int)($_GET['periodo_id'] ?? 0);
         if (!$periodo_id) {
@@ -46,66 +47,81 @@ class OfertaController extends Controller {
             $periodo_id = $activo['id_periodo'] ?? ($periodos[0]['id_periodo'] ?? 0);
         }
 
-        $programa_id = (int)($_GET['programa_id'] ?? ($programas[0]['id_programa'] ?? 0));
+        $nivel_id = (int)($_GET['nivel_id'] ?? 0);
+        $programa_id = (int)($_GET['programa_id'] ?? 0);
 
-        // Obtener asignaturas disponibles
-        $db = Database::getConexion();
-        $stmt = $db->prepare("
-            SELECT a.* FROM asignatura a
-            WHERE a.id_institucion = :inst AND a.estado = 'ACTIVO'
-            ORDER BY a.nombre ASC
-        ");
-        $stmt->execute([':inst' => $this->id_institucion]);
-        $asignaturas = $stmt->fetchAll();
+        // Si se envió un programa pero no nivel_id, detectar su nivel académico
+        if (!$nivel_id && $programa_id) {
+            foreach ($programas as $p) {
+                if ((int)$p['id_programa'] === $programa_id) {
+                    $nivel_id = (int)($p['id_nivel_academico'] ?? 0);
+                    break;
+                }
+            }
+        }
+
+        // Si no hay programa seleccionado, tomar el primero disponible
+        if (!$programa_id && !empty($programas)) {
+            if ($nivel_id) {
+                foreach ($programas as $p) {
+                    if ((int)($p['id_nivel_academico'] ?? 0) === $nivel_id) {
+                        $programa_id = (int)$p['id_programa'];
+                        break;
+                    }
+                }
+            }
+            if (!$programa_id) {
+                $programa_id = (int)($programas[0]['id_programa'] ?? 0);
+            }
+        }
+
+        // Obtener solo las asignaturas que pertenezcan a este programa (con su semestre desde asignatura_programa)
+        $asignaturas = $programa_id ? Asignatura::obtenerPorPrograma($programa_id) : [];
+
+        // Identificar asignaturas que ya fueron ofertadas en este periodo para este programa
+        $ofertadasIds = ($periodo_id && $programa_id) ? OfertaAcademica::obtenerIdsOfertados($periodo_id, $programa_id) : [];
 
         $this->render('admin/oferta/form', [
-            'titulo' => 'Cargar Oferta Académica',
-            'periodos' => $periodos,
-            'programas' => $programas,
-            'asignaturas' => $asignaturas,
-            'periodo_id' => $periodo_id,
-            'programa_id' => $programa_id
+            'titulo'        => 'Cargar Oferta Académica',
+            'periodos'      => $periodos,
+            'programas'     => $programas,
+            'niveles'       => $niveles,
+            'nivel_id'      => $nivel_id,
+            'asignaturas'   => $asignaturas,
+            'ofertadasIds'  => $ofertadasIds,
+            'periodo_id'    => $periodo_id,
+            'programa_id'   => $programa_id
         ]);
     }
 
     public function guardar() {
         Auth::requerirRol('ADMINISTRADOR');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_periodo = (int)($_POST['id_periodo'] ?? 0);
+            $id_periodo  = (int)($_POST['id_periodo'] ?? 0);
             $id_programa = (int)($_POST['id_programa'] ?? 0);
-            $id_asignatura = (int)($_POST['id_asignatura'] ?? 0);
 
-            if (!$id_periodo || !$id_programa || !$id_asignatura) {
+            // Admite selección múltiple de checkboxes id_asignaturas[] o individual id_asignatura
+            $asignaturasSeleccionadas = $_POST['id_asignaturas'] ?? [];
+            if (!is_array($asignaturasSeleccionadas) && !empty($_POST['id_asignatura'])) {
+                $asignaturasSeleccionadas = [(int)$_POST['id_asignatura']];
+            }
+
+            if (!$id_periodo || !$id_programa || empty($asignaturasSeleccionadas)) {
                 $_SESSION['swal_alerta'] = [
-                    'title' => 'No se pudo guardar',
-                    'text' => 'Todos los campos son obligatorios.',
-                    'icon' => 'error'
+                    'title' => 'Selección incompleta',
+                    'text'  => 'Debes seleccionar el periodo, programa y al menos una asignatura para agregar a la oferta.',
+                    'icon'  => 'warning'
                 ];
                 $this->redirect("?ruta=admin/academico/oferta/crear&periodo_id=$id_periodo&programa_id=$id_programa");
                 return;
             }
 
-            if (OfertaAcademica::existeOferta($id_periodo, $id_programa, $id_asignatura)) {
-                $_SESSION['swal_alerta'] = [
-                    'title' => 'Asignatura ya ofertada',
-                    'text' => 'Esta asignatura ya se encuentra ofertada para este programa en el periodo seleccionado.',
-                    'icon' => 'warning'
-                ];
-                $this->redirect("?ruta=admin/academico/oferta/crear&periodo_id=$id_periodo&programa_id=$id_programa");
-                return;
-            }
-
-            OfertaAcademica::crear([
-                'id_periodo' => $id_periodo,
-                'id_programa' => $id_programa,
-                'id_asignatura' => $id_asignatura,
-                'estado' => 'ACTIVA'
-            ]);
+            $cantidad = OfertaAcademica::crearMultiples($id_periodo, $id_programa, $asignaturasSeleccionadas);
 
             $_SESSION['swal_alerta'] = [
-                'title' => 'Oferta agregada',
-                'text' => 'La asignatura fue incorporada a la oferta académica del periodo.',
-                'icon' => 'success'
+                'title' => 'Oferta actualizada',
+                'text'  => "Se agregaron {$cantidad} asignatura(s) a la oferta académica del periodo.",
+                'icon'  => 'success'
             ];
 
             $this->redirect("?ruta=admin/academico/oferta&periodo_id=$id_periodo&programa_id=$id_programa");
@@ -116,15 +132,19 @@ class OfertaController extends Controller {
         Auth::requerirRol('ADMINISTRADOR');
         $id = (int)($_GET['id'] ?? 0);
         $periodo_id = (int)($_GET['periodo_id'] ?? 0);
+        $programa_id = (int)($_GET['programa_id'] ?? 0);
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             OfertaAcademica::desactivar($id);
             $_SESSION['swal_alerta'] = [
                 'title' => 'Oferta desactivada',
-                'text' => 'La asignatura ya no se encuentra activa en la oferta del periodo.',
-                'icon' => 'success'
+                'text'  => 'La asignatura ya no se encuentra activa en la oferta del periodo.',
+                'icon'  => 'success'
             ];
         }
-        $this->redirect("?ruta=admin/academico/oferta&periodo_id=$periodo_id");
+        $redirectUrl = "?ruta=admin/academico/oferta&periodo_id=$periodo_id";
+        if ($programa_id) {
+            $redirectUrl .= "&programa_id=$programa_id";
+        }
+        $this->redirect($redirectUrl);
     }
 }
-

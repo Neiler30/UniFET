@@ -1,6 +1,6 @@
 <?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Dashboard Lider']);
-$this->render('shared/sidebar_lider');
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Dashboard Lider']);
+$this->render('elementos_compartidos/sidebar_lider');
 $usuario = \App\Core\Auth::getUsuarioActual();
 ?>
 <style>
@@ -19,7 +19,7 @@ $usuario = \App\Core\Auth::getUsuarioActual();
     <div class="hero-actions">
         <a href="?ruta=lider/horarios"><i class="fa-solid fa-calendar-plus"></i> Construir horario</a>
         <a href="?ruta=lider/horarios&tab=fet"><i class="fa-solid fa-wand-magic-sparkles"></i> Generar con FET</a>
-        <a href="?ruta=lider/horarios&tab=auditoria"><i class="fa-solid fa-clipboard-check"></i> Auditar hoy</a>
+        <a href="?ruta=lider/auditoria"><i class="fa-solid fa-clipboard-check"></i> Auditar hoy</a>
     </div>
 </div>
 <?php if (!$programaActivo): ?>
@@ -46,4 +46,4 @@ $usuario = \App\Core\Auth::getUsuarioActual();
     </div>
 </div>
 <?php endif; ?>
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

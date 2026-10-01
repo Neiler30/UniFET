@@ -1,7 +1,7 @@
 <?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Lideres de Programa']);
-$this->render('shared/sidebar_admin');
-$this->render('shared/tabs', ['tabs' => [
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Lideres de Programa']);
+$this->render('elementos_compartidos/sidebar_admin');
+$this->render('elementos_compartidos/tabs', ['tabs' => [
     ['etiqueta' => 'Personalizacion', 'ruta' => 'admin/sistema/personalizacion', 'activa' => false],
     ['etiqueta' => 'Usuarios', 'ruta' => 'admin/sistema/usuarios', 'activa' => false],
     ['etiqueta' => 'Lideres de Programa', 'ruta' => 'admin/sistema/lideres', 'activa' => true],
@@ -141,4 +141,4 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePreview();
 });
 </script>
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

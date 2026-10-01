@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS `asignatura_programa` (
   `id_asignatura_programa` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_asignatura` int(10) unsigned NOT NULL,
   `id_programa` int(10) unsigned NOT NULL,
+  `semestre` tinyint(3) unsigned DEFAULT NULL COMMENT 'Semestre curricular dentro del programa',
   PRIMARY KEY (`id_asignatura_programa`),
   UNIQUE KEY `uq_asignatura_programa` (`id_asignatura`,`id_programa`),
   KEY `fk_ap_programa` (`id_programa`),
@@ -60,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `auditoria_clase` (
   `fecha_auditoria` date NOT NULL,
   `hora_verificacion` time DEFAULT NULL,
   `id_usuario_auditor` int(10) unsigned NOT NULL,
-  `resultado` enum('PENDIENTE','VERIFICADA','NO_REALIZADA') NOT NULL DEFAULT 'PENDIENTE',
+  `resultado` enum('PENDIENTE','SIN_NOVEDAD','CON_NOVEDAD','VERIFICADA','NO_REALIZADA') NOT NULL DEFAULT 'PENDIENTE',
   `observacion` text DEFAULT NULL,
   `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id_auditoria`),
@@ -69,6 +70,28 @@ CREATE TABLE IF NOT EXISTS `auditoria_clase` (
   KEY `idx_auditoria_fecha` (`fecha_auditoria`,`resultado`),
   CONSTRAINT `fk_auditoria_horario` FOREIGN KEY (`id_horario`) REFERENCES `horario` (`id_horario`) ON DELETE CASCADE,
   CONSTRAINT `fk_auditoria_usuario` FOREIGN KEY (`id_usuario_auditor`) REFERENCES `usuario` (`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--  estructura para tabla unifet.auditoria_criterio
+CREATE TABLE IF NOT EXISTS `auditoria_criterio` (
+  `id_criterio` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `descripcion` varchar(255) NOT NULL,
+  `orden` int(10) unsigned NOT NULL DEFAULT 1,
+  `estado` enum('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
+  PRIMARY KEY (`id_criterio`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--  estructura para tabla unifet.auditoria_detalle
+CREATE TABLE IF NOT EXISTS `auditoria_detalle` (
+  `id_auditoria_detalle` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id_auditoria` int(10) unsigned NOT NULL,
+  `id_criterio` int(10) unsigned DEFAULT NULL,
+  `criterio` varchar(255) NOT NULL,
+  `cumple` tinyint(1) NOT NULL DEFAULT 0,
+  `observacion` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id_auditoria_detalle`),
+  KEY `fk_adetalle_auditoria` (`id_auditoria`),
+  CONSTRAINT `fk_adetalle_auditoria` FOREIGN KEY (`id_auditoria`) REFERENCES `auditoria_clase` (`id_auditoria`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --  datos para la tabla unifet.auditoria_clase: ~0 rows (aproximadamente)
@@ -267,6 +290,23 @@ CREATE TABLE IF NOT EXISTS `institucion` (
 
 --  datos para la tabla unifet.institucion: ~0 rows (aproximadamente)
 
+--  estructura para tabla unifet.nivel_academico
+CREATE TABLE IF NOT EXISTS `nivel_academico` (
+  `id_nivel_academico` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `nombre`             varchar(80)  NOT NULL,
+  `descripcion`        varchar(255) DEFAULT NULL,
+  `estado`             enum('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
+  PRIMARY KEY (`id_nivel_academico`),
+  UNIQUE KEY `uq_nivel_nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- datos para la tabla unifet.nivel_academico: 4 niveles oficiales UniFET
+INSERT IGNORE INTO `nivel_academico` (`nombre`, `descripcion`) VALUES
+  ('Técnico Laboral',      'Formación técnica laboral. Duración configurable por programa.'),
+  ('Técnico Profesional',  'Ciclo técnico profesional. Aproximadamente 4 semestres.'),
+  ('Tecnólogo',            'Ciclo tecnológico. Acumulado de 6 semestres.'),
+  ('Profesional',          'Ciclo profesional universitario. 9 o 10 semestres según el programa.');
+
 --  estructura para tabla unifet.oferta_academica
 CREATE TABLE IF NOT EXISTS `oferta_academica` (
   `id_oferta` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -309,12 +349,16 @@ CREATE TABLE IF NOT EXISTS `periodo_academico` (
 CREATE TABLE IF NOT EXISTS `programa` (
   `id_programa` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id_facultad` int(10) unsigned NOT NULL,
+  `id_nivel_academico` int(10) unsigned DEFAULT NULL COMMENT 'Nivel académico del programa',
   `codigo` varchar(20) NOT NULL,
   `nombre` varchar(150) NOT NULL,
+  `numero_semestres` tinyint(3) unsigned NOT NULL DEFAULT 0 COMMENT 'Duración del programa en semestres',
   `estado` enum('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
   PRIMARY KEY (`id_programa`),
   UNIQUE KEY `uq_programa_codigo` (`id_facultad`,`codigo`),
-  CONSTRAINT `fk_programa_facultad` FOREIGN KEY (`id_facultad`) REFERENCES `facultad` (`id_facultad`)
+  KEY `fk_programa_nivel` (`id_nivel_academico`),
+  CONSTRAINT `fk_programa_facultad` FOREIGN KEY (`id_facultad`) REFERENCES `facultad` (`id_facultad`),
+  CONSTRAINT `fk_programa_nivel` FOREIGN KEY (`id_nivel_academico`) REFERENCES `nivel_academico` (`id_nivel_academico`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --  datos para la tabla unifet.programa: ~0 rows (aproximadamente)

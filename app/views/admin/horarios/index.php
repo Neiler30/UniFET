@@ -1,6 +1,6 @@
 <?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Horarios']);
-$this->render('shared/sidebar_admin');
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Horarios']);
+$this->render('elementos_compartidos/sidebar_admin');
 
 $tab = $tab ?? 'general';
 $diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
@@ -422,4 +422,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

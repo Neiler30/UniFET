@@ -44,15 +44,20 @@ class BloqueController extends Controller {
                 'estado' => $_POST['estado'] ?? 'ACTIVO'
             ];
             
-            if (empty($datos['id_sede']) || empty($datos['codigo']) || empty($datos['nombre'])) {
+            if (empty($datos['id_sede']) || empty($datos['nombre'])) {
                 $sedes = Sede::obtenerTodas($this->id_institucion);
                 $this->render('admin/bloques/form', [
                     'titulo' => 'Nuevo Bloque',
                     'bloque' => $datos,
                     'sedes' => $sedes,
-                    'error' => 'Todos los campos son obligatorios.'
+                    'error' => 'La sede y el nombre del bloque son obligatorios.'
                 ]);
                 return;
+            }
+
+            // Auto-generar código si viene vacío
+            if (empty($datos['codigo'])) {
+                $datos['codigo'] = Bloque::generarCodigo($datos['nombre'], $datos['id_sede']);
             }
 
             if (Bloque::existeCodigo($datos['codigo'], $datos['id_sede'])) {

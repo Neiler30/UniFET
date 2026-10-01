@@ -1,14 +1,14 @@
 <?php
 $esEdicion = !empty($sede['id_sede']);
-$this->render('shared/header', ['titulo' => ($esEdicion ? 'Editar Sede' : 'Nueva Sede') . ' - UniFET']);
-$this->render('shared/sidebar_admin');
+$this->render('elementos_compartidos/header', ['titulo' => ($esEdicion ? 'Editar Sede' : 'Nueva Sede') . ' - UniFET']);
+$this->render('elementos_compartidos/sidebar_admin');
 
 $tabs = [
     ['etiqueta' => 'Sedes', 'ruta' => 'admin/espacios/sedes', 'activa' => true],
     ['etiqueta' => 'Bloques', 'ruta' => 'admin/espacios/bloques', 'activa' => false],
     ['etiqueta' => 'Espacios', 'ruta' => 'admin/espacios/espacios', 'activa' => false],
 ];
-$this->render('shared/tabs', ['tabs' => $tabs]);
+$this->render('elementos_compartidos/tabs', ['tabs' => $tabs]);
 ?>
 
 <div class="header-acciones">
@@ -74,4 +74,4 @@ $this->render('shared/tabs', ['tabs' => $tabs]);
     </form>
 </div>
 
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

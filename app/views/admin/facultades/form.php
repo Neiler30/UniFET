@@ -1,12 +1,8 @@
 <?php
 $esEdicion = !empty($facultad['id_facultad']);
-$this->render('shared/header', ['titulo' => ($esEdicion ? 'Editar Facultad' : 'Nueva Facultad') . ' - UniFET']);
-$this->render('shared/sidebar_admin');
-$tabs = [
-    ['etiqueta' => 'Facultades', 'ruta' => 'admin/institucion/facultades', 'activa' => true],
-    ['etiqueta' => 'Programas', 'ruta' => 'admin/institucion/programas', 'activa' => false],
-];
-$this->render('shared/tabs', ['tabs' => $tabs]);
+$this->render('elementos_compartidos/header', ['titulo' => ($esEdicion ? 'Editar Facultad' : 'Nueva Facultad') . ' - UniFET']);
+$this->render('elementos_compartidos/sidebar_admin');
+$this->render('elementos_compartidos/tabs_institucion', ['activo' => 'facultades']);
 ?>
 
 <?php if (!empty($error)): ?>
@@ -62,4 +58,4 @@ $this->render('shared/tabs', ['tabs' => $tabs]);
     </div>
 </div>
 
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

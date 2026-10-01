@@ -6,14 +6,16 @@ use App\Config\Database;
 use PDO;
 
 class Programa {
-    
+
     public static function obtenerTodos($id_institucion) {
         $db = Database::getConexion();
         $stmt = $db->prepare("
-            SELECT p.*, f.nombre as facultad_nombre 
+            SELECT p.*, f.nombre AS facultad_nombre,
+                   na.nombre AS nivel_nombre
             FROM programa p
             JOIN facultad f ON p.id_facultad = f.id_facultad
-            WHERE f.id_institucion = :id_institucion 
+            LEFT JOIN nivel_academico na ON na.id_nivel_academico = p.id_nivel_academico
+            WHERE f.id_institucion = :id_institucion
             ORDER BY f.nombre ASC, p.nombre ASC
         ");
         $stmt->bindParam(':id_institucion', $id_institucion, PDO::PARAM_INT);
@@ -23,8 +25,31 @@ class Programa {
 
     public static function obtenerPorId($id_programa) {
         $db = Database::getConexion();
-        $stmt = $db->prepare("SELECT * FROM programa WHERE id_programa = :id_programa");
+        $stmt = $db->prepare("
+            SELECT p.*, na.nombre AS nivel_nombre
+            FROM programa p
+            LEFT JOIN nivel_academico na ON na.id_nivel_academico = p.id_nivel_academico
+            WHERE p.id_programa = :id_programa
+        ");
         $stmt->bindParam(':id_programa', $id_programa, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+
+    /**
+     * Retorna id_nivel_academico y numero_semestres de un programa.
+     * Usado por el formulario de oferta para construir el selector de semestres dinámicamente.
+     */
+    public static function obtenerConfiguracion($id_programa) {
+        $db = Database::getConexion();
+        $stmt = $db->prepare("
+            SELECT p.id_nivel_academico, p.numero_semestres,
+                   na.nombre AS nivel_nombre
+            FROM programa p
+            LEFT JOIN nivel_academico na ON na.id_nivel_academico = p.id_nivel_academico
+            WHERE p.id_programa = :id
+        ");
+        $stmt->bindParam(':id', $id_programa, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetch();
     }
@@ -47,10 +72,15 @@ class Programa {
 
     public static function crear($datos) {
         $db = Database::getConexion();
-        $stmt = $db->prepare("INSERT INTO programa (id_facultad, codigo, nombre, estado) VALUES (:id_facultad, :codigo, :nombre, :estado)");
-        $stmt->bindParam(':id_facultad', $datos['id_facultad'], PDO::PARAM_INT);
-        $stmt->bindParam(':codigo', $datos['codigo'], PDO::PARAM_STR);
-        $stmt->bindParam(':nombre', $datos['nombre'], PDO::PARAM_STR);
+        $stmt = $db->prepare("
+            INSERT INTO programa (id_facultad, id_nivel_academico, codigo, nombre, numero_semestres, estado)
+            VALUES (:id_facultad, :id_nivel_academico, :codigo, :nombre, :numero_semestres, :estado)
+        ");
+        $stmt->bindParam(':id_facultad',          $datos['id_facultad'],         PDO::PARAM_INT);
+        $stmt->bindParam(':id_nivel_academico',   $datos['id_nivel_academico'],  PDO::PARAM_INT);
+        $stmt->bindParam(':codigo',               $datos['codigo'],              PDO::PARAM_STR);
+        $stmt->bindParam(':nombre',               $datos['nombre'],              PDO::PARAM_STR);
+        $stmt->bindParam(':numero_semestres',     $datos['numero_semestres'],    PDO::PARAM_INT);
         $estado = $datos['estado'] ?? 'ACTIVO';
         $stmt->bindParam(':estado', $estado, PDO::PARAM_STR);
         if ($stmt->execute()) {
@@ -61,13 +91,24 @@ class Programa {
 
     public static function actualizar($id_programa, $datos) {
         $db = Database::getConexion();
-        $stmt = $db->prepare("UPDATE programa SET id_facultad = :id_facultad, codigo = :codigo, nombre = :nombre, estado = :estado WHERE id_programa = :id_programa");
-        $stmt->bindParam(':id_facultad', $datos['id_facultad'], PDO::PARAM_INT);
-        $stmt->bindParam(':codigo', $datos['codigo'], PDO::PARAM_STR);
-        $stmt->bindParam(':nombre', $datos['nombre'], PDO::PARAM_STR);
+        $stmt = $db->prepare("
+            UPDATE programa
+            SET id_facultad         = :id_facultad,
+                id_nivel_academico  = :id_nivel_academico,
+                codigo              = :codigo,
+                nombre              = :nombre,
+                numero_semestres    = :numero_semestres,
+                estado              = :estado
+            WHERE id_programa = :id_programa
+        ");
+        $stmt->bindParam(':id_facultad',         $datos['id_facultad'],        PDO::PARAM_INT);
+        $stmt->bindParam(':id_nivel_academico',  $datos['id_nivel_academico'], PDO::PARAM_INT);
+        $stmt->bindParam(':codigo',              $datos['codigo'],             PDO::PARAM_STR);
+        $stmt->bindParam(':nombre',              $datos['nombre'],             PDO::PARAM_STR);
+        $stmt->bindParam(':numero_semestres',    $datos['numero_semestres'],   PDO::PARAM_INT);
         $estado = $datos['estado'] ?? 'ACTIVO';
-        $stmt->bindParam(':estado', $estado, PDO::PARAM_STR);
-        $stmt->bindParam(':id_programa', $id_programa, PDO::PARAM_INT);
+        $stmt->bindParam(':estado',              $estado,                      PDO::PARAM_STR);
+        $stmt->bindParam(':id_programa',         $id_programa,                 PDO::PARAM_INT);
         return $stmt->execute();
     }
 

@@ -1,8 +1,8 @@
 <?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Usuarios']);
-$this->render('shared/sidebar_admin');
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Usuarios']);
+$this->render('elementos_compartidos/sidebar_admin');
 $tab = $_GET['tab'] ?? 'usuarios';
-$this->render('shared/tabs', ['tabs' => [
+$this->render('elementos_compartidos/tabs', ['tabs' => [
     ['etiqueta' => 'Personalizacion', 'ruta' => 'admin/sistema/personalizacion', 'activa' => false],
     ['etiqueta' => 'Usuarios', 'ruta' => 'admin/sistema/usuarios', 'activa' => true],
     ['etiqueta' => 'Lideres de Programa', 'ruta' => 'admin/sistema/lideres', 'activa' => false],
@@ -64,7 +64,7 @@ $this->render('shared/tabs', ['tabs' => [
                     <td><?= htmlspecialchars($u['programas'] ?? '-') ?></td>
                     <td><?= !empty($u['password_temporal']) ? '<span class="badge pendiente">SI</span>' : '<span class="badge activo">NO</span>' ?></td>
                     <td><span class="badge <?= strtolower($u['estado']) ?>"><?= htmlspecialchars($u['estado']) ?></span></td>
-                    <td style="text-align:right;"><?php $this->render('shared/botones_accion', ['ruta_editar' => '?ruta=admin/sistema/usuarios/editar&id=' . (int)$u['id_usuario'], 'ruta_desactivar' => '?ruta=admin/sistema/usuarios/desactivar&id=' . (int)$u['id_usuario'], 'activo' => $u['estado'] === 'ACTIVO']); ?></td>
+                    <td style="text-align:right;"><?php $this->render('elementos_compartidos/botones_accion', ['ruta_editar' => '?ruta=admin/sistema/usuarios/editar&id=' . (int)$u['id_usuario'], 'ruta_desactivar' => '?ruta=admin/sistema/usuarios/desactivar&id=' . (int)$u['id_usuario'], 'activo' => $u['estado'] === 'ACTIVO']); ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
@@ -90,4 +90,4 @@ function confirmarSolicitudUsuario(event, form, title, text, confirmText, icon) 
     return false;
 }
 </script>
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

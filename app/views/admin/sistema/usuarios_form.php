@@ -1,4 +1,4 @@
-<?php $this->render('shared/header', ['titulo' => $titulo ?? 'Usuario']); $this->render('shared/sidebar_admin'); $esEdicion = !empty($usuario['id_usuario']); ?>
+<?php $this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Usuario']); $this->render('elementos_compartidos/sidebar_admin'); $esEdicion = !empty($usuario['id_usuario']); ?>
 <div class="header-acciones"><h1><?= htmlspecialchars($titulo) ?></h1><a class="btn-demo" href="?ruta=admin/sistema/usuarios">Volver</a></div>
 <div class="panel"><form method="POST" action="?ruta=admin/sistema/usuarios/<?= $esEdicion ? 'actualizar' : 'guardar' ?>" style="display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:16px;">
 <?php if ($esEdicion): ?><input type="hidden" name="id_usuario" value="<?= (int)$usuario['id_usuario'] ?>"><?php endif; ?>
@@ -54,4 +54,4 @@ document.addEventListener('DOMContentLoaded', () => {
     syncPassword();
 });
 </script>
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

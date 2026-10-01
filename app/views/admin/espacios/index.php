@@ -1,18 +1,18 @@
-﻿<?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Espacios FÃ­sicos - UniFET']);
-$this->render('shared/sidebar_admin');
+<?php
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Espacios Físicos — UniFET']);
+$this->render('elementos_compartidos/sidebar_admin');
 
 $tabs = [
     ['etiqueta' => 'Sedes', 'ruta' => 'admin/espacios/sedes', 'activa' => false],
     ['etiqueta' => 'Bloques', 'ruta' => 'admin/espacios/bloques', 'activa' => false],
     ['etiqueta' => 'Espacios', 'ruta' => 'admin/espacios/espacios', 'activa' => true],
 ];
-$this->render('shared/tabs', ['tabs' => $tabs]);
+$this->render('elementos_compartidos/tabs', ['tabs' => $tabs]);
 ?>
 
 <div class="header-acciones">
     <div>
-        <h1 style="font-size: 22px; font-weight: 700; color: var(--color-oscuro);">GestiÃ³n de Espacios FÃ­sicos</h1>
+        <h1 style="font-size: 22px; font-weight: 700; color: var(--color-oscuro);">Gestión de Espacios Físicos</h1>
         <p style="color: var(--color-texto-secundario); font-size: 13.5px; margin-top: 4px;">
             Aulas, laboratorios, auditorios y salas disponibles para docencia y eventos.
         </p>
@@ -26,8 +26,8 @@ $this->render('shared/tabs', ['tabs' => $tabs]);
     <?php if (empty($espacios)): ?>
         <div class="empty-state">
             <img src="assets/img/isotipo-color.png" alt="UniFET" class="empty-state-img">
-            <h3>No hay espacios fÃ­sicos registrados</h3>
-            <p>Comienza registrando aulas, salas o laboratorios para habilitar la asignaciÃ³n de horarios.</p>
+            <h3>No hay espacios físicos registrados</h3>
+            <p>Comienza registrando aulas, salas o laboratorios para habilitar la asignación de horarios.</p>
             <a href="?ruta=admin/espacios/espacios/crear" class="btn-primario">
                 <i class="fa-solid fa-plus"></i> Crear Primer Espacio
             </a>
@@ -36,9 +36,9 @@ $this->render('shared/tabs', ['tabs' => $tabs]);
         <table class="table">
             <thead>
                 <tr>
-                    <th style="width: 120px;">CÃ³digo</th>
+                    <th style="width: 120px;">Código</th>
                     <th>Nombre del Espacio</th>
-                    <th>UbicaciÃ³n</th>
+                    <th>Ubicación</th>
                     <th>Tipo</th>
                     <th style="width: 110px;">Capacidad</th>
                     <th style="width: 140px;">Estado</th>
@@ -77,7 +77,7 @@ $this->render('shared/tabs', ['tabs' => $tabs]);
                             </span>
                         </td>
                         <td style="text-align: right;">
-                            <?php $this->render('shared/botones_accion', [
+                            <?php $this->render('elementos_compartidos/botones_accion', [
                                 'ruta_editar' => '?ruta=admin/espacios/espacios/editar&id=' . (int)$espacio['id_espacio'],
                                 'ruta_desactivar' => '?ruta=admin/espacios/espacios/cambiar_estado&id=' . (int)$espacio['id_espacio'] . '&estado=' . ($espacio['estado'] === 'INACTIVO' ? 'DISPONIBLE' : 'INACTIVO'),
                                 'activo' => $espacio['estado'] !== 'INACTIVO',
@@ -90,5 +90,5 @@ $this->render('shared/tabs', ['tabs' => $tabs]);
     <?php endif; ?>
 </div>
 
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>
 

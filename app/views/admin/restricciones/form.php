@@ -1,4 +1,4 @@
-<?php $this->render('shared/header', ['titulo' => $titulo ?? 'Restriccion']); $this->render('shared/sidebar_admin'); $esEdicion = !empty($restriccion['id_restriccion']); $dias = ['','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO']; ?>
+<?php $this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Restriccion']); $this->render('elementos_compartidos/sidebar_admin'); $esEdicion = !empty($restriccion['id_restriccion']); $dias = ['','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO']; ?>
 <div class="header-acciones"><h1><?= htmlspecialchars($titulo) ?></h1><a class="btn-demo" href="?ruta=admin/academico/restricciones">Volver</a></div>
 <div class="panel"><form method="POST" action="?ruta=admin/academico/restricciones/<?= $esEdicion ? 'actualizar' : 'guardar' ?>" class="responsive-form-grid">
 <?php if ($esEdicion): ?><input type="hidden" name="id_restriccion" value="<?= (int)$restriccion['id_restriccion'] ?>"><?php endif; ?>
@@ -12,4 +12,4 @@
 <div class="form-group"><label>Estado</label><select class="form-control" name="estado"><?php foreach (['ACTIVA','INACTIVA'] as $e): ?><option value="<?= $e ?>" <?= (($restriccion['estado'] ?? 'ACTIVA') === $e) ? 'selected' : '' ?>><?= $e ?></option><?php endforeach; ?></select></div>
 <div class="form-group" style="grid-column:1/-1;"><label>Descripcion</label><input class="form-control" name="descripcion" value="<?= htmlspecialchars($restriccion['descripcion'] ?? '') ?>"></div>
 <div class="form-group" style="grid-column:1/-1;"><button class="btn-primario">Guardar restriccion</button></div>
-</form></div><?php $this->render('shared/footer'); ?>
+</form></div><?php $this->render('elementos_compartidos/footer'); ?>

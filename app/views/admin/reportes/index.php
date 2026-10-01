@@ -1,4 +1,4 @@
-<?php $this->render('shared/header', ['titulo' => $titulo ?? 'Reportes']); $this->render('shared/sidebar_admin'); ?>
+<?php $this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Reportes']); $this->render('elementos_compartidos/sidebar_admin'); ?>
 <div class="header-acciones"><div><h1>Reportes academicos</h1><p style="color:var(--color-texto-secundario);font-size:13px;">Vista previa HTML con datos reales del sistema.</p></div></div>
 <div class="panel">
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
@@ -30,4 +30,4 @@
         <?php endif; ?>
     </table></div>
 </div>
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

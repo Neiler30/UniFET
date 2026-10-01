@@ -1,6 +1,6 @@
 <?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Periodo']);
-$this->render('shared/sidebar_admin');
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Periodo']);
+$this->render('elementos_compartidos/sidebar_admin');
 $esEdicion = !empty($periodo['id_periodo']);
 ?>
 <div class="header-acciones"><h1><?= htmlspecialchars($titulo) ?></h1><a class="btn-demo" href="?ruta=admin/academico/periodos">Volver</a></div>
@@ -19,4 +19,4 @@ $esEdicion = !empty($periodo['id_periodo']);
         <div class="form-group" style="grid-column:1/-1;"><button class="btn-primario">Guardar periodo</button></div>
     </form>
 </div>
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>

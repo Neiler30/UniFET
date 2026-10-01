@@ -85,4 +85,35 @@ class Bloque {
         $stmt->bindParam(':id_bloque', $id_bloque, PDO::PARAM_INT);
         return $stmt->execute();
     }
+
+    /**
+     * Generar código automático para un bloque
+     * Formato: BL-XXX donde XXX es el consecutivo dentro de la sede
+     */
+    public static function generarCodigo($nombre, $id_sede, $id_excluir = null) {
+        $db = Database::getConexion();
+        $sql = "SELECT COUNT(*) FROM bloque WHERE id_sede = :id";
+        $params = [':id' => (int)$id_sede];
+        if ($id_excluir) {
+            $sql .= " AND id_bloque != :excluir";
+            $params[':excluir'] = (int)$id_excluir;
+        }
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $total = (int)$stmt->fetchColumn();
+        $palabras = preg_split('/\s+/', trim($nombre));
+        $siglas = '';
+        foreach ($palabras as $p) {
+            if (strlen($siglas) >= 3) break;
+            $siglas .= strtoupper(mb_substr($p, 0, 1));
+        }
+        if (empty($siglas)) $siglas = 'BL';
+        $codigo = $siglas . '-' . str_pad($total + 1, 3, '0', STR_PAD_LEFT);
+        $check = $db->prepare("SELECT COUNT(*) FROM bloque WHERE codigo = :c AND id_sede = :i");
+        $check->execute([':c' => $codigo, ':i' => (int)$id_sede]);
+        if ($check->fetchColumn() > 0) {
+            $codigo = $siglas . '-' . str_pad($total + 2, 3, '0', STR_PAD_LEFT);
+        }
+        return $codigo;
+    }
 }

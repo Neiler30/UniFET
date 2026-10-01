@@ -75,4 +75,93 @@ class Sede {
         $stmt->bindParam(':id_institucion', $id_institucion, PDO::PARAM_INT);
         return $stmt->execute();
     }
+
+    /**
+     * Generar código automático para una sede basado en las iniciales del nombre
+     * Formato: SD-XXX donde XXX es el consecutivo
+     */
+    public static function generarCodigo($nombre, $id_institucion, $id_excluir = null) {
+        $db = Database::getConexion();
+        // Obtener el total de sedes para el consecutivo
+        $sql = "SELECT COUNT(*) FROM sede WHERE id_institucion = :id";
+        $params = [':id' => (int)$id_institucion];
+        if ($id_excluir) {
+            $sql .= " AND id_sede != :excluir";
+            $params[':excluir'] = (int)$id_excluir;
+        }
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $total = (int)$stmt->fetchColumn();
+        // Siglas del nombre (primera letra de cada palabra, máx 3)
+        $palabras = preg_split('/\s+/', trim($nombre));
+        $siglas = '';
+        foreach ($palabras as $p) {
+            if (strlen($siglas) >= 3) break;
+            $siglas .= strtoupper(mb_substr($p, 0, 1));
+        }
+        if (empty($siglas)) $siglas = 'SD';
+        $codigo = $siglas . '-' . str_pad($total + 1, 3, '0', STR_PAD_LEFT);
+        // Asegurar unicidad
+        $check = $db->prepare("SELECT COUNT(*) FROM sede WHERE codigo = :c AND id_institucion = :i");
+        $check->execute([':c' => $codigo, ':i' => (int)$id_institucion]);
+        if ($check->fetchColumn() > 0) {
+            $codigo = $siglas . '-' . str_pad($total + 2, 3, '0', STR_PAD_LEFT);
+        }
+        return $codigo;
+    }
+
+    /**
+     * Obtener una sede con todos sus bloques y cada bloque con sus espacios
+     */
+    public static function obtenerConBloquesYEspacios($id_sede, $id_institucion) {
+        $db = Database::getConexion();
+        $stmt = $db->prepare("SELECT * FROM sede WHERE id_sede = :s AND id_institucion = :i");
+        $stmt->execute([':s' => (int)$id_sede, ':i' => (int)$id_institucion]);
+        $sede = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$sede) return null;
+        $stmtB = $db->prepare("SELECT * FROM bloque WHERE id_sede = :s ORDER BY nombre ASC");
+        $stmtB->execute([':s' => (int)$id_sede]);
+        $bloques = $stmtB->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($bloques as &$bloque) {
+            $stmtE = $db->prepare("SELECT * FROM espacio WHERE id_bloque = :b ORDER BY nombre ASC");
+            $stmtE->execute([':b' => (int)$bloque['id_bloque']]);
+            $bloque['espacios'] = $stmtE->fetchAll(PDO::FETCH_ASSOC);
+        }
+        $sede['bloques'] = $bloques;
+        return $sede;
+    }
+
+    /**
+     * Obtener todas las sedes con su jerarquía completa (bloques y espacios)
+     * para la vista principal de Gestión de Espacios
+     */
+    public static function obtenerTodasConJerarquia($id_institucion) {
+        $db = Database::getConexion();
+        $stmt = $db->prepare("SELECT * FROM sede WHERE id_institucion = :i ORDER BY nombre ASC");
+        $stmt->execute([':i' => (int)$id_institucion]);
+        $sedes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($sedes as &$sede) {
+            $stmtB = $db->prepare("SELECT * FROM bloque WHERE id_sede = :s ORDER BY nombre ASC");
+            $stmtB->execute([':s' => (int)$sede['id_sede']]);
+            $bloques = $stmtB->fetchAll(PDO::FETCH_ASSOC);
+            $totalEspaciosSede = 0;
+
+            foreach ($bloques as &$bloque) {
+                $stmtE = $db->prepare("SELECT * FROM espacio WHERE id_bloque = :b ORDER BY nombre ASC");
+                $stmtE->execute([':b' => (int)$bloque['id_bloque']]);
+                $espacios = $stmtE->fetchAll(PDO::FETCH_ASSOC);
+                $bloque['espacios'] = $espacios;
+                $bloque['num_espacios'] = count($espacios);
+                $totalEspaciosSede += count($espacios);
+            }
+
+            $sede['bloques'] = $bloques;
+            $sede['num_bloques'] = count($bloques);
+            $sede['num_espacios'] = $totalEspaciosSede;
+        }
+
+        return $sedes;
+    }
 }
+

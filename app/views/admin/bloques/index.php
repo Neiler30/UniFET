@@ -1,20 +1,20 @@
-﻿<?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Bloques - UniFET']);
-$this->render('shared/sidebar_admin');
+<?php
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Bloques - UniFET']);
+$this->render('elementos_compartidos/sidebar_admin');
 
 $tabs = [
     ['etiqueta' => 'Sedes', 'ruta' => 'admin/espacios/sedes', 'activa' => false],
     ['etiqueta' => 'Bloques', 'ruta' => 'admin/espacios/bloques', 'activa' => true],
     ['etiqueta' => 'Espacios', 'ruta' => 'admin/espacios/espacios', 'activa' => false],
 ];
-$this->render('shared/tabs', ['tabs' => $tabs]);
+$this->render('elementos_compartidos/tabs', ['tabs' => $tabs]);
 ?>
 
 <div class="header-acciones">
     <div>
-        <h1 style="font-size: 22px; font-weight: 700; color: var(--color-oscuro);">GestiÃ³n de Bloques</h1>
+        <h1 style="font-size: 22px; font-weight: 700; color: var(--color-oscuro);">Gestión de Bloques</h1>
         <p style="color: var(--color-texto-secundario); font-size: 13.5px; margin-top: 4px;">
-            Edificios, torres y mÃ³dulos constructivos pertenecientes a cada sede.
+            Edificios, torres y módulos constructivos pertenecientes a cada sede.
         </p>
     </div>
     <a href="?ruta=admin/espacios/bloques/crear" class="btn-primario">
@@ -61,9 +61,9 @@ $this->render('shared/tabs', ['tabs' => $tabs]);
         <table class="table" id="tabla-bloques">
             <thead>
                 <tr>
-                    <th style="width: 140px;">CÃ³digo</th>
+                    <th style="width: 140px;">Código</th>
                     <th>Nombre del Bloque</th>
-                    <th>Sede UbicaciÃ³n</th>
+                    <th>Sede Ubicación</th>
                     <th style="width: 130px;">Estado</th>
                     <th style="width: 180px; text-align: right;">Acciones</th>
                 </tr>
@@ -92,7 +92,7 @@ $this->render('shared/tabs', ['tabs' => $tabs]);
                             </span>
                         </td>
                         <td style="text-align: right;">
-                            <?php $this->render('shared/botones_accion', [
+                            <?php $this->render('elementos_compartidos/botones_accion', [
                                 'ruta_editar' => '?ruta=admin/espacios/bloques/editar&id=' . (int)$bloque['id_bloque'],
                                 'ruta_desactivar' => '?ruta=admin/espacios/bloques/desactivar&id=' . (int)$bloque['id_bloque'],
                                 'activo' => $bloque['estado'] === 'ACTIVO',
@@ -119,5 +119,5 @@ document.getElementById('filtro-sede')?.addEventListener('change', function() {
 });
 </script>
 
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>
 

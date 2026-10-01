@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 $composerAutoload = __DIR__ . '/../vendor/autoload.php';
 if (file_exists($composerAutoload)) {
@@ -38,6 +38,7 @@ use App\Controllers\Lider\DashboardController as LiderDashboard;
 use App\Controllers\Lider\ProgramaController as LiderPrograma;
 use App\Controllers\Lider\EspacioController as LiderEspacio;
 use App\Controllers\Lider\HorarioController as LiderHorario;
+use App\Controllers\Lider\AuditoriaController as LiderAuditoria;
 use App\Controllers\Lider\ReporteController as LiderReporte;
 use App\Controllers\Admin\FacultadController;
 use App\Controllers\Admin\ProgramaController;
@@ -99,6 +100,8 @@ $router->agregarRuta('admin/academico/docentes/guardar', DocenteController::clas
 $router->agregarRuta('admin/academico/docentes/editar', DocenteController::class, 'editar');
 $router->agregarRuta('admin/academico/docentes/actualizar', DocenteController::class, 'actualizar');
 $router->agregarRuta('admin/academico/docentes/desactivar', DocenteController::class, 'desactivar');
+$router->agregarRuta('admin/academico/docentes/api_asignaturas', DocenteController::class, 'apiAsignaturas');
+$router->agregarRuta('admin/academico/docentes/api_generar_codigo', DocenteController::class, 'apiGenerarCodigo');
 
 $router->agregarRuta('admin/academico/areas', AreaAcademicaController::class, 'index');
 $router->agregarRuta('admin/academico/areas/crear', AreaAcademicaController::class, 'crear');
@@ -136,8 +139,16 @@ $router->agregarRuta('admin/institucion/programas/editar', ProgramaController::c
 $router->agregarRuta('admin/institucion/programas/actualizar', ProgramaController::class, 'actualizar');
 $router->agregarRuta('admin/institucion/programas/desactivar', ProgramaController::class, 'desactivar');
 
-// Espacios (Sedes, Bloques, Espacios)
+// Espacios (Sedes, Bloques, Espacios) - Formulario unificado y pantalla principal
+$router->agregarRuta('admin/espacios', SedeController::class, 'index');
 $router->agregarRuta('admin/espacios/sedes', SedeController::class, 'index');
+$router->agregarRuta('admin/espacios/sedes/nueva', SedeController::class, 'formulario_completo');
+$router->agregarRuta('admin/espacios/sedes/formulario_completo', SedeController::class, 'formulario_completo');
+$router->agregarRuta('admin/espacios/sedes/editar_completo', SedeController::class, 'formulario_completo');
+$router->agregarRuta('admin/espacios/sedes/guardar_completo', SedeController::class, 'guardar_completo');
+$router->agregarRuta('admin/espacios/sedes/api_codigo', SedeController::class, 'api_codigo');
+$router->agregarRuta('admin/espacios/sedes/api_bloques', SedeController::class, 'api_bloques');
+// Legacy routes
 $router->agregarRuta('admin/espacios/sedes/crear', SedeController::class, 'crear');
 $router->agregarRuta('admin/espacios/sedes/guardar', SedeController::class, 'guardar');
 $router->agregarRuta('admin/espacios/sedes/editar', SedeController::class, 'editar');
@@ -164,6 +175,11 @@ $router->agregarRuta('admin/reportes', ReporteController::class, 'index');
 // Importar/Exportar
 $router->agregarRuta('admin/importar', ImportExportController::class, 'index');
 $router->agregarRuta('admin/importar/validar', ImportExportController::class, 'validar');
+$router->agregarRuta('admin/importar/previsualizar', ImportExportController::class, 'previsualizar');
+$router->agregarRuta('admin/importar/ejecutar', ImportExportController::class, 'ejecutar');
+$router->agregarRuta('admin/importar/plantilla', ImportExportController::class, 'plantilla');
+$router->agregarRuta('admin/importar/exportar', ImportExportController::class, 'exportar');
+$router->agregarRuta('admin/importar/reporte_errores', ImportExportController::class, 'reporteErrores');
 
 // Sistema
 $router->agregarRuta('admin/sistema', SistemaController::class, 'personalizacion');
@@ -180,7 +196,7 @@ $router->agregarRuta('admin/sistema/usuarios/desactivar', SistemaController::cla
 $router->agregarRuta('admin/sistema/usuarios/aprobar', SistemaController::class, 'aprobarUsuario');
 $router->agregarRuta('admin/sistema/usuarios/rechazar', SistemaController::class, 'rechazarUsuario');
 
-// Rutas de LÃ­der de Programa
+// Rutas de Li­der de Programa
 $router->agregarRuta('lider/dashboard', LiderDashboard::class, 'index');
 $router->agregarRuta('lider/programa', LiderPrograma::class, 'index');
 $router->agregarRuta('lider/programa/asignar_docente', LiderPrograma::class, 'asignarDocente');
@@ -196,6 +212,13 @@ $router->agregarRuta('lider/horarios/api_asignaturas', LiderHorario::class, 'api
 $router->agregarRuta('lider/horarios/api_docentes', LiderHorario::class, 'apiDocentes');
 $router->agregarRuta('lider/horarios/api_espacios', LiderHorario::class, 'apiEspaciosLibres');
 $router->agregarRuta('lider/reportes', LiderReporte::class, 'index');
+
+// Rutas especializadas de Auditoría del Líder
+$router->agregarRuta('lider/auditoria', LiderAuditoria::class, 'index');
+$router->agregarRuta('lider/auditoria/auditar', LiderAuditoria::class, 'auditar');
+$router->agregarRuta('lider/auditoria/guardar', LiderAuditoria::class, 'guardar');
+$router->agregarRuta('lider/auditoria/detalle', LiderAuditoria::class, 'detalle');
+$router->agregarRuta('lider/auditoria/historial', LiderAuditoria::class, 'historial');
 
 // Despachar (normalizar puntos a barras para compatibilidad con prompt)
 $ruta = $_GET['ruta'] ?? 'login';

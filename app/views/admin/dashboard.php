@@ -1,6 +1,6 @@
 <?php
-$this->render('shared/header', ['titulo' => $titulo ?? 'Dashboard - UniFET']);
-$this->render('shared/sidebar_admin');
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Dashboard - UniFET']);
+$this->render('elementos_compartidos/sidebar_admin');
 $usuario = \App\Core\Auth::getUsuarioActual();
 $periodoActivo = \App\Models\PeriodoAcademico::getActivo();
 ?>
@@ -336,4 +336,4 @@ $periodoActivo = \App\Models\PeriodoAcademico::getActivo();
     </div>
 </div>
 
-<?php $this->render('shared/footer'); ?>
+<?php $this->render('elementos_compartidos/footer'); ?>
