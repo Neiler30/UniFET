@@ -145,7 +145,6 @@ class AsignaturaController extends Controller {
                 'codigo'            => $codigo,
                 'nombre'            => $nombre,
                 'creditos'          => max(0, (int)($_POST['creditos'] ?? 0)),
-                'tipo'              => trim($_POST['tipo'] ?? ''),
                 'estado'            => $_POST['estado'] ?? 'ACTIVO',
             ], $asociacionesValidadas, $id ?: null);
 
