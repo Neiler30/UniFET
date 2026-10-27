@@ -81,28 +81,45 @@ class ImportExportController extends Controller {
                 $tipo = $tipoDetectado;
             }
 
-            // 3. Mapear las columnas
+            // 3. Mapear las columnas automáticamente identificando los datos específicos
             $mapeo = ColumnMapper::map($tipo, $headers);
-
             $modoDuplicados = $_POST['modo_duplicados'] ?? 'omitir';
 
-            // 4. Guardar en sesión
-            $_SESSION['importacion_datos'] = [
+            // Extraer el mapeo automático directamente sin pantalla intermedia
+            $mapeoUsuario = [];
+            foreach ($mapeo['mapping'] as $col => $info) {
+                if (!empty($info['mapped_to'])) {
+                    $mapeoUsuario[$col] = $info['mapped_to'];
+                }
+            }
+
+            // Validar directamente usando DataValidator con id_institucion y modo_duplicados
+            $procesado = \App\Services\Importar\DataValidator::validate(
+                $tipo, 
+                $mapeoUsuario, 
+                $data, 
+                $this->id_institucion, 
+                $modoDuplicados
+            );
+
+            // Guardar directamente en sesión para ejecución final
+            $_SESSION['importacion_previa'] = [
                 'tipo'            => $tipo,
                 'nombre_archivo'  => $nombreOriginal,
                 'fecha'           => date('Y-m-d H:i:s'),
-                'headers'         => $headers,
-                'data'            => $data,
-                'mapeo'           => $mapeo,
+                'stats'           => $procesado['stats'],
+                'filas'           => $procesado['filas'],
+                'mapeo_usuario'   => $mapeoUsuario,
                 'modo_duplicados' => $modoDuplicados
             ];
 
-            $this->render('admin/importar/mapear', [
-                'titulo'          => 'Revisar Mapeo de Columnas',
+            // Renderizar directamente la Vista Previa
+            $this->render('admin/importar/preview', [
+                'titulo'          => 'Vista Previa de Importación',
                 'tipo'            => $tipo,
                 'nombre_archivo'  => $nombreOriginal,
-                'mapeo'           => $mapeo,
-                'catalogo'        => Catalog::getEntities()[$tipo],
+                'stats'           => $procesado['stats'],
+                'filas'           => $procesado['filas'],
                 'modo_duplicados' => $modoDuplicados
             ]);
         } catch (Throwable $e) {

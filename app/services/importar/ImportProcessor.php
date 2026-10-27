@@ -100,17 +100,22 @@ class ImportProcessor {
         $codigo = trim((string)($fila['codigo'] ?? ''));
         $nombre = trim((string)($fila['nombre'] ?? ''));
         $creditos = (int)($fila['creditos'] ?? 0);
-        $tipo = trim((string)($fila['tipo'] ?? 'Obligatoria'));
+        $idArea = !empty($fila['id_area_academica']) ? (int)$fila['id_area_academica'] : null;
+        $idPrograma = !empty($fila['id_programa']) ? (int)$fila['id_programa'] : null;
+        $semestre = !empty($fila['semestre']) ? (int)$fila['semestre'] : null;
+        $idNivel = !empty($fila['id_nivel_academico']) ? (int)$fila['id_nivel_academico'] : null;
 
-        if ($idExistente) {
+        $idAsignatura = $idExistente;
+
+        if ($idAsignatura) {
             // Verificar si el código ya pertenece a OTRA asignatura en BD
             if ($codigo !== '') {
                 $stmtCheck = $db->prepare("SELECT id_asignatura FROM asignatura WHERE id_institucion = :inst AND codigo = :cod AND id_asignatura != :id LIMIT 1");
-                $stmtCheck->execute([':inst' => $id_institucion, ':cod' => $codigo, ':id' => $idExistente]);
+                $stmtCheck->execute([':inst' => $id_institucion, ':cod' => $codigo, ':id' => $idAsignatura]);
                 $otroId = $stmtCheck->fetchColumn();
                 if ($otroId) {
                     if ($modoDuplicados === 'actualizar') {
-                        $idExistente = (int)$otroId;
+                        $idAsignatura = (int)$otroId;
                     } elseif ($modoDuplicados === 'omitir') {
                         // Conservar el código original de BD para no provocar error de clave duplicada
                         $codigo = $fila['codigo_bd'] ?? '';
@@ -123,35 +128,84 @@ class ImportProcessor {
                 SET codigo = :codigo, 
                     nombre = :nombre, 
                     creditos = :creditos, 
-                    tipo = :tipo
+                    id_area_academica = COALESCE(:area, id_area_academica)
                 WHERE id_asignatura = :id
             ");
             $stmt->execute([
                 ':codigo'   => $codigo !== '' ? $codigo : ($fila['codigo_bd'] ?? '0'),
                 ':nombre'   => $nombre,
                 ':creditos' => $creditos,
-                ':tipo'     => $tipo,
-                ':id'       => $idExistente
+                ':area'     => $idArea,
+                ':id'       => $idAsignatura
             ]);
-            return;
+        } else {
+            // Buscar si ya existe por código en la institución
+            if ($codigo !== '') {
+                $stmtBuscar = $db->prepare("SELECT id_asignatura FROM asignatura WHERE id_institucion = :inst AND codigo = :cod LIMIT 1");
+                $stmtBuscar->execute([':inst' => $id_institucion, ':cod' => $codigo]);
+                $idPorCod = $stmtBuscar->fetchColumn();
+                if ($idPorCod) {
+                    $idAsignatura = (int)$idPorCod;
+                    if ($modoDuplicados === 'actualizar') {
+                        $stmtUpd = $db->prepare("UPDATE asignatura SET nombre = :nombre, creditos = :creditos, id_area_academica = COALESCE(:area, id_area_academica) WHERE id_asignatura = :id");
+                        $stmtUpd->execute([':nombre' => $nombre, ':creditos' => $creditos, ':area' => $idArea, ':id' => $idAsignatura]);
+                    }
+                }
+            }
+
+            if (!$idAsignatura) {
+                $stmt = $db->prepare("
+                    INSERT INTO asignatura (id_institucion, codigo, nombre, creditos, id_area_academica)
+                    VALUES (:inst, :codigo, :nombre, :creditos, :area)
+                    ON DUPLICATE KEY UPDATE 
+                        nombre = VALUES(nombre),
+                        creditos = VALUES(creditos),
+                        id_area_academica = COALESCE(VALUES(id_area_academica), id_area_academica)
+                ");
+                
+                $stmt->execute([
+                    ':inst'     => $id_institucion,
+                    ':codigo'   => $codigo !== '' ? $codigo : '0',
+                    ':nombre'   => $nombre,
+                    ':creditos' => $creditos,
+                    ':area'     => $idArea
+                ]);
+                $idAsignatura = (int)$db->lastInsertId();
+                if (!$idAsignatura && $codigo !== '') {
+                    $stmtBuscar = $db->prepare("SELECT id_asignatura FROM asignatura WHERE id_institucion = :inst AND codigo = :cod LIMIT 1");
+                    $stmtBuscar->execute([':inst' => $id_institucion, ':cod' => $codigo]);
+                    $idAsignatura = (int)$stmtBuscar->fetchColumn();
+                }
+            }
         }
 
-        $stmt = $db->prepare("
-            INSERT INTO asignatura (id_institucion, codigo, nombre, creditos, tipo)
-            VALUES (:inst, :codigo, :nombre, :creditos, :tipo)
-            ON DUPLICATE KEY UPDATE 
-                nombre = VALUES(nombre),
-                creditos = VALUES(creditos),
-                tipo = VALUES(tipo)
-        ");
-        
-        $stmt->execute([
-            ':inst'     => $id_institucion,
-            ':codigo'   => $codigo !== '' ? $codigo : '0',
-            ':nombre'   => $nombre,
-            ':creditos' => $creditos,
-            ':tipo'     => $tipo
-        ]);
+        // 2. Asociar curricularmente al programa en asignatura_programa
+        if ($idAsignatura && $idPrograma) {
+            $stmtRel = $db->prepare("
+                INSERT INTO asignatura_programa (id_asignatura, id_programa, semestre)
+                VALUES (:asig, :prog, :sem)
+                ON DUPLICATE KEY UPDATE 
+                    semestre = COALESCE(VALUES(semestre), semestre)
+            ");
+            $stmtRel->execute([
+                ':asig' => $idAsignatura,
+                ':prog' => $idPrograma,
+                ':sem'  => ($semestre && $semestre > 0) ? $semestre : 1
+            ]);
+
+            // 3. Vincular Nivel Académico al Programa si fue especificado
+            if ($idNivel) {
+                $stmtNivel = $db->prepare("
+                    UPDATE programa 
+                    SET id_nivel_academico = :nivel 
+                    WHERE id_programa = :prog AND (id_nivel_academico IS NULL OR id_nivel_academico = 0)
+                ");
+                $stmtNivel->execute([
+                    ':nivel' => $idNivel,
+                    ':prog'  => $idPrograma
+                ]);
+            }
+        }
     }
 
     private static function insertarDocente(PDO $db, array $fila, int $id_institucion, string $modoDuplicados = 'omitir') {

@@ -124,13 +124,13 @@ class ExistenceChecker {
                 $semestre = !empty($filaEstructurada['semestre']) ? (int)$filaEstructurada['semestre'] : null;
 
                 $dbRowNombre = null;
-                $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:nom)) LIMIT 1");
+                $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, id_area_academica FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:nom)) LIMIT 1");
                 $stmt->execute([':inst' => $id_institucion, ':nom' => $nombre]);
                 $dbRowNombre = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 $dbRowCodigo = null;
                 if ($codigo !== '') {
-                    $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND codigo = :cod LIMIT 1");
+                    $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, id_area_academica FROM asignatura WHERE id_institucion = :inst AND codigo = :cod LIMIT 1");
                     $stmt->execute([':inst' => $id_institucion, ':cod' => $codigo]);
                     $dbRowCodigo = $stmt->fetch(PDO::FETCH_ASSOC);
                 }

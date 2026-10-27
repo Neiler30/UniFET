@@ -42,10 +42,10 @@ class Catalog {
                         'requerido' => false,
                         'alias' => ['semestre', 'sem', 'semestre curricular', 'nivel semestre', 'semestre academico']
                     ],
-                    'tipo' => [
-                        'label' => 'Tipo / Componente',
+                    'area_academica' => [
+                        'label' => 'Área Académica',
                         'requerido' => false,
-                        'alias' => ['tipo', 'tipo materia', 'modalidad', 'clasificacion', 'componente', 'area']
+                        'alias' => ['area academica', 'area', 'area formacion', 'area de formacion', 'tipo', 'tipo materia', 'componente', 'modalidad', 'clasificacion']
                     ],
                     'estado' => [
                         'label' => 'Estado',

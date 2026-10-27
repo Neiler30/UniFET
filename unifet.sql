@@ -30,10 +30,12 @@ CREATE TABLE IF NOT EXISTS `asignatura` (
   `codigo` varchar(20) NOT NULL,
   `nombre` varchar(200) NOT NULL,
   `creditos` tinyint(3) unsigned NOT NULL,
-  `tipo` varchar(50) DEFAULT NULL,
+  `id_area_academica` int(10) unsigned DEFAULT NULL,
   `estado` enum('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
   PRIMARY KEY (`id_asignatura`),
   UNIQUE KEY `uq_asignatura_codigo` (`id_institucion`,`codigo`),
+  KEY `fk_asignatura_area` (`id_area_academica`),
+  CONSTRAINT `fk_asignatura_area` FOREIGN KEY (`id_area_academica`) REFERENCES `area_academica` (`id_area_academica`) ON DELETE SET NULL,
   CONSTRAINT `fk_asignatura_institucion` FOREIGN KEY (`id_institucion`) REFERENCES `institucion` (`id_institucion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

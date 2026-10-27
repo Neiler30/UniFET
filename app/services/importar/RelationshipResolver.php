@@ -127,6 +127,32 @@ class RelationshipResolver {
                         $errores[] = "Semestre curricular '{$semRaw}' inválido. Debe ser número romano (I a X) o arábigo (1 a 20).";
                     }
                 }
+
+                // 4. Resolver Área Académica (a partir de area_academica o alias anterior tipo)
+                $areaRaw = trim((string)($filaEstructurada['area_academica'] ?? $filaEstructurada['area'] ?? $filaEstructurada['tipo'] ?? ''));
+                if ($areaRaw !== '') {
+                    $areaInfo = self::resolverAreaAcademica($db, $areaRaw, $id_institucion);
+                    if ($areaInfo) {
+                        $filaEstructurada['id_area_academica'] = (int)$areaInfo['id_area_academica'];
+                        $filaEstructurada['area_academica'] = $areaInfo['nombre'];
+                    } else {
+                        // Crear automáticamente el área académica si no existía previamente
+                        try {
+                            $stmtNewArea = $db->prepare("INSERT INTO area_academica (id_institucion, nombre, estado) VALUES (:inst, :nom, 'ACTIVO')");
+                            $stmtNewArea->execute([':inst' => $id_institucion, ':nom' => $areaRaw]);
+                            $idNewArea = (int)$db->lastInsertId();
+                            $filaEstructurada['id_area_academica'] = $idNewArea;
+                            $filaEstructurada['area_academica'] = $areaRaw;
+                        } catch (\PDOException $e) {
+                            // En caso de concurrencia o duplicado
+                            $areaInfo = self::resolverAreaAcademica($db, $areaRaw, $id_institucion);
+                            if ($areaInfo) {
+                                $filaEstructurada['id_area_academica'] = (int)$areaInfo['id_area_academica'];
+                                $filaEstructurada['area_academica'] = $areaInfo['nombre'];
+                            }
+                        }
+                    }
+                }
                 break;
         }
 
@@ -317,6 +343,37 @@ class RelationshipResolver {
             'XVI' => 16, 'XVII' => 17, 'XVIII' => 18, 'XIX' => 19, 'XX' => 20
         ];
         return $romanos[$str] ?? null;
+    }
+
+    /**
+     * Resuelve el área académica buscando por nombre exacto o normalizado.
+     */
+    public static function resolverAreaAcademica(PDO $db, string $texto, int $id_institucion = 1): ?array {
+        $textoOriginal = trim($texto);
+        if ($textoOriginal === '') {
+            return null;
+        }
+
+        $stmt = $db->prepare("SELECT id_area_academica, nombre FROM area_academica WHERE id_institucion = :inst");
+        $stmt->execute([':inst' => $id_institucion]);
+        $areas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // 1. Coincidencia exacta insensible a mayúsculas
+        foreach ($areas as $a) {
+            if (mb_strtolower($a['nombre'], 'UTF-8') === mb_strtolower($textoOriginal, 'UTF-8')) {
+                return $a;
+            }
+        }
+
+        // 2. Coincidencia normalizada sin tildes ni caracteres especiales
+        $limpio = self::limpiarTexto($textoOriginal);
+        foreach ($areas as $a) {
+            if (self::limpiarTexto($a['nombre']) === $limpio) {
+                return $a;
+            }
+        }
+
+        return null;
     }
 
     /**
