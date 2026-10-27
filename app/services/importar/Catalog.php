@@ -10,7 +10,7 @@ class Catalog {
     public static function getEntities(): array {
         return [
             'ASIGNATURA' => [
-                'nombre_amigable' => 'Asignaturas',
+                'nombre_amigable' => 'Asignaturas y Malla Curricular',
                 'campos' => [
                     'codigo' => [
                         'label' => 'Código',
@@ -27,10 +27,25 @@ class Catalog {
                         'requerido' => true,
                         'alias' => ['creditos', 'n creditos', 'num creditos', 'cantidad creditos']
                     ],
-                    'tipo' => [
-                        'label' => 'Tipo',
+                    'programa' => [
+                        'label' => 'Programa Académico',
                         'requerido' => false,
-                        'alias' => ['tipo', 'tipo materia', 'modalidad', 'clasificacion']
+                        'alias' => ['programa', 'programa academico', 'carrera', 'nombre programa', 'cod programa', 'codigo programa']
+                    ],
+                    'nivel_academico' => [
+                        'label' => 'Nivel Académico',
+                        'requerido' => false,
+                        'alias' => ['nivel academico', 'nivel de formacion', 'nivel formacion', 'nivel', 'grado', 'tipo programa']
+                    ],
+                    'semestre' => [
+                        'label' => 'Semestre',
+                        'requerido' => false,
+                        'alias' => ['semestre', 'sem', 'semestre curricular', 'nivel semestre', 'semestre academico']
+                    ],
+                    'tipo' => [
+                        'label' => 'Tipo / Componente',
+                        'requerido' => false,
+                        'alias' => ['tipo', 'tipo materia', 'modalidad', 'clasificacion', 'componente', 'area']
                     ],
                     'estado' => [
                         'label' => 'Estado',

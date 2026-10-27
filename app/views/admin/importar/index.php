@@ -57,6 +57,12 @@ $this->render('elementos_compartidos/sidebar_admin');
                 <span style="font-size: 12px; color: var(--color-texto-secundario); text-transform: uppercase; font-weight: 600;">Existentes Conservados</span>
                 <strong style="display: block; font-size: 22px; color: var(--color-oscuro); margin-top: 2px;"><?= $existentes ?></strong>
             </div>
+            <?php if (!empty($resultado['duplicados_omitidos']) && (int)$resultado['duplicados_omitidos'] > 0): ?>
+            <div style="background: #fff; padding: 12px 16px; border-radius: 8px; border: 1px solid #c7d2fe;">
+                <span style="font-size: 12px; color: #4338ca; text-transform: uppercase; font-weight: 600;">Duplicados Omitidos</span>
+                <strong style="display: block; font-size: 22px; color: #3730a3; margin-top: 2px;"><?= (int)$resultado['duplicados_omitidos'] ?></strong>
+            </div>
+            <?php endif; ?>
             <div style="background: #fff; padding: 12px 16px; border-radius: 8px; border: 1px solid #fed7aa;">
                 <span style="font-size: 12px; color: #c2410c; text-transform: uppercase; font-weight: 600;">Inconsistencias Omitidas</span>
                 <strong style="display: block; font-size: 22px; color: #ea580c; margin-top: 2px;"><?= $omitidas ?></strong>
@@ -124,6 +130,22 @@ $this->render('elementos_compartidos/sidebar_admin');
                         </span>
                         <input type="file" id="input-archivo" name="archivo" accept=".xlsx,.xls" style="display: none;" required onchange="archivoSeleccionado(this)">
                     </div>
+                </div>
+
+                <!-- Parámetro de Manejo de Duplicados / Conflictos -->
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="select_modo_duplicados" style="font-weight: 600; font-size: 13px; color: var(--color-oscuro); display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <span><i class="fa-solid fa-sliders" style="color: var(--color-primario);"></i> Manejo de Códigos Duplicados</span>
+                        <span style="font-size: 11px; color: #10b981; font-weight: 700;">Recomendado</span>
+                    </label>
+                    <select name="modo_duplicados" id="select_modo_duplicados" class="form-control" style="font-size: 13px; padding: 8px 12px; font-weight: 600;">
+                        <option value="omitir" selected>🛡️ Omitir duplicados y continuar (No arrojar error)</option>
+                        <option value="actualizar">🔄 Sobrescribir / Actualizar registros existentes</option>
+                        <option value="estricto">⚠️ Modo estricto (Revertir todo si hay error)</option>
+                    </select>
+                    <small style="color: var(--color-texto-secundario); font-size: 11.5px; display: block; margin-top: 4px;">
+                        Evita errores de clave duplicada (como <code>uq_asignatura_codigo</code>) omitiendo o actualizando los registros existentes de forma segura.
+                    </small>
                 </div>
 
                 <button type="submit" class="btn-primario" style="width: 100%; justify-content: center; height: 42px; font-size: 14px;">

@@ -17,11 +17,11 @@ class ExistenceChecker {
      * - CONFLICTO / ERROR: Violación de integridad o inconsistencia insalvable.
      *
      * @param string $entityKey Clave de entidad ('PROGRAMA', 'ASIGNATURA', 'DOCENTE', etc.)
-     * @param array $filaEstructurada Fila ya mapeada con sus claves internas
      * @param int $id_institucion ID de la institución activa
+     * @param string $modoDuplicados 'omitir', 'actualizar', 'estricto'
      * @return array ['estado' => string, 'detalle' => string, 'id_existente' => ?int, 'codigo_bd' => ?string]
      */
-    public static function check(string $entityKey, array &$filaEstructurada, int $id_institucion = 1): array {
+    public static function check(string $entityKey, array &$filaEstructurada, int $id_institucion = 1, string $modoDuplicados = 'omitir'): array {
         $db = Database::getConexion();
         $estado = 'NUEVO';
         $detalle = 'Nuevo registro listo para insertar.';
@@ -70,19 +70,43 @@ class ExistenceChecker {
                         $estado = 'EXISTENTE';
                         $detalle = "Coincidencia exacta: El código '{$codigo}' coincide con el registro activo en BD (ID #{$idExistente}). Registro sincronizado.";
                     } else {
-                        // Ambos tienen código pero no coinciden: permitir sobreescribir
-                        $estado = 'ACTUALIZAR';
-                        $detalle = "Divergencia de código: El archivo especifica '{$codigo}' pero en BD figura como '{$codigoBd}'. Habilitado para sobreescribir en BD.";
+                        // Conflicto de código: verificar si $codigo ya le pertenece a otro programa en BD
+                        if ($dbRowCodigo && (int)$dbRowCodigo['id_programa'] !== $idExistente) {
+                            if ($modoDuplicados === 'omitir') {
+                                $estado = 'DUPLICADO';
+                                $detalle = "Código '{$codigo}' ya asignado en BD a '{$dbRowCodigo['nombre']}'. Omitido para evitar colisión.";
+                            } elseif ($modoDuplicados === 'actualizar') {
+                                $idExistente = (int)$dbRowCodigo['id_programa'];
+                                $filaEstructurada['id_existente'] = $idExistente;
+                                $estado = 'ACTUALIZAR';
+                                $detalle = "Código '{$codigo}' existente en BD. Habilitado para actualizar datos de '{$dbRowCodigo['nombre']}'.";
+                            } else {
+                                $estado = 'CONFLICTO';
+                                $detalle = "Conflicto crítico: El código '{$codigo}' ya pertenece al programa '{$dbRowCodigo['nombre']}'.";
+                            }
+                        } else {
+                            if ($modoDuplicados === 'omitir') {
+                                $estado = 'EXISTENTE';
+                                $detalle = "Programa coincidente por nombre. Conservado código de BD para evitar conflicto.";
+                            } else {
+                                $estado = 'ACTUALIZAR';
+                                $detalle = "Divergencia de código: El archivo especifica '{$codigo}' pero en BD figura como '{$codigoBd}'. Habilitado para sobreescribir en BD.";
+                            }
+                        }
                     }
                 } elseif ($dbRowCodigo) {
-                    // El código existe pero con diferente nombre
                     $idExistente = (int)$dbRowCodigo['id_programa'];
                     $codigoBd = $dbRowCodigo['codigo'];
                     $filaEstructurada['id_existente'] = $idExistente;
                     $filaEstructurada['codigo_bd'] = $codigoBd;
 
-                    $estado = 'ACTUALIZAR';
-                    $detalle = "Divergencia de nombre: El código '{$codigo}' ya está asignado al programa '{$dbRowCodigo['nombre']}' en BD. Habilitado para actualizar datos.";
+                    if ($modoDuplicados === 'omitir') {
+                        $estado = 'EXISTENTE';
+                        $detalle = "Programa con código '{$codigo}' ya existe en BD ('{$dbRowCodigo['nombre']}'). Omitido sin error.";
+                    } else {
+                        $estado = 'ACTUALIZAR';
+                        $detalle = "Divergencia de nombre: El código '{$codigo}' ya está asignado al programa '{$dbRowCodigo['nombre']}' en BD. Habilitado para actualizar datos.";
+                    }
                 } else {
                     $estado = 'NUEVO';
                     if ($codigo !== '') {
@@ -96,6 +120,8 @@ class ExistenceChecker {
             case 'ASIGNATURA':
                 $nombre = trim((string)($filaEstructurada['nombre'] ?? ''));
                 $codigo = trim((string)($filaEstructurada['codigo'] ?? ''));
+                $idPrograma = !empty($filaEstructurada['id_programa']) ? (int)$filaEstructurada['id_programa'] : null;
+                $semestre = !empty($filaEstructurada['semestre']) ? (int)$filaEstructurada['semestre'] : null;
 
                 $dbRowNombre = null;
                 $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:nom)) LIMIT 1");
@@ -109,33 +135,53 @@ class ExistenceChecker {
                     $dbRowCodigo = $stmt->fetch(PDO::FETCH_ASSOC);
                 }
 
-                if ($dbRowNombre) {
-                    $idExistente = (int)$dbRowNombre['id_asignatura'];
-                    $codigoBd = $dbRowNombre['codigo'];
+                $asigExistenteRow = $dbRowCodigo ?: $dbRowNombre;
+
+                if ($asigExistenteRow) {
+                    $idExistente = (int)$asigExistenteRow['id_asignatura'];
+                    $codigoBd = $asigExistenteRow['codigo'];
                     $filaEstructurada['id_existente'] = $idExistente;
                     $filaEstructurada['codigo_bd'] = $codigoBd;
 
-                    if ($codigo === '') {
-                        $estado = 'EXISTENTE';
-                        $detalle = "Asignatura preexistente en BD [Código: '{$codigoBd}']. El archivo no especifica código; se conservará el código de BD.";
-                    } elseif (strcasecmp($codigo, $codigoBd) === 0) {
-                        $estado = 'EXISTENTE';
-                        $detalle = "Coincidencia exacta: Código '{$codigo}' y nombre validados con BD (ID #{$idExistente}). Registro sincronizado.";
+                    // Si la fila incluye Programa Académico, verificamos la vinculación en asignatura_programa
+                    if ($idPrograma) {
+                        $stmtRel = $db->prepare("SELECT id_asignatura_programa, semestre FROM asignatura_programa WHERE id_asignatura = :asig AND id_programa = :prog LIMIT 1");
+                        $stmtRel->execute([':asig' => $idExistente, ':prog' => $idPrograma]);
+                        $relRow = $stmtRel->fetch(PDO::FETCH_ASSOC);
+
+                        if ($relRow) {
+                            if ($semestre && (int)$relRow['semestre'] !== (int)$semestre) {
+                                $estado = 'ACTUALIZAR';
+                                $detalle = "Asignatura vinculada a '{$filaEstructurada['programa']}'. Semestre se actualizará de '{$relRow['semestre']}' a '{$semestre}'.";
+                            } else {
+                                $estado = 'EXISTENTE';
+                                $detalle = "Asignatura y vinculación con programa '{$filaEstructurada['programa']}' ya sincronizadas en BD.";
+                            }
+                        } else {
+                            $estado = 'NUEVO';
+                            $detalle = "Asignatura existente en BD [Código: '{$codigoBd}']. Se creará asociación curricular con el programa '{$filaEstructurada['programa']}'.";
+                        }
                     } else {
-                        $estado = 'ACTUALIZAR';
-                        $detalle = "Divergencia de código: El archivo especifica '{$codigo}' pero en BD figura como '{$codigoBd}'. Habilitado para sobreescribir en BD.";
+                        // Caso sin programa
+                        if ($codigo === '' || strcasecmp($codigo, $codigoBd) === 0) {
+                            $estado = 'EXISTENTE';
+                            $detalle = "Asignatura coincidente en BD [Código: '{$codigoBd}']. Registro sincronizado.";
+                        } else {
+                            if ($modoDuplicados === 'omitir') {
+                                $estado = 'EXISTENTE';
+                                $detalle = "Asignatura registrada en BD. Conservado código '{$codigoBd}'.";
+                            } else {
+                                $estado = 'ACTUALIZAR';
+                                $detalle = "Divergencia de código: El archivo especifica '{$codigo}' pero en BD figura como '{$codigoBd}'. Habilitado para actualizar.";
+                            }
+                        }
                     }
-                } elseif ($dbRowCodigo) {
-                    $idExistente = (int)$dbRowCodigo['id_asignatura'];
-                    $codigoBd = $dbRowCodigo['codigo'];
-                    $filaEstructurada['id_existente'] = $idExistente;
-                    $filaEstructurada['codigo_bd'] = $codigoBd;
-
-                    $estado = 'ACTUALIZAR';
-                    $detalle = "Divergencia de nombre: El código '{$codigo}' pertenece en BD a '{$dbRowCodigo['nombre']}'. Habilitado para actualizar denominación.";
                 } else {
                     $estado = 'NUEVO';
-                    $detalle = $codigo !== '' ? "Nueva asignatura con código '{$codigo}'. Lista para insertar." : "Nueva asignatura sin código. Se asignará código institucional.";
+                    $progTxt = !empty($filaEstructurada['programa']) ? " para el programa '{$filaEstructurada['programa']}'" : "";
+                    $detalle = $codigo !== '' 
+                        ? "Nueva asignatura con código '{$codigo}'{$progTxt}. Lista para registrar." 
+                        : "Nueva asignatura sin código{$progTxt}. Se asignará código institucional.";
                 }
                 break;
 
@@ -168,8 +214,13 @@ class ExistenceChecker {
                         $estado = 'EXISTENTE';
                         $detalle = "Coincidencia exacta: Docente con documento/código '{$documento}' existente en BD (ID #{$idExistente}).";
                     } else {
-                        $estado = 'ACTUALIZAR';
-                        $detalle = "Divergencia de datos: Documento '{$documento}' coincide, pero el nombre en BD es '{$nombreCompletoBd}'. Habilitado para actualizar.";
+                        if ($modoDuplicados === 'omitir') {
+                            $estado = 'EXISTENTE';
+                            $detalle = "Docente con documento '{$documento}' ya registrado en BD ('{$nombreCompletoBd}'). Conservado sin cambios.";
+                        } else {
+                            $estado = 'ACTUALIZAR';
+                            $detalle = "Divergencia de datos: Documento '{$documento}' coincide, pero el nombre en BD es '{$nombreCompletoBd}'. Habilitado para actualizar.";
+                        }
                     }
                 } elseif ($dbRowNom) {
                     $idExistente = (int)$dbRowNom['id_docente'];
@@ -177,8 +228,31 @@ class ExistenceChecker {
                     $filaEstructurada['id_existente'] = $idExistente;
                     $filaEstructurada['codigo_bd'] = $codigoBd;
 
-                    $estado = 'ACTUALIZAR';
-                    $detalle = "Divergencia de documento: Docente coincide por nombre, pero en BD tiene documento '{$codigoBd}' y el archivo trae '{$documento}'. Habilitado para sobreescribir.";
+                    if ($documento !== '') {
+                        $stmtCheckDoc = $db->prepare("SELECT id_docente, nombre, apellido FROM docente WHERE id_institucion = :inst AND codigo = :doc AND id_docente != :id LIMIT 1");
+                        $stmtCheckDoc->execute([':inst' => $id_institucion, ':doc' => $documento, ':id' => $idExistente]);
+                        $docColision = $stmtCheckDoc->fetch(PDO::FETCH_ASSOC);
+                        if ($docColision) {
+                            if ($modoDuplicados === 'omitir') {
+                                $estado = 'DUPLICADO';
+                                $detalle = "Documento '{$documento}' ya pertenece a otro docente en BD. Omitido para evitar colisión.";
+                            } elseif ($modoDuplicados === 'actualizar') {
+                                $idExistente = (int)$docColision['id_docente'];
+                                $filaEstructurada['id_existente'] = $idExistente;
+                                $estado = 'ACTUALIZAR';
+                                $detalle = "Documento '{$documento}' encontrado en BD. Actualizando registro correspondiente.";
+                            } else {
+                                $estado = 'CONFLICTO';
+                                $detalle = "Conflicto crítico: El documento '{$documento}' ya está asignado a otro docente.";
+                            }
+                        } else {
+                            $estado = 'ACTUALIZAR';
+                            $detalle = "Divergencia de documento: Docente coincide por nombre, pero en BD tiene documento '{$codigoBd}' y el archivo trae '{$documento}'. Habilitado para sobreescribir.";
+                        }
+                    } else {
+                        $estado = 'EXISTENTE';
+                        $detalle = "Docente coincidente en BD por nombre. Conservado sin cambios.";
+                    }
                 } else {
                     $estado = 'NUEVO';
                     $detalle = "Nuevo docente con documento '{$documento}'. Listo para registrar.";

@@ -94,10 +94,21 @@ $totalValidas = (int)(($stats['nuevos'] ?? 0) + ($stats['completar'] ?? 0) + ($s
         </div>
 
         <div>
-            <form id="form-ejecutar-carga" method="POST" action="?ruta=admin/importar/ejecutar">
+            <form id="form-ejecutar-carga" method="POST" action="?ruta=admin/importar/ejecutar" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0;">
                 <input type="hidden" name="accion" id="accion" value="cargar_datos">
 
-                <button type="button" class="btn-primario" style="height: 40px; font-weight: 700; font-size: 14px; margin-right: 8px;" onclick="establecerAccion('cargar_datos'); confirmarEjecucion()">
+                <div style="display: flex; align-items: center; gap: 6px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 8px;">
+                    <label for="modo_duplicados" style="font-size: 12px; font-weight: 700; color: var(--color-oscuro); margin: 0; white-space: nowrap;">
+                        <i class="fa-solid fa-sliders" style="color: var(--color-primario);"></i> Duplicados:
+                    </label>
+                    <select name="modo_duplicados" id="modo_duplicados" style="border: none; background: transparent; font-size: 12.5px; font-weight: 600; color: var(--color-oscuro); padding: 6px 4px; cursor: pointer; outline: none;">
+                        <option value="omitir" <?= ($modo_duplicados ?? 'omitir') === 'omitir' ? 'selected' : '' ?>>🛡️ Omitir (Sin error)</option>
+                        <option value="actualizar" <?= ($modo_duplicados ?? '') === 'actualizar' ? 'selected' : '' ?>>🔄 Sobrescribir</option>
+                        <option value="estricto" <?= ($modo_duplicados ?? '') === 'estricto' ? 'selected' : '' ?>>⚠️ Modo estricto</option>
+                    </select>
+                </div>
+
+                <button type="button" class="btn-primario" style="height: 40px; font-weight: 700; font-size: 14px;" onclick="establecerAccion('cargar_datos'); confirmarEjecucion()">
                     <i class="fa-solid fa-cloud-arrow-up"></i> Cargar datos (<?= $totalValidas ?> accionables)
                 </button>
             </form>
@@ -234,12 +245,24 @@ function confirmarEjecucion() {
     const nuevos = <?= (int)($stats['nuevos'] ?? 0) ?>;
     const actualizar = <?= (int)($stats['actualizar'] ?? 0) ?>;
 
+    const selectModo = document.getElementById('modo_duplicados');
+    const modoVal = selectModo ? selectModo.value : 'omitir';
+    let avisoModo = '';
+    if (modoVal === 'omitir') {
+        avisoModo = '<div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 12px; margin-top: 10px; font-size: 12px; color: #166534;"><i class="fa-solid fa-shield-halved"></i> <strong>Parámetro de Duplicados:</strong> Omitir sin error. Si un código ya existe en BD (ej. <code>uq_asignatura_codigo</code>), se conservará el de BD y se importarán todos los demás registros sin revertir la transacción.</div>';
+    } else if (modoVal === 'actualizar') {
+        avisoModo = '<div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 8px 12px; margin-top: 10px; font-size: 12px; color: #1e40af;"><i class="fa-solid fa-arrows-rotate"></i> <strong>Parámetro de Duplicados:</strong> Sobrescribir existentes. Los registros con el mismo código serán actualizados con los nuevos datos.</div>';
+    } else {
+        avisoModo = '<div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 8px 12px; margin-top: 10px; font-size: 12px; color: #991b1b;"><i class="fa-solid fa-triangle-exclamation"></i> <strong>Parámetro de Duplicados:</strong> Modo estricto. Cualquier duplicado o conflicto provocará la reversión total de la transacción.</div>';
+    }
+
     let resumenTexto = `<p style="margin-bottom: 12px;">Se procesarán <strong>${totalValidas}</strong> registros en la base de datos:</p>`;
     resumenTexto += `<ul style="margin: 0 0 12px 18px; padding: 0; color: #475569; font-size: 13px;">`;
     if (nuevos > 0) resumenTexto += `<li><strong>${nuevos}</strong> registro(s) nuevo(s) a insertar.</li>`;
     if (actualizar > 0) resumenTexto += `<li><strong>${actualizar}</strong> registro(s) con divergencia de datos/código habilitados para sobreescribir.</li>`;
     resumenTexto += `</ul>`;
     resumenTexto += `<p style="color: #64748b; font-size: 12px; margin: 0;">Los registros idénticos o con errores serán preservados u omitidos sin alteraciones.</p>`;
+    resumenTexto += avisoModo;
 
     Swal.fire({
         title: '¿Confirmar carga y sincronización?',

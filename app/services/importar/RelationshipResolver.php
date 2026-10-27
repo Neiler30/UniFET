@@ -14,9 +14,10 @@ class RelationshipResolver {
      * 
      * @param string $entityKey
      * @param array &$filaEstructurada Fila modificada por referencia
+     * @param int $id_institucion ID de la institución
      * @return array Errores encontrados durante la resolución
      */
-    public static function resolve(string $entityKey, array &$filaEstructurada): array {
+    public static function resolve(string $entityKey, array &$filaEstructurada, int $id_institucion = 1): array {
         $errores = [];
         $db = Database::getConexion();
 
@@ -80,7 +81,6 @@ class RelationshipResolver {
                     $nivelInfo = self::resolverNivelAcademico($db, (string)$filaEstructurada['nivel_academico']);
                     if ($nivelInfo) {
                         $filaEstructurada['id_nivel_academico'] = (int)$nivelInfo['id_nivel_academico'];
-                        // Normalizamos el texto visible en la vista previa al nombre oficial
                         $filaEstructurada['nivel_academico'] = $nivelInfo['nombre'];
                     } else {
                         $errores[] = "Nivel Académico '{$filaEstructurada['nivel_academico']}' no reconocido en el catálogo del sistema.";
@@ -89,7 +89,44 @@ class RelationshipResolver {
                 break;
 
             case 'ASIGNATURA':
-                // Soporte futuro si se vinculan áreas u ofertas
+                // 1. Resolver Programa Académico
+                if (!empty($filaEstructurada['programa'])) {
+                    $progRaw = trim((string)$filaEstructurada['programa']);
+                    $prog = self::resolverPrograma($db, $progRaw, $id_institucion);
+                    if ($prog) {
+                        $filaEstructurada['id_programa'] = (int)$prog['id_programa'];
+                        $filaEstructurada['programa'] = $prog['nombre'];
+                        // Si el programa en BD ya tiene nivel y el excel no lo trae, aprovecharlo
+                        if (empty($filaEstructurada['nivel_academico']) && !empty($prog['nivel_nombre'])) {
+                            $filaEstructurada['nivel_academico'] = $prog['nivel_nombre'];
+                            $filaEstructurada['id_nivel_academico'] = (int)$prog['id_nivel_academico'];
+                        }
+                    } else {
+                        $errores[] = "Programa Académico '{$progRaw}' no encontrado en el sistema. Asegúrate de registrar el programa primero.";
+                    }
+                }
+
+                // 2. Resolver Nivel Académico (ej. Profesional, Tecnólogo, etc.)
+                if (!empty($filaEstructurada['nivel_academico'])) {
+                    $nivelInfo = self::resolverNivelAcademico($db, (string)$filaEstructurada['nivel_academico']);
+                    if ($nivelInfo) {
+                        $filaEstructurada['id_nivel_academico'] = (int)$nivelInfo['id_nivel_academico'];
+                        $filaEstructurada['nivel_academico'] = $nivelInfo['nombre'];
+                    } else {
+                        $errores[] = "Nivel de Formación '{$filaEstructurada['nivel_academico']}' no reconocido en el sistema.";
+                    }
+                }
+
+                // 3. Resolver Semestre (soporta romanos I, II, III o arábigos 1, 2, 3)
+                if (isset($filaEstructurada['semestre']) && trim((string)$filaEstructurada['semestre']) !== '') {
+                    $semRaw = trim((string)$filaEstructurada['semestre']);
+                    $semNum = self::resolverSemestre($semRaw);
+                    if ($semNum !== null && $semNum > 0) {
+                        $filaEstructurada['semestre'] = $semNum;
+                    } else {
+                        $errores[] = "Semestre curricular '{$semRaw}' inválido. Debe ser número romano (I a X) o arábigo (1 a 20).";
+                    }
+                }
                 break;
         }
 
@@ -205,6 +242,81 @@ class RelationshipResolver {
         }
 
         return null;
+    }
+
+    /**
+     * Resuelve el programa académico por código o nombre exacto/flexible.
+     */
+    public static function resolverPrograma(PDO $db, string $texto, int $id_institucion = 1): ?array {
+        $textoOriginal = trim($texto);
+        if ($textoOriginal === '') {
+            return null;
+        }
+
+        // 1. Coincidencia directa por código o nombre
+        $stmt = $db->prepare("
+            SELECT p.id_programa, p.codigo, p.nombre, p.id_nivel_academico, na.nombre AS nivel_nombre
+            FROM programa p
+            JOIN facultad f ON f.id_facultad = p.id_facultad
+            LEFT JOIN nivel_academico na ON na.id_nivel_academico = p.id_nivel_academico
+            WHERE f.id_institucion = :inst
+              AND (LOWER(TRIM(p.codigo)) = LOWER(TRIM(:txt)) OR LOWER(TRIM(p.nombre)) = LOWER(TRIM(:txt)))
+            LIMIT 1
+        ");
+        $stmt->execute([':inst' => $id_institucion, ':txt' => $textoOriginal]);
+        $prog = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($prog) {
+            return $prog;
+        }
+
+        // 2. Coincidencia flexible (sin tildes ni caracteres especiales)
+        $stmtAll = $db->prepare("
+            SELECT p.id_programa, p.codigo, p.nombre, p.id_nivel_academico, na.nombre AS nivel_nombre
+            FROM programa p
+            JOIN facultad f ON f.id_facultad = p.id_facultad
+            LEFT JOIN nivel_academico na ON na.id_nivel_academico = p.id_nivel_academico
+            WHERE f.id_institucion = :inst
+        ");
+        $stmtAll->execute([':inst' => $id_institucion]);
+        $programas = $stmtAll->fetchAll(PDO::FETCH_ASSOC);
+
+        $limpioBuscado = self::limpiarTexto($textoOriginal);
+        foreach ($programas as $p) {
+            if (self::limpiarTexto($p['nombre']) === $limpioBuscado || self::limpiarTexto($p['codigo']) === $limpioBuscado) {
+                return $p;
+            }
+        }
+
+        // 3. Coincidencia por contención de subcadena
+        if (mb_strlen($limpioBuscado) >= 5) {
+            foreach ($programas as $p) {
+                $limpioNom = self::limpiarTexto($p['nombre']);
+                if (str_contains($limpioNom, $limpioBuscado) || str_contains($limpioBuscado, $limpioNom)) {
+                    return $p;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Convierte número romano (I, II, ..., X) o arábigo a entero.
+     */
+    public static function resolverSemestre(string $texto): ?int {
+        $str = strtoupper(trim($texto));
+        if ($str === '') return null;
+        if (is_numeric($str)) {
+            $num = (int)$str;
+            return ($num >= 1 && $num <= 20) ? $num : null;
+        }
+        $romanos = [
+            'I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5,
+            'VI' => 6, 'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10,
+            'XI' => 11, 'XII' => 12, 'XIII' => 13, 'XIV' => 14, 'XV' => 15,
+            'XVI' => 16, 'XVII' => 17, 'XVIII' => 18, 'XIX' => 19, 'XX' => 20
+        ];
+        return $romanos[$str] ?? null;
     }
 
     /**

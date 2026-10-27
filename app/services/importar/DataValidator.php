@@ -9,9 +9,11 @@ class DataValidator {
      * @param string $entityKey
      * @param array $mapeoUsuario [ 'A' => 'codigo', 'B' => 'nombre', ... ]
      * @param array $dataRows Filas de excel
+     * @param int $id_institucion ID de la institución
+     * @param string $modoDuplicados 'omitir', 'actualizar', 'estricto'
      * @return array
      */
-    public static function validate(string $entityKey, array $mapeoUsuario, array $dataRows): array {
+    public static function validate(string $entityKey, array $mapeoUsuario, array $dataRows, int $id_institucion = 1, string $modoDuplicados = 'omitir'): array {
         $catalogo = Catalog::getEntities()[$entityKey];
         $filas = [];
         $stats = [
@@ -22,6 +24,9 @@ class DataValidator {
             'duplicados' => 0,
             'errores'    => 0
         ];
+
+        // Rastreo de códigos o identificadores repetidos en el mismo archivo
+        $clavesVistasEnLote = [];
 
         foreach ($dataRows as $index => $row) {
             $erroresFila = [];
@@ -52,7 +57,7 @@ class DataValidator {
             }
 
             // 3. Resolver Relaciones
-            $erroresRelacion = RelationshipResolver::resolve($entityKey, $filaEstructurada);
+            $erroresRelacion = RelationshipResolver::resolve($entityKey, $filaEstructurada, $id_institucion);
             $erroresFila = array_merge($erroresFila, $erroresRelacion);
 
             // 4. Establecer estado final
@@ -61,8 +66,35 @@ class DataValidator {
                 $filaEstructurada['detalle'] = implode(' | ', $erroresFila);
                 $stats['errores']++;
             } else {
+                // Chequeo de duplicados dentro del mismo archivo Excel
+                $claveIdentificadora = '';
+                if ($entityKey === 'ASIGNATURA') {
+                    $cod = trim((string)($filaEstructurada['codigo'] ?? ''));
+                    $prog = !empty($filaEstructurada['id_programa']) ? (string)$filaEstructurada['id_programa'] : trim((string)($filaEstructurada['programa'] ?? ''));
+                    if ($cod !== '') {
+                        $claveIdentificadora = $prog !== '' ? ($cod . '||' . $prog) : $cod;
+                    }
+                } elseif ($entityKey === 'PROGRAMA') {
+                    $claveIdentificadora = trim((string)($filaEstructurada['codigo'] ?? ''));
+                } elseif ($entityKey === 'DOCENTE') {
+                    $claveIdentificadora = trim((string)($filaEstructurada['documento'] ?? ''));
+                }
+
+                if ($claveIdentificadora !== '' && isset($clavesVistasEnLote[strtoupper($claveIdentificadora)])) {
+                    $filaOriginal = $clavesVistasEnLote[strtoupper($claveIdentificadora)];
+                    if ($modoDuplicados === 'omitir') {
+                        $filaEstructurada['estado'] = 'DUPLICADO';
+                        $filaEstructurada['detalle'] = "Registro repetido en el archivo para la misma asignatura/programa (primera aparición en fila #{$filaOriginal}). Omitido sin error.";
+                        $stats['duplicados']++;
+                        $filas[] = $filaEstructurada;
+                        continue;
+                    }
+                } elseif ($claveIdentificadora !== '') {
+                    $clavesVistasEnLote[strtoupper($claveIdentificadora)] = $index;
+                }
+
                 // Chequeo técnico en Base de Datos (NUEVO, EXISTENTE, ACTUALIZAR, CONFLICTO)
-                $checkDB = ExistenceChecker::check($entityKey, $filaEstructurada);
+                $checkDB = ExistenceChecker::check($entityKey, $filaEstructurada, $id_institucion, $modoDuplicados);
                 $filaEstructurada['estado'] = $checkDB['estado'];
                 $filaEstructurada['detalle'] = $checkDB['detalle'];
                 if (!empty($checkDB['id_existente'])) {

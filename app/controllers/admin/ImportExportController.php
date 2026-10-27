@@ -84,22 +84,26 @@ class ImportExportController extends Controller {
             // 3. Mapear las columnas
             $mapeo = ColumnMapper::map($tipo, $headers);
 
+            $modoDuplicados = $_POST['modo_duplicados'] ?? 'omitir';
+
             // 4. Guardar en sesión
             $_SESSION['importacion_datos'] = [
-                'tipo' => $tipo,
-                'nombre_archivo' => $nombreOriginal,
-                'fecha' => date('Y-m-d H:i:s'),
-                'headers' => $headers,
-                'data' => $data,
-                'mapeo' => $mapeo
+                'tipo'            => $tipo,
+                'nombre_archivo'  => $nombreOriginal,
+                'fecha'           => date('Y-m-d H:i:s'),
+                'headers'         => $headers,
+                'data'            => $data,
+                'mapeo'           => $mapeo,
+                'modo_duplicados' => $modoDuplicados
             ];
 
             $this->render('admin/importar/mapear', [
-                'titulo'         => 'Revisar Mapeo de Columnas',
-                'tipo'           => $tipo,
-                'nombre_archivo' => $nombreOriginal,
-                'mapeo'          => $mapeo,
-                'catalogo'       => Catalog::getEntities()[$tipo]
+                'titulo'          => 'Revisar Mapeo de Columnas',
+                'tipo'            => $tipo,
+                'nombre_archivo'  => $nombreOriginal,
+                'mapeo'           => $mapeo,
+                'catalogo'        => Catalog::getEntities()[$tipo],
+                'modo_duplicados' => $modoDuplicados
             ]);
         } catch (Throwable $e) {
             $_SESSION['swal_alerta'] = [
@@ -126,26 +130,35 @@ class ImportExportController extends Controller {
 
         $tipo = $_POST['tipo_entidad'] ?? $sessionDatos['tipo'];
         $mapeoUsuario = $_POST['mapeo'] ?? []; // ['A' => 'codigo', 'B' => 'nombre', ...]
+        $modoDuplicados = $_POST['modo_duplicados'] ?? $sessionDatos['modo_duplicados'] ?? 'omitir';
 
         try {
-            // Validar usando el nuevo DataValidator
-            $procesado = \App\Services\Importar\DataValidator::validate($tipo, $mapeoUsuario, $sessionDatos['data']);
+            // Validar usando el nuevo DataValidator con soporte de id_institucion y modo_duplicados
+            $procesado = \App\Services\Importar\DataValidator::validate(
+                $tipo, 
+                $mapeoUsuario, 
+                $sessionDatos['data'], 
+                $this->id_institucion, 
+                $modoDuplicados
+            );
 
             $_SESSION['importacion_previa'] = [
-                'tipo'           => $tipo,
-                'nombre_archivo' => $sessionDatos['nombre_archivo'],
-                'fecha'          => date('Y-m-d H:i:s'),
-                'stats'          => $procesado['stats'],
-                'filas'          => $procesado['filas'],
-                'mapeo_usuario'  => $mapeoUsuario // Guardamos el mapeo para la ejecución final
+                'tipo'            => $tipo,
+                'nombre_archivo'  => $sessionDatos['nombre_archivo'],
+                'fecha'           => date('Y-m-d H:i:s'),
+                'stats'           => $procesado['stats'],
+                'filas'           => $procesado['filas'],
+                'mapeo_usuario'   => $mapeoUsuario, // Guardamos el mapeo para la ejecución final
+                'modo_duplicados' => $modoDuplicados
             ];
 
             $this->render('admin/importar/preview', [
-                'titulo'         => 'Vista Previa de Importación',
-                'tipo'           => $tipo,
-                'nombre_archivo' => $sessionDatos['nombre_archivo'],
-                'stats'          => $procesado['stats'],
-                'filas'          => $procesado['filas'],
+                'titulo'          => 'Vista Previa de Importación',
+                'tipo'            => $tipo,
+                'nombre_archivo'  => $sessionDatos['nombre_archivo'],
+                'stats'           => $procesado['stats'],
+                'filas'           => $procesado['filas'],
+                'modo_duplicados' => $modoDuplicados
             ]);
         } catch (Throwable $e) {
             $_SESSION['swal_alerta'] = [
@@ -177,6 +190,7 @@ class ImportExportController extends Controller {
 
         try {
             $accion = $_POST['accion'] ?? 'cargar_datos';
+            $modoDuplicados = $_POST['modo_duplicados'] ?? $datosPrevios['modo_duplicados'] ?? 'omitir';
             $filasParaProcesar = $datosPrevios['filas'];
 
             if ($accion === 'cargar_semestre') {
@@ -185,8 +199,13 @@ class ImportExportController extends Controller {
                 $filasParaProcesar = array_filter($filasParaProcesar, fn($f) => $f['estado'] === 'NUEVO');
             }
 
-            // Llamada al nuevo ImportProcessor
-            $res = \App\Services\Importar\ImportProcessor::process($datosPrevios['tipo'], $filasParaProcesar, $this->id_institucion);
+            // Llamada al nuevo ImportProcessor con el parámetro modo_duplicados
+            $res = \App\Services\Importar\ImportProcessor::process(
+                $datosPrevios['tipo'], 
+                $filasParaProcesar, 
+                $this->id_institucion, 
+                $modoDuplicados
+            );
 
             // Guardar reporte para posible descarga de inconsistencias
             $filasNoImportadas = array_values(array_filter($datosPrevios['filas'], function ($f) {
@@ -200,15 +219,19 @@ class ImportExportController extends Controller {
             $entidades = \App\Services\Importar\Catalog::getEntities();
             $nombreAmigable = $entidades[$datosPrevios['tipo']]['nombre_amigable'] ?? 'Registros';
 
+            $omitidosTotal = count($filasExistentes) + ($res['omitidos'] ?? 0);
+
             $_SESSION['importacion_resultado'] = [
                 'nombre_archivo'       => $datosPrevios['nombre_archivo'],
                 'total_procesadas'     => count($datosPrevios['filas']),
                 'entity_tipo'          => $datosPrevios['tipo'],
                 'entity_nombre'        => $nombreAmigable,
+                'modo_duplicados'      => $modoDuplicados,
                 // Claves genéricas (usadas por la vista)
                 'creados'              => $res['creados'],
                 'actualizados'         => $res['actualizados'],
-                'existentes_omitidas'  => count($filasExistentes),
+                'duplicados_omitidos'  => $res['omitidos'] ?? 0,
+                'existentes_omitidas'  => $omitidosTotal,
                 'filas_omitidas'       => count($filasNoImportadas),
                 'errores'              => $filasNoImportadas,
                 // Compat. legacy (no se quita para no romper nada)
@@ -220,10 +243,13 @@ class ImportExportController extends Controller {
 
             $detalleTexto = "{$nombreAmigable}: {$res['creados']} nuevo(s) importado(s)";
             if ($res['actualizados'] > 0) {
-                $detalleTexto .= ", {$res['actualizados']} actualizado(s)/sobreescrito(s)";
+                $detalleTexto .= ", {$res['actualizados']} actualizado(s)";
+            }
+            if (($res['omitidos'] ?? 0) > 0) {
+                $detalleTexto .= ", {$res['omitidos']} duplicado(s) omitido(s) sin error";
             }
             if (count($filasExistentes) > 0) {
-                $detalleTexto .= ", " . count($filasExistentes) . " sincronizado(s) en BD sin modificaciones";
+                $detalleTexto .= ", " . count($filasExistentes) . " sincronizado(s) en BD";
             }
             $detalleTexto .= ".";
 

@@ -13,15 +13,17 @@ class ImportProcessor {
      * @param string $entityKey Ej: 'ASIGNATURA', 'DOCENTE', 'PROGRAMA', etc.
      * @param array $filas Las filas estructuradas y validadas
      * @param int $id_institucion ID de la institución
-     * @return array Resumen de la operación ['creados' => int, 'actualizados' => int, 'errores' => int]
+     * @param string $modoDuplicados 'omitir', 'actualizar', 'estricto'
+     * @return array Resumen de la operación ['creados' => int, 'actualizados' => int, 'omitidos' => int, 'errores' => int]
      */
-    public static function process(string $entityKey, array $filas, int $id_institucion = 1): array {
+    public static function process(string $entityKey, array $filas, int $id_institucion = 1, string $modoDuplicados = 'omitir'): array {
         $db = Database::getConexion();
         $db->beginTransaction();
 
         $resumen = [
             'creados'      => 0,
             'actualizados' => 0,
+            'omitidos'     => 0,
             'errores'      => 0
         ];
 
@@ -34,43 +36,53 @@ class ImportProcessor {
 
                 $esNuevo = ($fila['estado'] === 'NUEVO');
 
-                switch ($entityKey) {
-                    case 'ASIGNATURA':
-                        self::insertarAsignatura($db, $fila, $id_institucion);
-                        break;
-                        
-                    case 'DOCENTE':
-                        self::insertarDocente($db, $fila, $id_institucion);
-                        break;
+                try {
+                    switch ($entityKey) {
+                        case 'ASIGNATURA':
+                            self::insertarAsignatura($db, $fila, $id_institucion, $modoDuplicados);
+                            break;
+                            
+                        case 'DOCENTE':
+                            self::insertarDocente($db, $fila, $id_institucion, $modoDuplicados);
+                            break;
 
-                    case 'ESPACIO':
-                        self::insertarEspacio($db, $fila, $id_institucion);
-                        break;
-                    
-                    case 'PROGRAMA':
-                        self::insertarPrograma($db, $fila, $id_institucion);
-                        break;
+                        case 'ESPACIO':
+                            self::insertarEspacio($db, $fila, $id_institucion);
+                            break;
                         
-                    case 'FACULTAD':
-                        self::insertarFacultad($db, $fila, $id_institucion);
-                        break;
+                        case 'PROGRAMA':
+                            self::insertarPrograma($db, $fila, $id_institucion, $modoDuplicados);
+                            break;
+                            
+                        case 'FACULTAD':
+                            self::insertarFacultad($db, $fila, $id_institucion);
+                            break;
+                            
+                        case 'SEDE':
+                            self::insertarSede($db, $fila, $id_institucion);
+                            break;
+                            
+                        case 'BLOQUE':
+                            self::insertarBloque($db, $fila, $id_institucion);
+                            break;
                         
-                    case 'SEDE':
-                        self::insertarSede($db, $fila, $id_institucion);
-                        break;
-                        
-                    case 'BLOQUE':
-                        self::insertarBloque($db, $fila, $id_institucion);
-                        break;
-                    
-                    default:
-                        throw new Exception("El procesador de importación no soporta la entidad: {$entityKey}");
-                }
+                        default:
+                            throw new Exception("El procesador de importación no soporta la entidad: {$entityKey}");
+                    }
 
-                if ($esNuevo) {
-                    $resumen['creados']++;
-                } else {
-                    $resumen['actualizados']++;
+                    if ($esNuevo) {
+                        $resumen['creados']++;
+                    } else {
+                        $resumen['actualizados']++;
+                    }
+                } catch (\PDOException $pe) {
+                    $isDuplicate = ($pe->getCode() == 23000 || (isset($pe->errorInfo[1]) && $pe->errorInfo[1] == 1062));
+                    if ($isDuplicate && ($modoDuplicados === 'omitir' || $modoDuplicados === 'actualizar')) {
+                        // En modo omitir/actualizar, no abortar la transacción completa
+                        $resumen['omitidos']++;
+                        continue;
+                    }
+                    throw $pe;
                 }
             }
 
@@ -83,7 +95,7 @@ class ImportProcessor {
         }
     }
 
-    private static function insertarAsignatura(PDO $db, array $fila, int $id_institucion) {
+    private static function insertarAsignatura(PDO $db, array $fila, int $id_institucion, string $modoDuplicados = 'omitir') {
         $idExistente = !empty($fila['id_existente']) ? (int)$fila['id_existente'] : null;
         $codigo = trim((string)($fila['codigo'] ?? ''));
         $nombre = trim((string)($fila['nombre'] ?? ''));
@@ -91,6 +103,21 @@ class ImportProcessor {
         $tipo = trim((string)($fila['tipo'] ?? 'Obligatoria'));
 
         if ($idExistente) {
+            // Verificar si el código ya pertenece a OTRA asignatura en BD
+            if ($codigo !== '') {
+                $stmtCheck = $db->prepare("SELECT id_asignatura FROM asignatura WHERE id_institucion = :inst AND codigo = :cod AND id_asignatura != :id LIMIT 1");
+                $stmtCheck->execute([':inst' => $id_institucion, ':cod' => $codigo, ':id' => $idExistente]);
+                $otroId = $stmtCheck->fetchColumn();
+                if ($otroId) {
+                    if ($modoDuplicados === 'actualizar') {
+                        $idExistente = (int)$otroId;
+                    } elseif ($modoDuplicados === 'omitir') {
+                        // Conservar el código original de BD para no provocar error de clave duplicada
+                        $codigo = $fila['codigo_bd'] ?? '';
+                    }
+                }
+            }
+
             $stmt = $db->prepare("
                 UPDATE asignatura 
                 SET codigo = :codigo, 
@@ -127,7 +154,7 @@ class ImportProcessor {
         ]);
     }
 
-    private static function insertarDocente(PDO $db, array $fila, int $id_institucion) {
+    private static function insertarDocente(PDO $db, array $fila, int $id_institucion, string $modoDuplicados = 'omitir') {
         $idExistente = !empty($fila['id_existente']) ? (int)$fila['id_existente'] : null;
         $doc = trim((string)($fila['documento'] ?? ''));
         $nomCompleto = trim((string)($fila['nombre'] ?? ''));
@@ -137,6 +164,19 @@ class ImportProcessor {
         $correo = trim((string)($fila['correo'] ?? ''));
 
         if ($idExistente) {
+            if ($doc !== '') {
+                $stmtCheck = $db->prepare("SELECT id_docente FROM docente WHERE id_institucion = :inst AND codigo = :doc AND id_docente != :id LIMIT 1");
+                $stmtCheck->execute([':inst' => $id_institucion, ':doc' => $doc, ':id' => $idExistente]);
+                $otroId = $stmtCheck->fetchColumn();
+                if ($otroId) {
+                    if ($modoDuplicados === 'actualizar') {
+                        $idExistente = (int)$otroId;
+                    } elseif ($modoDuplicados === 'omitir') {
+                        $doc = $fila['codigo_bd'] ?? '';
+                    }
+                }
+            }
+
             $stmt = $db->prepare("
                 UPDATE docente 
                 SET codigo = :doc, 
@@ -252,7 +292,7 @@ class ImportProcessor {
         ]);
     }
 
-    private static function insertarPrograma(PDO $db, array $fila, int $id_institucion) {
+    private static function insertarPrograma(PDO $db, array $fila, int $id_institucion, string $modoDuplicados = 'omitir') {
         $id_facultad = $fila['id_facultad'] ?? null;
         if (!$id_facultad) {
             throw new Exception("El programa '{$fila['nombre']}' no tiene una facultad válida resuelta.");
@@ -268,6 +308,17 @@ class ImportProcessor {
             // Si el excel no trae código, preservar el que ya tenía en BD
             if ($codigo === '') {
                 $codigo = $fila['codigo_bd'] ?? '';
+            } else {
+                $stmtCheck = $db->prepare("SELECT id_programa FROM programa WHERE codigo = :cod AND id_programa != :id LIMIT 1");
+                $stmtCheck->execute([':cod' => $codigo, ':id' => $idExistente]);
+                $otroId = $stmtCheck->fetchColumn();
+                if ($otroId) {
+                    if ($modoDuplicados === 'actualizar') {
+                        $idExistente = (int)$otroId;
+                    } elseif ($modoDuplicados === 'omitir') {
+                        $codigo = $fila['codigo_bd'] ?? '';
+                    }
+                }
             }
 
             $stmt = $db->prepare("

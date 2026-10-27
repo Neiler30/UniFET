@@ -15,6 +15,7 @@ $this->render('elementos_compartidos/sidebar_admin');
 <div class="panel">
     <form action="?ruta=admin/importar/previsualizar" method="POST">
         <input type="hidden" name="tipo_entidad" value="<?= htmlspecialchars($tipo) ?>">
+        <input type="hidden" name="modo_duplicados" value="<?= htmlspecialchars($modo_duplicados ?? 'omitir') ?>">
 
         <table class="tabla-datos" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <thead>
