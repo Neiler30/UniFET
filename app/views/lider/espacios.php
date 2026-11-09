@@ -237,47 +237,79 @@ foreach ($espacios as $e) {
     border-color: #2e0870 transparent transparent transparent;
 }
 .busy-own-asig {
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 600;
     color: #4c1d95;
-    margin-top: 4px;
+    margin-top: 3px;
+    width: 100%;
     max-width: 100%;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: block;
+    box-sizing: border-box;
+    padding: 0 4px;
 }
 .busy-own-docente {
     font-size: 10.5px;
     color: #6d28d9;
     margin-top: 1px;
+    width: 100%;
     max-width: 100%;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: block;
+    box-sizing: border-box;
+    padding: 0 4px;
 }
 .busy-block-content {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 3px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 .busy-title {
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 700;
     color: #b42318;
     letter-spacing: .2px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .busy-time {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
     color: #991b1b;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .busy-duration {
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 600;
     color: #7f1d1d;
     background: rgba(217, 54, 54, 0.12);
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-top: 2px;
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
     padding: 2px 10px;
     border-radius: 999px;
     margin-top: 2px;

@@ -170,6 +170,416 @@ $tabsHorario = [
         }
     }
 
+    /* =========================================================
+       REDISEÑO UI/UX: ASIGNAR CLASE (SAAS ACADÉMICO PREMIUM)
+       ========================================================= */
+    .class-assigner-panel {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid var(--color-borde, #e2e8f0);
+        box-shadow: 0 4px 20px rgba(11, 31, 51, 0.04);
+        padding: 24px;
+        margin-bottom: 24px;
+        position: relative;
+    }
+
+    .assigner-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 18px;
+        margin-bottom: 22px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .assigner-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--color-primario, #3b0d8f);
+        background: rgba(59, 13, 143, 0.08);
+        padding: 3px 10px;
+        border-radius: 999px;
+        margin-bottom: 8px;
+    }
+
+    .assigner-header h2 {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--color-oscuro, #0b1f33);
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .assigner-header p {
+        font-size: 13px;
+        color: var(--color-texto-secundario, #5e6d7e);
+        margin: 0;
+        max-width: 720px;
+        line-height: 1.5;
+    }
+
+    .assigner-program-badge {
+        background: linear-gradient(135deg, rgba(59, 13, 143, 0.06), rgba(59, 13, 143, 0.02));
+        border: 1px solid rgba(59, 13, 143, 0.18);
+        border-radius: 10px;
+        padding: 10px 14px;
+        text-align: right;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .assigner-program-badge .apb-label {
+        display: block;
+        font-size: 11px;
+        color: var(--color-texto-secundario, #5e6d7e);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        margin-bottom: 2px;
+    }
+
+    .assigner-program-badge strong {
+        font-size: 13.5px;
+        color: var(--color-primario, #3b0d8f);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Grilla de 3 Bloques */
+    .assigner-blocks-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .assigner-block {
+        background: #fafbfd;
+        border: 1px solid #eef2f6;
+        border-radius: 10px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all .2s ease;
+        box-sizing: border-box;
+    }
+
+    .assigner-block:hover {
+        background: #ffffff;
+        border-color: rgba(59, 13, 143, 0.22);
+        box-shadow: 0 8px 24px rgba(59, 13, 143, 0.06);
+    }
+
+    .block-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #edf2f7;
+    }
+
+    .block-badge {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--color-primario, #3b0d8f);
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(59, 13, 143, 0.3);
+    }
+
+    .block-title-wrap h3 {
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--color-oscuro, #0b1f33);
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    .block-title-wrap p {
+        font-size: 11.5px;
+        color: var(--color-texto-secundario, #5e6d7e);
+        margin: 2px 0 0 0;
+    }
+
+    .block-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        flex: 1;
+    }
+
+    .field-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .field-item label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #334155;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0;
+    }
+
+    .field-item label i {
+        color: var(--color-primario, #3b0d8f);
+        font-size: 12px;
+        margin-right: 5px;
+    }
+
+    .field-item label .req {
+        color: #ef4444;
+        font-weight: 700;
+        margin-left: 2px;
+    }
+
+    .field-spinner {
+        font-size: 11px;
+        color: var(--color-primario, #3b0d8f);
+        margin-left: auto;
+    }
+
+    .select-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .select-wrapper select.form-control {
+        width: 100%;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding-right: 32px;
+        background-color: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #1e293b;
+        height: 40px;
+        transition: all .15s ease;
+    }
+
+    .select-wrapper select.form-control:focus {
+        border-color: var(--color-primario, #3b0d8f);
+        box-shadow: 0 0 0 3px rgba(59, 13, 143, 0.12);
+        outline: none;
+    }
+
+    .select-chevron {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 11px;
+        color: #94a3b8;
+        pointer-events: none;
+    }
+
+    /* Selector Visual de Días */
+    .days-pills-container {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 5px;
+        margin-top: 2px;
+    }
+
+    .day-pill-btn {
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        border-radius: 6px;
+        padding: 7px 2px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #475569;
+        cursor: pointer;
+        text-align: center;
+        transition: all .15s ease;
+        user-select: none;
+    }
+
+    .day-pill-btn:hover {
+        border-color: var(--color-primario, #3b0d8f);
+        background: rgba(59, 13, 143, 0.04);
+        color: var(--color-primario, #3b0d8f);
+    }
+
+    .day-pill-btn.active {
+        background: var(--color-primario, #3b0d8f);
+        border-color: var(--color-primario, #3b0d8f);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(59, 13, 143, 0.25);
+    }
+
+    .hidden-select-accessible {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+    }
+
+    /* Rango de Horas */
+    .time-range-group {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 8px;
+        align-items: flex-end;
+    }
+
+    .time-range-group input[type="time"].form-control {
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 13px;
+        padding: 6px 10px;
+        color: #1e293b;
+        background: #ffffff;
+    }
+
+    .time-separator {
+        color: #94a3b8;
+        padding-bottom: 10px;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    /* Feedback de Duración */
+    .duration-feedback-wrapper {
+        margin-top: 4px;
+    }
+
+    .duration-badge-idle {
+        font-size: 11.5px;
+        color: #64748b;
+        background: #f1f5f9;
+        padding: 8px 12px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .duration-badge-active {
+        font-size: 11.5px;
+        color: #2e0870;
+        background: rgba(59, 13, 143, 0.08);
+        border: 1px solid rgba(59, 13, 143, 0.2);
+        padding: 8px 12px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 500;
+    }
+
+    .duration-badge-active strong {
+        font-weight: 700;
+        color: var(--color-primario, #3b0d8f);
+    }
+
+    .duration-badge-error {
+        font-size: 11.5px;
+        color: #b91c1c;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        padding: 8px 12px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+    }
+
+    /* Bloque 3: Estado y Origen */
+    .config-row-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .field-helper {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 3px;
+        display: block;
+    }
+
+    /* Botón Guardar Clase */
+    .form-actions-wrapper {
+        margin-top: auto;
+        padding-top: 14px;
+    }
+
+    .btn-submit-class {
+        width: 100%;
+        background: linear-gradient(135deg, var(--color-primario, #3b0d8f), #240b5c);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 18px;
+        font-size: 13.5px;
+        font-weight: 700;
+        letter-spacing: .2px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all .2s ease;
+        box-shadow: 0 4px 14px rgba(59, 13, 143, 0.25);
+    }
+
+    .btn-submit-class:hover {
+        background: linear-gradient(135deg, #4c11b0, #2c0e70);
+        box-shadow: 0 6px 20px rgba(59, 13, 143, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .btn-submit-class:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Responsividad */
+    @media (max-width: 1200px) {
+        .assigner-blocks-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+    }
+    @media (max-width: 680px) {
+        .assigner-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .days-pills-container {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
     /* Estilos Cuadrícula de Horarios */
     .schedule-grid-wrap {
         overflow-x: auto;
@@ -468,84 +878,238 @@ $tabsHorario = [
 </nav>
 
 <?php if ($tab === 'general'): ?>
-    <div class="panel">
-        <div class="section-title">
-            <div>
-                <h2>Asignar clase</h2>
-                <p>Selectores en cascada para asignaturas ofertadas, docentes compatibles y espacios libres.</p>
+    <div class="class-assigner-panel">
+        <div class="assigner-header">
+            <div class="assigner-header-info">
+                <span class="assigner-eyebrow"><i class="fa-solid fa-graduation-cap"></i> Planificación Académica</span>
+                <h2><i class="fa-solid fa-calendar-plus" style="color:var(--color-primario);"></i> Asignar Nueva Clase</h2>
+                <p>Configura y programa la sesión académica seleccionando la oferta curricular, asignando el docente compatible y reservando el espacio libre correspondiente.</p>
             </div>
         </div>
-        <form action="?ruta=admin/horarios/guardar" method="POST" class="assignment-grid">
-            <div class="form-group">
-                <label>Periodo academico</label>
-                <select name="id_periodo" id="id_periodo" class="form-control" required>
-                    <?php foreach ($periodos as $p): ?>
-                        <option value="<?= (int) $p['id_periodo'] ?>" <?= (($periodoActivo['id_periodo'] ?? null) == $p['id_periodo']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($p['codigo'] . ' - ' . ($p['nombre'] ?? '')) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Programa</label>
-                <select name="id_programa" id="id_programa" class="form-control" required>
-                    <option value="">Seleccionar programa</option>
-                    <?php foreach ($programas as $p): ?>
-                        <option value="<?= (int) $p['id_programa'] ?>"><?= htmlspecialchars($p['nombre']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Asignatura ofertada</label>
-                <select name="id_asignatura" id="id_asignatura" class="form-control" required>
-                    <option value="">Selecciona periodo y programa</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Docente compatible</label>
-                <select name="id_docente" id="id_docente" class="form-control" required>
-                    <option value="">Selecciona una asignatura</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Dia</label>
-                <select name="dia_semana" id="dia_semana" class="form-control" required>
-                    <option value="">Seleccionar dia</option>
-                    <?php foreach ($diasSemana as $dia): ?>
-                        <option value="<?= $dia ?>"><?= $dia ?></option><?php endforeach; ?>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Hora inicio</label>
-                <input type="time" name="hora_inicio" id="hora_inicio" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label>Hora fin</label>
-                <input type="time" name="hora_fin" id="hora_fin" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label>Espacio disponible</label>
-                <select name="id_espacio" id="id_espacio" class="form-control" required>
-                    <option value="">Completa dia y horas</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Estado</label>
-                <select name="estado" class="form-control">
-                    <?php foreach ($estadosHorario as $estado): ?>
-                        <option value="<?= $estado ?>"><?= $estado ?></option><?php endforeach; ?>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Origen</label>
-                <select name="origen" class="form-control">
-                    <?php foreach ($origenes as $origen): ?>
-                        <option value="<?= $origen ?>"><?= $origen ?></option><?php endforeach; ?>
-                </select>
-            </div>
-            <div class="form-group" style="display:flex; align-items:end;">
-                <button type="submit" class="btn-primario" style="width:100%;"><i class="fa-solid fa-calendar-plus"></i>
-                    Guardar clase</button>
+
+        <form action="?ruta=admin/horarios/guardar" method="POST" id="form-asignar-clase" class="assigner-form">
+            <div class="assigner-blocks-grid">
+                
+                <!-- BLOQUE 1 — INFORMACIÓN ACADÉMICA -->
+                <div class="assigner-block block-academico">
+                    <div>
+                        <div class="block-header">
+                            <div class="block-badge">1</div>
+                            <div class="block-title-wrap">
+                                <h3>Información Académica</h3>
+                                <p>Periodo, programa y cátedra ofertada</p>
+                            </div>
+                        </div>
+
+                        <div class="block-fields">
+                            <div class="field-item">
+                                <label for="id_periodo">
+                                    <span><i class="fa-regular fa-calendar"></i> Periodo Académico <span class="req">*</span></span>
+                                </label>
+                                <div class="select-wrapper">
+                                    <select name="id_periodo" id="id_periodo" class="form-control" required>
+                                        <?php foreach ($periodos as $p): ?>
+                                            <option value="<?= (int) $p['id_periodo'] ?>" <?= (($periodoActivo['id_periodo'] ?? null) == $p['id_periodo']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($p['codigo'] . ' - ' . ($p['nombre'] ?? '')) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                </div>
+                            </div>
+
+                            <div class="field-item">
+                                <label for="id_programa">
+                                    <span><i class="fa-solid fa-folder-tree"></i> Programa Académico <span class="req">*</span></span>
+                                </label>
+                                <div class="select-wrapper">
+                                    <select name="id_programa" id="id_programa" class="form-control" required>
+                                        <option value="">Seleccionar programa</option>
+                                        <?php foreach ($programas as $p): ?>
+                                            <option value="<?= (int) $p['id_programa'] ?>"><?= htmlspecialchars($p['nombre']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                </div>
+                            </div>
+
+                            <div class="field-item">
+                                <label for="id_asignatura">
+                                    <span><i class="fa-solid fa-book-open"></i> Asignatura Ofertada <span class="req">*</span></span>
+                                    <span class="field-spinner" id="spinner-asignatura" style="display:none;"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                                </label>
+                                <div class="select-wrapper">
+                                    <select name="id_asignatura" id="id_asignatura" class="form-control" required>
+                                        <option value="">Selecciona periodo y programa</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                </div>
+                            </div>
+
+                            <div class="field-item">
+                                <label for="id_docente">
+                                    <span><i class="fa-solid fa-chalkboard-user"></i> Docente Compatible <span class="req">*</span></span>
+                                    <span class="field-spinner" id="spinner-docente" style="display:none;"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                                </label>
+                                <div class="select-wrapper">
+                                    <select name="id_docente" id="id_docente" class="form-control" required>
+                                        <option value="">Selecciona una asignatura</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOQUE 2 — PROGRAMACIÓN DEL HORARIO -->
+                <div class="assigner-block block-horario">
+                    <div>
+                        <div class="block-header">
+                            <div class="block-badge">2</div>
+                            <div class="block-title-wrap">
+                                <h3>Programación del Horario</h3>
+                                <p>Día lectivo, franja horaria y duración</p>
+                            </div>
+                        </div>
+
+                        <div class="block-fields">
+                            <div class="field-item">
+                                <label>
+                                    <span><i class="fa-regular fa-calendar-check"></i> Día de la Semana <span class="req">*</span></span>
+                                </label>
+                                <select name="dia_semana" id="dia_semana" class="form-control hidden-select-accessible" required>
+                                    <option value="">Seleccionar día</option>
+                                    <?php foreach ($diasSemana as $dia): ?>
+                                        <option value="<?= $dia ?>"><?= $dia ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <div class="days-pills-container" id="days-pills-wrapper">
+                                    <?php 
+                                    $nombresCortos = [
+                                        'LUNES' => 'LUN',
+                                        'MARTES' => 'MAR',
+                                        'MIERCOLES' => 'MIÉ',
+                                        'JUEVES' => 'JUE',
+                                        'VIERNES' => 'VIE',
+                                        'SABADO' => 'SÁB',
+                                        'DOMINGO' => 'DOM'
+                                    ];
+                                    foreach ($diasSemana as $dia): 
+                                        if ($dia === 'DOMINGO') continue; // Lunes a Sábado institucional
+                                    ?>
+                                        <button type="button" class="day-pill-btn" data-day="<?= $dia ?>">
+                                            <?= $nombresCortos[$dia] ?? substr($dia, 0, 3) ?>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+
+                            <div class="time-range-group">
+                                <div class="field-item">
+                                    <label for="hora_inicio">
+                                        <span><i class="fa-regular fa-clock"></i> Inicio <span class="req">*</span></span>
+                                    </label>
+                                    <input type="time" name="hora_inicio" id="hora_inicio" class="form-control" required>
+                                </div>
+                                <div class="time-separator">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </div>
+                                <div class="field-item">
+                                    <label for="hora_fin">
+                                        <span><i class="fa-regular fa-clock"></i> Fin <span class="req">*</span></span>
+                                    </label>
+                                    <input type="time" name="hora_fin" id="hora_fin" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <div class="duration-feedback-wrapper">
+                                <div class="duration-badge-idle" id="duration-idle">
+                                    <i class="fa-regular fa-clock"></i> Selecciona hora inicio y fin
+                                </div>
+                                <div class="duration-badge-active" id="duration-active" style="display:none;">
+                                    <i class="fa-solid fa-stopwatch"></i> Duración: <strong id="duration-text">-</strong>
+                                </div>
+                                <div class="duration-badge-error" id="duration-error" style="display:none;">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> La hora fin debe ser posterior a inicio
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOQUE 3 — ESPACIO Y CONFIGURACIÓN -->
+                <div class="assigner-block block-espacio">
+                    <div>
+                        <div class="block-header">
+                            <div class="block-badge">3</div>
+                            <div class="block-title-wrap">
+                                <h3>Espacio y Configuración</h3>
+                                <p>Infraestructura y estado del registro</p>
+                            </div>
+                        </div>
+
+                        <div class="block-fields">
+                            <div class="field-item">
+                                <label for="id_espacio">
+                                    <span><i class="fa-solid fa-door-open"></i> Espacio Físico Libre <span class="req">*</span></span>
+                                    <span class="field-spinner" id="spinner-espacio" style="display:none;"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+                                </label>
+                                <div class="select-wrapper">
+                                    <select name="id_espacio" id="id_espacio" class="form-control" required>
+                                        <option value="">Completa día y horas para filtrar</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                </div>
+                                <small class="field-helper" id="espacio-helper">
+                                    <i class="fa-solid fa-circle-info"></i> Disponibilidad en tiempo real sin cruces.
+                                </small>
+                            </div>
+
+                            <div class="config-row-2col">
+                                <div class="field-item">
+                                    <label for="estado">
+                                        <span><i class="fa-solid fa-shield-halved"></i> Estado</span>
+                                    </label>
+                                    <div class="select-wrapper">
+                                        <select name="estado" id="estado" class="form-control">
+                                            <?php foreach ($estadosHorario as $estado): ?>
+                                                <option value="<?= $estado ?>" <?= $estado === 'CONFIRMADO' ? 'selected' : '' ?>><?= $estado ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                    </div>
+                                </div>
+
+                                <div class="field-item">
+                                    <label for="origen">
+                                        <span><i class="fa-solid fa-tag"></i> Origen</span>
+                                    </label>
+                                    <div class="select-wrapper">
+                                        <select name="origen" id="origen" class="form-control">
+                                            <?php foreach ($origenes as $origen): ?>
+                                                <option value="<?= $origen ?>"><?= $origen ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down select-chevron"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions-wrapper">
+                        <button type="submit" class="btn-submit-class" id="btn-submit-class">
+                            <span class="btn-text" id="btn-submit-text">
+                                <i class="fa-solid fa-calendar-plus"></i> Guardar y Asignar Clase
+                            </span>
+                            <span class="btn-loading" id="btn-submit-loading" style="display:none;">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i> Guardando asignación...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </form>
     </div>
@@ -1236,6 +1800,116 @@ $tabsHorario = [
         const inicio = document.getElementById('hora_inicio');
         const fin = document.getElementById('hora_fin');
         const espacio = document.getElementById('id_espacio');
+        const formAsignar = document.getElementById('form-asignar-clase');
+        const btnSubmit = document.getElementById('btn-submit-class');
+        const btnText = document.getElementById('btn-submit-text');
+        const btnLoading = document.getElementById('btn-submit-loading');
+
+        // Spinners
+        const spinAsig = document.getElementById('spinner-asignatura');
+        const spinDoc = document.getElementById('spinner-docente');
+        const spinEsp = document.getElementById('spinner-espacio');
+
+        // Duración
+        const durIdle = document.getElementById('duration-idle');
+        const durActive = document.getElementById('duration-active');
+        const durError = document.getElementById('duration-error');
+        const durText = document.getElementById('duration-text');
+
+        // Day pills
+        const dayPills = document.querySelectorAll('.day-pill-btn');
+        dayPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                const targetDay = pill.dataset.day;
+                if (dia) {
+                    dia.value = targetDay;
+                    dia.dispatchEvent(new Event('change'));
+                }
+                dayPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+            });
+        });
+
+        if (dia) {
+            dia.addEventListener('change', () => {
+                dayPills.forEach(p => {
+                    if (p.dataset.day === dia.value) p.classList.add('active');
+                    else p.classList.remove('active');
+                });
+            });
+            // Si ya tiene valor, sincronizar pills
+            if (dia.value) {
+                dayPills.forEach(p => {
+                    if (p.dataset.day === dia.value) p.classList.add('active');
+                });
+            }
+        }
+
+        // Calculador de duración de clase
+        const updateDuracion = () => {
+            if (!inicio || !fin || !durIdle || !durActive || !durError || !durText) return;
+            const vIni = inicio.value;
+            const vFin = fin.value;
+            if (!vIni || !vFin) {
+                durIdle.style.display = 'flex';
+                durActive.style.display = 'none';
+                durError.style.display = 'none';
+                return;
+            }
+            const [h1, m1] = vIni.split(':').map(Number);
+            const [h2, m2] = vFin.split(':').map(Number);
+            const t1 = h1 * 60 + m1;
+            const t2 = h2 * 60 + m2;
+            const diff = t2 - t1;
+
+            if (diff <= 0) {
+                durIdle.style.display = 'none';
+                durActive.style.display = 'none';
+                durError.style.display = 'flex';
+            } else {
+                durIdle.style.display = 'none';
+                durError.style.display = 'none';
+                durActive.style.display = 'flex';
+                const horas = Math.floor(diff / 60);
+                const mins = diff % 60;
+                let texto = '';
+                if (horas > 0 && mins === 0) {
+                    texto = horas === 1 ? '1 hora académica' : `${horas} horas académicas`;
+                } else if (horas === 0) {
+                    texto = `${mins} minutos`;
+                } else {
+                    texto = `${horas} h ${mins} min`;
+                }
+                durText.textContent = texto;
+            }
+        };
+        [inicio, fin].forEach(el => el && el.addEventListener('input', updateDuracion));
+        [inicio, fin].forEach(el => el && el.addEventListener('change', updateDuracion));
+
+        // Prevención de envíos duplicados
+        if (formAsignar) {
+            formAsignar.addEventListener('submit', (e) => {
+                if (!dia || !dia.value) {
+                    e.preventDefault();
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Día no seleccionado',
+                            text: 'Por favor selecciona un día de la semana para la clase.',
+                            confirmButtonColor: '#3B0D8F'
+                        });
+                    } else {
+                        alert('Por favor selecciona un día de la semana para la clase.');
+                    }
+                    return;
+                }
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    if (btnText) btnText.style.display = 'none';
+                    if (btnLoading) btnLoading.style.display = 'inline-flex';
+                }
+            });
+        }
 
         const fillSelect = (select, rows, placeholder, mapper) => {
             if (!select) return;
@@ -1251,19 +1925,34 @@ $tabsHorario = [
 
         const loadAsignaturas = async () => {
             if (!periodo || !programa || !periodo.value || !programa.value) return;
-            const res = await fetch(`?ruta=admin/horarios/api_asignaturas&periodo_id=${periodo.value}&programa_id=${programa.value}`);
-            fillSelect(asignatura, await res.json(), 'Seleccionar asignatura', row => ({ value: row.id_asignatura, label: `${row.codigo} - ${row.nombre}` }));
-            fillSelect(docente, [], 'Selecciona una asignatura', row => row);
+            if (spinAsig) spinAsig.style.display = 'inline-block';
+            try {
+                const res = await fetch(`?ruta=admin/horarios/api_asignaturas&periodo_id=${periodo.value}&programa_id=${programa.value}`);
+                fillSelect(asignatura, await res.json(), 'Seleccionar asignatura', row => ({ value: row.id_asignatura, label: `${row.codigo} - ${row.nombre}` }));
+                fillSelect(docente, [], 'Selecciona una asignatura', row => row);
+            } finally {
+                if (spinAsig) spinAsig.style.display = 'none';
+            }
         };
         const loadDocentes = async () => {
             if (!asignatura || !asignatura.value) return;
-            const res = await fetch(`?ruta=admin/horarios/api_docentes&asignatura_id=${asignatura.value}`);
-            fillSelect(docente, await res.json(), 'Seleccionar docente', row => ({ value: row.id_docente, label: `${row.apellido} ${row.nombre}` }));
+            if (spinDoc) spinDoc.style.display = 'inline-block';
+            try {
+                const res = await fetch(`?ruta=admin/horarios/api_docentes&asignatura_id=${asignatura.value}`);
+                fillSelect(docente, await res.json(), 'Seleccionar docente', row => ({ value: row.id_docente, label: `${row.apellido} ${row.nombre}` }));
+            } finally {
+                if (spinDoc) spinDoc.style.display = 'none';
+            }
         };
         const loadEspacios = async () => {
             if (!periodo || !dia || !inicio || !fin || !periodo.value || !dia.value || !inicio.value || !fin.value) return;
-            const res = await fetch(`?ruta=admin/horarios/api_espacios&periodo_id=${periodo.value}&dia_semana=${dia.value}&hora_inicio=${inicio.value}&hora_fin=${fin.value}`);
-            fillSelect(espacio, await res.json(), 'Seleccionar espacio libre', row => ({ value: row.id_espacio, label: `${row.sede_nombre} / ${row.bloque_nombre} / ${row.nombre} (${row.tipo}, ${row.capacidad})` }));
+            if (spinEsp) spinEsp.style.display = 'inline-block';
+            try {
+                const res = await fetch(`?ruta=admin/horarios/api_espacios&periodo_id=${periodo.value}&dia_semana=${dia.value}&hora_inicio=${inicio.value}&hora_fin=${fin.value}`);
+                fillSelect(espacio, await res.json(), 'Seleccionar espacio libre', row => ({ value: row.id_espacio, label: `${row.sede_nombre} / ${row.bloque_nombre} / ${row.nombre} (${row.tipo}, ${row.capacidad})` }));
+            } finally {
+                if (spinEsp) spinEsp.style.display = 'none';
+            }
         };
         [periodo, programa].forEach(el => el && el.addEventListener('change', loadAsignaturas));
         asignatura && asignatura.addEventListener('change', loadDocentes);
