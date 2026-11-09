@@ -66,10 +66,12 @@ class Horario {
                    esp.tipo AS espacio_tipo,
                    bl.nombre AS bloque_nombre, 
                    sede.nombre AS sede_nombre,
+                   fac.nombre AS facultad_nombre,
                    ap.semestre
             FROM horario h
             JOIN periodo_academico per ON per.id_periodo = h.id_periodo
             JOIN programa prog ON prog.id_programa = h.id_programa
+            LEFT JOIN facultad fac ON fac.id_facultad = prog.id_facultad
             JOIN asignatura asig ON asig.id_asignatura = h.id_asignatura
             JOIN docente doc ON doc.id_docente = h.id_docente
             JOIN espacio esp ON esp.id_espacio = h.id_espacio

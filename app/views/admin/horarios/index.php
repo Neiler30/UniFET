@@ -300,6 +300,145 @@ $tabsHorario = [
         background: rgba(16,185,129,0.15);
         color: #047857;
     }
+
+    /* Contenedor de ranura con múltiples clases */
+    .schedule-multi-container {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+    }
+    .schedule-simultaneous-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .15s ease;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .schedule-simultaneous-header:hover {
+        background: #fde68a;
+        transform: translateY(-1px);
+    }
+    .schedule-simultaneous-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .schedule-card.clickable-card {
+        cursor: pointer;
+    }
+    .schedule-card.clickable-card:hover {
+        transform: translateY(-2px);
+    }
+    .click-hint {
+        font-size: 9.5px;
+        color: var(--color-texto-secundario);
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        opacity: 0.85;
+    }
+
+    /* Modal de detalle de asignaturas / clases */
+    .occupied-swal-container { text-align: left !important; }
+    .occupied-detail { text-align: left; color: #0B1F33; font-family: inherit; }
+    .occupied-header {
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        gap: 14px;
+        align-items: center;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #E2E5E9;
+    }
+    .modal-logo {
+        width: 56px; height: 56px;
+        border-radius: 12px;
+        background: rgba(59,13,143,.08);
+        display: grid; place-items: center;
+    }
+    .modal-logo img { max-width: 38px; max-height: 38px; }
+    .occupied-header h2 { font-size: 19px; margin: 0 0 4px; color: #0B1F33; line-height: 1.25; font-weight: 700; }
+    .occupied-header p { margin: 0; color: #637083; font-size: 13px; font-weight: 500; }
+    .detail-chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+    .detail-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F6F7F9;
+        border: 1px solid #E2E5E9;
+        border-radius: 999px;
+        padding: 5px 11px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #4B5563;
+    }
+    .detail-chip.chip-primary {
+        background: rgba(59,13,143,0.08);
+        border-color: rgba(59,13,143,0.25);
+        color: var(--color-primario);
+    }
+    .detail-chip.chip-success {
+        background: rgba(16,185,129,0.1);
+        border-color: rgba(16,185,129,0.25);
+        color: #047857;
+    }
+    .detail-sections {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    .detail-section {
+        border: 1px solid #E2E5E9;
+        border-radius: 8px;
+        padding: 12px 14px;
+        background: #fff;
+    }
+    .detail-section h3 {
+        font-size: 12px;
+        text-transform: uppercase;
+        color: #637083;
+        letter-spacing: .5px;
+        margin: 0 0 10px;
+        font-weight: 700;
+    }
+    .detail-list { display: grid; gap: 9px; }
+    .detail-item { display: grid; gap: 2px; font-size: 13px; }
+    .detail-item span { color: #637083; font-size: 11.5px; }
+    .detail-item strong { color: #0B1F33; font-weight: 600; line-height: 1.35; }
+    .occupied-modal-backdrop {
+        position: fixed; inset: 0;
+        background: rgba(11,31,51,.46);
+        z-index: 2000;
+        display: grid; place-items: center;
+        padding: 18px;
+    }
+    .occupied-modal {
+        width: min(740px, 100%);
+        background: #fff;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 18px 60px rgba(11,31,51,.22);
+    }
+    .occupied-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 18px;
+    }
+    @media (max-width: 700px) {
+        .detail-sections { grid-template-columns: 1fr; }
+        .occupied-header { grid-template-columns: 1fr; }
+    }
 </style>
 
 <div class="horarios-hero">
@@ -523,31 +662,90 @@ $tabsHorario = [
         $eventosPorDia[$dia] = $items;
     }
 
-    $eventosPorInicio = [];
+    $detalleEvento = function ($ev) {
+        return [
+            'id_horario' => (int)($ev['id_horario'] ?? 0),
+            'asignatura_codigo' => $ev['asignatura_codigo'] ?? '',
+            'asignatura_nombre' => $ev['asignatura_nombre'] ?? '',
+            'creditos' => (int)($ev['creditos'] ?? 0),
+            'semestre' => $ev['semestre'] ?? '',
+            'docente' => $ev['docente_nombre'] ?? 'Sin docente',
+            'espacio' => $ev['espacio_nombre'] ?? '',
+            'espacio_tipo' => $ev['espacio_tipo'] ?? 'AULA',
+            'bloque' => $ev['bloque_nombre'] ?? '',
+            'sede' => $ev['sede_nombre'] ?? '',
+            'programa' => ($ev['programa_codigo'] ? $ev['programa_codigo'] . ' - ' : '') . ($ev['programa_nombre'] ?? ''),
+            'facultad' => $ev['facultad_nombre'] ?? 'Facultad Institucional',
+            'dia' => $ev['dia_semana'] ?? '',
+            'hora_inicio' => date('H:i', strtotime($ev['hora_inicio'])),
+            'hora_fin' => date('H:i', strtotime($ev['hora_fin'])),
+            'hora' => date('H:i', strtotime($ev['hora_inicio'])) . ' - ' . date('H:i', strtotime($ev['hora_fin'])),
+            'duracion' => $ev['_duracion_texto'] ?? '',
+            'estado' => $ev['estado'] ?? 'CONFIRMADO',
+            'origen' => $ev['origen'] ?? 'MANUAL'
+        ];
+    };
+
+    // Agrupar eventos de cada día en bloques continuos o simultáneos
+    $bloquesPorDia = [];
     $celdasOmitidas = [];
-    foreach ($eventosPorDia as $dia => $eventos) {
-        foreach ($eventos as $ev) {
+
+    foreach ($diasCuadricula as $dia) {
+        $itemsDia = $eventosPorDia[$dia] ?? [];
+        $bloques = [];
+
+        foreach ($itemsDia as $ev) {
             $iniTs = strtotime($ev['hora_inicio']);
             $finTs = strtotime($ev['hora_fin']);
-            $duracionSeg = max(0, $finTs - $iniTs);
-            $duracionHoras = $duracionSeg / 3600;
-            $span = (int)round($duracionHoras);
-            if ($span < 1) $span = 1;
-
-            $inicioHora = (int)date('H', $iniTs);
-            if ($inicioHora + $span > 22) {
-                $span = max(1, 22 - $inicioHora);
+            $iniH = (int)date('H', $iniTs);
+            $finH = (int)date('H', $finTs);
+            if ((int)date('i', $finTs) > 0) {
+                $finH++;
             }
+            $iniH = max(6, min(21, $iniH));
+            $finH = max($iniH + 1, min(22, $finH));
 
-            $ev['_rowspan'] = $span;
-            $ev['_duracion_texto'] = ($span === 1) ? '1 hora' : $span . ' horas';
+            $duracionSeg = max(0, $finTs - $iniTs);
+            $duracionHoras = max(1, round($duracionSeg / 3600, 1));
             $ev['_hora_formato'] = date('H:i', $iniTs) . ' - ' . date('H:i', $finTs);
+            $ev['_duracion_texto'] = $duracionHoras . ($duracionHoras == 1 ? ' hora' : ' horas');
+            $ev['_iniH'] = $iniH;
+            $ev['_finH'] = $finH;
 
-            if (!isset($eventosPorInicio[$dia][$inicioHora])) {
-                $eventosPorInicio[$dia][$inicioHora] = $ev;
-                for ($i = 1; $i < $span; $i++) {
-                    $celdasOmitidas[$dia][$inicioHora + $i] = true;
+            // Verificar si este evento solapa con algún bloque ya iniciado
+            $asig = false;
+            foreach ($bloques as &$b) {
+                if ($iniH < $b['finH'] && $finH > $b['iniH']) {
+                    $b['eventos'][] = $ev;
+                    $b['iniH'] = min($b['iniH'], $iniH);
+                    $b['finH'] = max($b['finH'], $finH);
+                    $asig = true;
+                    break;
                 }
+            }
+            unset($b);
+
+            if (!$asig) {
+                $bloques[] = [
+                    'iniH' => $iniH,
+                    'finH' => $finH,
+                    'eventos' => [$ev]
+                ];
+            }
+        }
+
+        // Ordenar bloques por hora de inicio
+        usort($bloques, fn($a, $b) => $a['iniH'] <=> $b['iniH']);
+
+        // Indexar por hora de inicio y marcar celdas continuas omitidas
+        foreach ($bloques as $bl) {
+            $inicioHora = $bl['iniH'];
+            $span = $bl['finH'] - $bl['iniH'];
+            $bl['span'] = $span;
+            $bloquesPorDia[$dia][$inicioHora] = $bl;
+
+            for ($i = 1; $i < $span; $i++) {
+                $celdasOmitidas[$dia][$inicioHora + $i] = true;
             }
         }
     }
@@ -686,40 +884,72 @@ $tabsHorario = [
                             </td>
                             <?php foreach ($diasCuadricula as $dia): ?>
                                 <?php if (!empty($celdasOmitidas[$dia][$horaInt])) continue; ?>
-                                <?php $ev = $eventosPorInicio[$dia][$horaInt] ?? null; ?>
-                                <?php if ($ev): $span = (int)$ev['_rowspan']; $isLab = (strtoupper($ev['espacio_tipo'] ?? '') === 'LABORATORIO'); ?>
+                                <?php $bloque = $bloquesPorDia[$dia][$horaInt] ?? null; ?>
+                                <?php if ($bloque): 
+                                    $span = (int)$bloque['span'];
+                                    $eventos = $bloque['eventos'];
+                                    $totalEventos = count($eventos);
+                                    $minHeightPx = $span * 64 - 6;
+                                    $detallesList = array_map($detalleEvento, $eventos);
+                                ?>
                                     <td class="schedule-slot" rowspan="<?= $span ?>">
-                                        <div class="schedule-card <?= $isLab ? 'tipo-lab' : '' ?>" style="min-height: calc(<?= $span ?> * 64px - 6px);">
-                                            <div>
-                                                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:4px; margin-bottom:3px;">
-                                                    <span class="schedule-card-badge">
-                                                        <?= htmlspecialchars($ev['asignatura_codigo'] ?? '') ?>
-                                                        <?= !empty($ev['semestre']) ? '• Sem. ' . $ev['semestre'] : '' ?>
+                                        <div class="schedule-multi-container" style="min-height: <?= $minHeightPx ?>px;">
+                                            <?php if ($totalEventos > 1): ?>
+                                                <div class="schedule-simultaneous-header" 
+                                                     title="Haz clic para ver las <?= $totalEventos ?> asignaturas programadas"
+                                                     data-multi-detail='<?= htmlspecialchars(json_encode($detallesList), ENT_QUOTES, 'UTF-8') ?>'
+                                                     data-dia="<?= htmlspecialchars($dia) ?>"
+                                                     data-hora-texto="<?= sprintf('%02d:00 - %02d:00', $bloque['iniH'], $bloque['finH']) ?>">
+                                                    <span class="schedule-simultaneous-pill">
+                                                        <i class="fa-solid fa-layer-group"></i> <?= $totalEventos ?> Asignaturas Simultáneas
                                                     </span>
-                                                    <span style="font-size:10.5px; font-weight:700; color:var(--color-primario);">
-                                                        <?= htmlspecialchars($ev['_hora_formato']) ?>
-                                                    </span>
+                                                    <span style="font-size: 10px; opacity: 0.9;">Ver todas <i class="fa-solid fa-chevron-right"></i></span>
                                                 </div>
-                                                <strong class="schedule-card-title" title="<?= htmlspecialchars($ev['asignatura_nombre']) ?>">
-                                                    <?= htmlspecialchars($ev['asignatura_nombre']) ?>
-                                                </strong>
-                                            </div>
-                                            <div>
-                                                <div class="schedule-card-meta" title="Docente: <?= htmlspecialchars($ev['docente_nombre']) ?>">
-                                                    <i class="fa-solid fa-chalkboard-user"></i>
-                                                    <span><?= htmlspecialchars($ev['docente_nombre']) ?></span>
-                                                </div>
-                                                <div class="schedule-card-meta" title="Espacio: <?= htmlspecialchars($ev['sede_nombre'].' - '.$ev['bloque_nombre'].' - '.$ev['espacio_nombre']) ?>">
-                                                    <i class="fa-solid fa-location-dot"></i>
-                                                    <span><?= htmlspecialchars($ev['espacio_nombre']) ?> (<?= htmlspecialchars($ev['espacio_tipo']) ?>)</span>
-                                                </div>
-                                                <?php if (empty($idProgramaHorario)): ?>
-                                                    <div class="schedule-card-meta" style="font-size:10px; color:#64748b;" title="Programa: <?= htmlspecialchars($ev['programa_nombre']) ?>">
-                                                        <i class="fa-solid fa-graduation-cap"></i>
-                                                        <span><?= htmlspecialchars($ev['programa_nombre']) ?></span>
+                                            <?php endif; ?>
+
+                                            <?php foreach ($eventos as $ev): 
+                                                $isLab = (strtoupper($ev['espacio_tipo'] ?? '') === 'LABORATORIO');
+                                                $det = $detalleEvento($ev);
+                                            ?>
+                                                <div class="schedule-card clickable-card <?= $isLab ? 'tipo-lab' : '' ?>" 
+                                                     data-class-detail='<?= htmlspecialchars(json_encode($det), ENT_QUOTES, 'UTF-8') ?>'
+                                                     title="Haz clic para ver detalles completos de <?= htmlspecialchars($ev['asignatura_nombre']) ?>"
+                                                     style="flex: 1;">
+                                                    <div>
+                                                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:4px; margin-bottom:3px;">
+                                                            <span class="schedule-card-badge">
+                                                                <?= htmlspecialchars($ev['asignatura_codigo'] ?? '') ?>
+                                                                <?= !empty($ev['semestre']) ? '• Sem. ' . $ev['semestre'] : '' ?>
+                                                            </span>
+                                                            <span style="font-size:10.5px; font-weight:700; color:var(--color-primario);">
+                                                                <?= htmlspecialchars($ev['_hora_formato']) ?>
+                                                            </span>
+                                                        </div>
+                                                        <strong class="schedule-card-title">
+                                                            <?= htmlspecialchars($ev['asignatura_nombre']) ?>
+                                                        </strong>
                                                     </div>
-                                                <?php endif; ?>
-                                            </div>
+                                                    <div>
+                                                        <div class="schedule-card-meta">
+                                                            <i class="fa-solid fa-chalkboard-user"></i>
+                                                            <span><?= htmlspecialchars($ev['docente_nombre']) ?></span>
+                                                        </div>
+                                                        <div class="schedule-card-meta">
+                                                            <i class="fa-solid fa-location-dot"></i>
+                                                            <span><?= htmlspecialchars($ev['espacio_nombre']) ?> (<?= htmlspecialchars($ev['espacio_tipo']) ?>)</span>
+                                                        </div>
+                                                        <?php if (empty($idProgramaHorario)): ?>
+                                                            <div class="schedule-card-meta" style="font-size:10px; color:#64748b;">
+                                                                <i class="fa-solid fa-graduation-cap"></i>
+                                                                <span><?= htmlspecialchars($ev['programa_nombre']) ?></span>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                        <div class="click-hint">
+                                                            <i class="fa-solid fa-circle-info"></i> Haz clic para ver detalles
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
                                         </div>
                                     </td>
                                 <?php else: ?>
@@ -1038,6 +1268,174 @@ $tabsHorario = [
         [periodo, programa].forEach(el => el && el.addEventListener('change', loadAsignaturas));
         asignatura && asignatura.addEventListener('change', loadDocentes);
         [periodo, dia, inicio, fin].forEach(el => el && el.addEventListener('change', loadEspacios));
+
+        // Helpers para modales de horarios en cuadrícula
+        const esc = value => String(value || '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+
+        const showSingleClassModal = (detail) => {
+            const isLab = String(detail.espacio_tipo || '').toUpperCase() === 'LABORATORIO';
+            const chipTypeClass = isLab ? 'chip-success' : 'chip-primary';
+            const html = `
+                <div class="occupied-detail">
+                    <div class="occupied-header">
+                        <div class="modal-logo"><img src="assets/img/isotipo-color.png" alt="UniFET" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%233b0d8f\'><rect width=\'24\' height=\'24\' rx=\'6\'/><text x=\'50%25\' y=\'65%25\' font-size=\'14\' font-weight=\'bold\' fill=\'%23ffffff\' text-anchor=\'middle\'>U</text></svg>'"></div>
+                        <div>
+                            <h2>${esc(detail.asignatura_nombre || 'Asignatura')}</h2>
+                            <p>${esc(detail.programa || 'Programa Académico')}</p>
+                        </div>
+                    </div>
+                    <div class="detail-chips">
+                        <span class="detail-chip"><i class="fa-solid fa-calendar-day"></i> ${esc(detail.dia) || '-'}</span>
+                        <span class="detail-chip"><i class="fa-regular fa-clock"></i> ${esc(detail.hora) || '-'} ${detail.duracion ? '(' + esc(detail.duracion) + ')' : ''}</span>
+                        <span class="detail-chip ${chipTypeClass}"><i class="fa-solid ${isLab ? 'fa-flask-vial' : 'fa-school'}"></i> ${esc(detail.espacio_tipo || 'AULA')}</span>
+                        <span class="detail-chip"><i class="fa-solid fa-circle-check"></i> ${esc(detail.estado || 'CONFIRMADO')}</span>
+                    </div>
+                    <div class="detail-sections">
+                        <section class="detail-section">
+                            <h3>Asignatura</h3>
+                            <div class="detail-list">
+                                <div class="detail-item"><span>Código</span><strong>${esc(detail.asignatura_codigo) || 'N/A'}</strong></div>
+                                <div class="detail-item"><span>Nombre</span><strong>${esc(detail.asignatura_nombre) || '-'}</strong></div>
+                                <div class="detail-item"><span>Créditos / Semestre</span><strong>${detail.creditos || 0} Créditos ${detail.semestre ? '• Semestre ' + esc(detail.semestre) : ''}</strong></div>
+                            </div>
+                        </section>
+                        <section class="detail-section">
+                            <h3>Docente</h3>
+                            <div class="detail-list">
+                                <div class="detail-item"><span>Docente a cargo</span><strong>${esc(detail.docente) || 'Sin docente'}</strong></div>
+                                <div class="detail-item"><span>Programa</span><strong>${esc(detail.programa) || '-'}</strong></div>
+                                <div class="detail-item"><span>Facultad</span><strong>${esc(detail.facultad) || 'Institucional'}</strong></div>
+                            </div>
+                        </section>
+                        <section class="detail-section">
+                            <h3>Ubicación Física</h3>
+                            <div class="detail-list">
+                                <div class="detail-item"><span>Espacio</span><strong>${esc(detail.espacio) || '-'} (${esc(detail.espacio_tipo || 'AULA')})</strong></div>
+                                <div class="detail-item"><span>Bloque</span><strong>${esc(detail.bloque) || '-'}</strong></div>
+                                <div class="detail-item"><span>Sede</span><strong>${esc(detail.sede) || 'Sede Principal'}</strong></div>
+                            </div>
+                        </section>
+                        <section class="detail-section">
+                            <h3>Planificación y Origen</h3>
+                            <div class="detail-list">
+                                <div class="detail-item"><span>Franja programada</span><strong>${esc(detail.dia)}: ${esc(detail.hora)}</strong></div>
+                                <div class="detail-item"><span>Origen / Estado</span><strong>${esc(detail.origen) || 'MANUAL'} • ${esc(detail.estado) || 'CONFIRMADO'}</strong></div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            `;
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    width: 760,
+                    customClass: { htmlContainer: 'occupied-swal-container' },
+                    showConfirmButton: true,
+                    confirmButtonText: 'Cerrar',
+                    confirmButtonColor: '#3B0D8F',
+                    html
+                });
+                return;
+            }
+
+            const backdrop = document.createElement('div');
+            backdrop.className = 'occupied-modal-backdrop';
+            backdrop.innerHTML = `<div class="occupied-modal">${html}<div class="occupied-modal-actions"><button class="btn-primario" type="button">Cerrar</button></div></div>`;
+            backdrop.querySelector('button').addEventListener('click', () => backdrop.remove());
+            backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+            document.body.appendChild(backdrop);
+        };
+
+        const showMultiClassModal = (dia, horaTexto, clases) => {
+            let cardsHtml = '';
+            clases.forEach((c) => {
+                const isLab = String(c.espacio_tipo || '').toUpperCase() === 'LABORATORIO';
+                cardsHtml += `
+                    <div style="border:1.5px solid #E2E8F0; border-left:4.5px solid ${isLab ? '#10b981' : '#3b0d8f'}; border-radius:8px; padding:12px 14px; margin-bottom:10px; background:${isLab ? '#f0fdf4' : '#faf5ff'}; text-align:left;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; flex-wrap:wrap; gap:6px;">
+                            <div>
+                                <span style="font-size:11px; font-weight:700; color:${isLab ? '#047857' : '#3b0d8f'}; background:rgba(0,0,0,0.06); padding:2px 7px; border-radius:4px;">${esc(c.asignatura_codigo)} ${c.semestre ? '• Sem. ' + esc(c.semestre) : ''}</span>
+                                <strong style="font-size:14px; color:#0f172a; margin-left:6px;">${esc(c.asignatura_nombre)}</strong>
+                            </div>
+                            <span style="font-size:12px; font-weight:700; color:var(--color-primario); background:#fff; padding:2px 8px; border-radius:4px; border:1px solid #e2e8f0;">${esc(c.hora)}</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:6px; font-size:12px; color:#475569; margin-top:8px;">
+                            <div><i class="fa-solid fa-chalkboard-user" style="color:var(--color-primario);"></i> <strong>Docente:</strong> ${esc(c.docente)}</div>
+                            <div><i class="fa-solid fa-location-dot" style="color:#ef4444;"></i> <strong>Espacio:</strong> ${esc(c.espacio)} (${esc(c.espacio_tipo)})</div>
+                            <div><i class="fa-solid fa-graduation-cap" style="color:#6366f1;"></i> <strong>Programa:</strong> ${esc(c.programa)}</div>
+                            <div><i class="fa-solid fa-building" style="color:#64748b;"></i> <strong>Bloque/Sede:</strong> ${esc(c.bloque)} - ${esc(c.sede)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const html = `
+                <div class="occupied-detail">
+                    <div class="occupied-header">
+                        <div class="modal-logo"><img src="assets/img/isotipo-color.png" alt="UniFET" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%233b0d8f\'><rect width=\'24\' height=\'24\' rx=\'6\'/><text x=\'50%25\' y=\'65%25\' font-size=\'14\' font-weight=\'bold\' fill=\'%23ffffff\' text-anchor=\'middle\'>U</text></svg>'"></div>
+                        <div>
+                            <h2>${clases.length} Asignaturas Simultáneas</h2>
+                            <p>${esc(dia)} • Franja ${esc(horaTexto)}</p>
+                        </div>
+                    </div>
+                    <div class="detail-chips">
+                        <span class="detail-chip"><i class="fa-solid fa-calendar-day"></i> ${esc(dia)}</span>
+                        <span class="detail-chip chip-primary"><i class="fa-solid fa-layer-group"></i> ${clases.length} Clases concurrentes</span>
+                        <span class="detail-chip"><i class="fa-regular fa-clock"></i> ${esc(horaTexto)}</span>
+                    </div>
+                    <div style="margin-top:14px; max-height:420px; overflow-y:auto; padding-right:4px;">
+                        ${cardsHtml}
+                    </div>
+                </div>
+            `;
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    width: 780,
+                    customClass: { htmlContainer: 'occupied-swal-container' },
+                    showConfirmButton: true,
+                    confirmButtonText: 'Cerrar',
+                    confirmButtonColor: '#3B0D8F',
+                    html
+                });
+                return;
+            }
+
+            const backdrop = document.createElement('div');
+            backdrop.className = 'occupied-modal-backdrop';
+            backdrop.innerHTML = `<div class="occupied-modal">${html}<div class="occupied-modal-actions"><button class="btn-primario" type="button">Cerrar</button></div></div>`;
+            backdrop.querySelector('button').addEventListener('click', () => backdrop.remove());
+            backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
+            document.body.appendChild(backdrop);
+        };
+
+        // Event delegation para clic en tarjetas de clase y cabeceras simultáneas
+        document.addEventListener('click', (e) => {
+            const multiHeader = e.target.closest('[data-multi-detail]');
+            if (multiHeader) {
+                e.stopPropagation();
+                try {
+                    const clases = JSON.parse(multiHeader.dataset.multiDetail || '[]');
+                    const dia = multiHeader.dataset.dia || '';
+                    const horaTexto = multiHeader.dataset.horaTexto || '';
+                    showMultiClassModal(dia, horaTexto, clases);
+                } catch (err) {
+                    console.error('Error parseando clases simultáneas:', err);
+                }
+                return;
+            }
+
+            const card = e.target.closest('[data-class-detail]');
+            if (card) {
+                e.stopPropagation();
+                try {
+                    const detail = JSON.parse(card.dataset.classDetail || '{}');
+                    showSingleClassModal(detail);
+                } catch (err) {
+                    console.error('Error parseando detalle de clase:', err);
+                }
+            }
+        });
     });
 </script>
 
