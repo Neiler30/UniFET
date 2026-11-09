@@ -311,26 +311,13 @@ class ImportExportController extends Controller {
 
     public function exportar() {
         Auth::requerirRol('ADMINISTRADOR');
-        try {
-            $spreadsheet = ImportExport::exportarAsignaturas($this->id_institucion);
-            $writer = new Xlsx($spreadsheet);
-
-            $nombre = "asignaturas_unifet_" . date('Y-m-d_His') . ".xlsx";
-
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment; filename="' . $nombre . '"');
-            header('Cache-Control: max-age=0');
-
-            $writer->save('php://output');
-            exit;
-        } catch (Throwable $e) {
-            $_SESSION['swal_alerta'] = [
-                'icon'  => 'error',
-                'title' => 'Error al exportar',
-                'text'  => $e->getMessage(),
-            ];
-            $this->redirect('?ruta=admin/importar');
-        }
+        $_SESSION['swal_alerta'] = [
+            'icon'  => 'info',
+            'title' => 'Módulo en Desarrollo',
+            'text'  => 'La exportación de datos a Excel se encuentra actualmente en desarrollo y optimización. Estará disponible en la próxima actualización.',
+        ];
+        $this->redirect('?ruta=admin/importar');
+        return;
     }
 
     public function reporteErrores() {

@@ -11,10 +11,26 @@ $colorPrimario = !empty($institucion['color_principal']) ? $institucion['color_p
 $colorSecundario = !empty($institucion['color_secundario']) ? $institucion['color_secundario'] : '#0F9D58';
 $colorAcento = !empty($institucion['color_acento']) ? $institucion['color_acento'] : '#F5B301';
 $nombreInstitucion = !empty($institucion['nombre']) ? $institucion['nombre'] : 'Fundación de Educación Superior del Caribe';
-$nombreSistema = !empty($institucion['nombre_sistema']) ? $institucion['nombre_sistema'] : 'UniFET';
+$nombreSistema = 'UniFET'; // El nombre del software es UniFET de forma inmutable
 $lema = !empty($institucion['lema']) ? $institucion['lema'] : 'Gestión Académica Inteligente';
 $logoUrl = !empty($institucion['logo_url']) ? $institucion['logo_url'] : 'assets/img/isotipo-color.png';
 $faviconUrl = !empty($institucion['favicon_url']) ? $institucion['favicon_url'] : 'assets/img/isotipo-color.png';
+
+// Función para oscurecer un color hex para los degradados
+function darkenHex($hex, $percent = 35) {
+    $hex = ltrim($hex, '#');
+    if (strlen($hex) === 3) {
+        $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+    }
+    $num = hexdec($hex);
+    $amt = round(2.55 * $percent);
+    $r = max(0, min(255, ($num >> 16) - $amt));
+    $g = max(0, min(255, (($num >> 8) & 0x00FF) - $amt));
+    $b = max(0, min(255, ($num & 0x0000FF) - $amt));
+    return sprintf("#%02x%02x%02x", $r, $g, $b);
+}
+$colorPrimarioDark = darkenHex($colorPrimario, 35);
+$colorPrimarioDeep = darkenHex($colorPrimario, 55);
 ?>
 
 <style>
@@ -520,7 +536,7 @@ $faviconUrl = !empty($institucion['favicon_url']) ? $institucion['favicon_url'] 
 
     <!-- BANNER DINÁMICO DE IDENTIDAD EN TIEMPO REAL -->
     <div class="identity-preview-banner" id="live-identity-banner"
-         style="background: linear-gradient(135deg, <?= htmlspecialchars($colorPrimario) ?> 0%, #1e0940 70%, #0b1f33 100%);">
+         style="background: linear-gradient(135deg, <?= htmlspecialchars($colorPrimario) ?> 0%, <?= htmlspecialchars($colorPrimarioDark) ?> 65%, <?= htmlspecialchars($colorPrimarioDeep) ?> 100%);">
         
         <div class="banner-left">
             <div class="banner-logo-frame">
@@ -589,9 +605,15 @@ $faviconUrl = !empty($institucion['favicon_url']) ? $institucion['favicon_url'] 
                             <label for="input_nombre_sistema">
                                 <i class="fa-solid fa-laptop-code"></i> Nombre del Software / Sistema
                             </label>
-                            <input class="form-control" name="nombre_sistema" id="input_nombre_sistema"
-                                   value="<?= htmlspecialchars($nombreSistema) ?>"
-                                   placeholder="Ej: UniFET">
+                            <div style="position:relative;">
+                                <input class="form-control" name="nombre_sistema" id="input_nombre_sistema"
+                                       value="UniFET" readonly
+                                       style="background:#f8fafc; font-weight:700; color:var(--color-primario); padding-right:110px;">
+                                <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:11px; background:rgba(59,13,143,0.08); color:var(--color-primario); padding:3px 8px; border-radius:6px; font-weight:700;">
+                                    <i class="fa-solid fa-lock"></i> Predeterminado
+                                </span>
+                            </div>
+                            <small style="color:var(--color-texto-secundario); font-size:11px; margin-top:2px; display:block;">El nombre oficial de la plataforma es inmutable: <strong>UniFET</strong>.</small>
                         </div>
 
                         <div class="field-block">
@@ -830,15 +852,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Función para oscurecer colores hex automáticamente
+    const darkenColorHex = (hex, percent) => {
+        let cleanHex = hex.replace('#', '');
+        if (cleanHex.length === 3) {
+            cleanHex = cleanHex[0] + cleanHex[0] + cleanHex[1] + cleanHex[1] + cleanHex[2] + cleanHex[2];
+        }
+        let num = parseInt(cleanHex, 16);
+        let amt = Math.round(2.55 * percent);
+        let R = Math.max(0, Math.min(255, (num >> 16) - amt));
+        let G = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) - amt));
+        let B = Math.max(0, Math.min(255, (num & 0x0000FF) - amt));
+        return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+    };
+
     // Actualizador de Banner y Colores
     const updateThemeColors = () => {
         const cPri = swatchPrincipal ? swatchPrincipal.value : '#3B0D8F';
         const cSec = swatchSecundario ? swatchSecundario.value : '#0F9D58';
         const cAcc = swatchAcento ? swatchAcento.value : '#F5B301';
 
-        // Banner principal con gradiente
+        // Degradado automático derivado exclusivamente del color principal escogido y sus variantes más oscuras
+        const cPriDark = darkenColorHex(cPri, 35);
+        const cPriDeep = darkenColorHex(cPri, 55);
+
         if (banner) {
-            banner.style.background = `linear-gradient(135deg, ${cPri} 0%, #1e0940 70%, #0b1f33 100%)`;
+            banner.style.background = `linear-gradient(135deg, ${cPri} 0%, ${cPriDark} 65%, ${cPriDeep} 100%)`;
         }
 
         // Swatches en el banner

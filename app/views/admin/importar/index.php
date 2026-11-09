@@ -164,42 +164,49 @@ $this->render('elementos_compartidos/sidebar_admin');
         </div>
     </div>
 
-    <!-- Tarjeta 2: EXPORTAR -->
-    <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid #10b981;">
+    <!-- Tarjeta 2: EXPORTAR (BLOQUEADO / EN DESARROLLO) -->
+    <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid #f59e0b; position: relative; background: #fafbfd;">
         <div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                <div style="width: 38px; height: 38px; border-radius: 8px; background: #d1fae5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 18px;">
-                    <i class="fa-solid fa-file-export"></i>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 38px; height: 38px; border-radius: 8px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                        <i class="fa-solid fa-file-export"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 18px; font-weight: 700; color: var(--color-oscuro); margin: 0;">Exportar Datos</h2>
+                        <span style="font-size: 12px; color: var(--color-texto-secundario);">Descarga en formato compatible</span>
+                    </div>
                 </div>
+                <span class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 99px;">
+                    <i class="fa-solid fa-code"></i> EN DESARROLLO
+                </span>
+            </div>
+
+            <!-- Banner Explicativo de En Desarrollo -->
+            <div style="background: #fffbeb; border: 1.5px dashed #f59e0b; border-radius: 10px; padding: 14px; margin: 14px 0 16px 0; display: flex; align-items: flex-start; gap: 12px;">
+                <i class="fa-solid fa-person-digging" style="color: #d97706; font-size: 20px; margin-top: 2px;"></i>
                 <div>
-                    <h2 style="font-size: 18px; font-weight: 700; color: var(--color-oscuro); margin: 0;">Exportar Datos</h2>
-                    <span style="font-size: 12px; color: var(--color-texto-secundario);">Descarga en formato compatible</span>
+                    <strong style="color: #92400e; font-size: 13.5px; display: block;">Módulo de Exportación en Construcción</strong>
+                    <p style="color: #b45309; font-size: 12.5px; margin: 3px 0 0 0; line-height: 1.45;">
+                        La herramienta de exportación de asignaturas y mallas curriculares a formato Excel (.xlsx) se encuentra actualmente en desarrollo y optimización de rendimiento.
+                    </p>
                 </div>
             </div>
 
-            <p style="font-size: 13.5px; color: var(--color-texto-secundario); line-height: 1.5; margin: 12px 0 16px 0;">
-                Genera una hoja de cálculo con la totalidad de asignaturas registradas y sus respectivas asociaciones curriculares (programa, semestre romano, créditos, nivel y área académica).
+            <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin: 0 0 16px 0;">
+                El motor de <strong>Importación de Datos</strong> se encuentra 100% operativo y listo para recibir y validar tus plantillas curriculares.
             </p>
 
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-                <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--color-texto-secundario); line-height: 1.6;">
-                    <li>Mantiene una fila por cada asociación <code>asignatura_programa</code>.</li>
-                    <li>Semestres formateados en números romanos estándar (I - X).</li>
-                    <li>Créditos con formato de dos dígitos (02, 03, 04).</li>
-                    <li>Listo para editarse y reimportarse en cualquier momento.</li>
-                </ul>
-            </div>
-
-            <a href="?ruta=admin/importar/exportar" class="btn-demo" style="width: 100%; justify-content: center; height: 42px; font-size: 14px; font-weight: 600; border-color: #10b981; color: #047857; background: #fff;">
-                <i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Exportar Asignaturas a Excel (.xlsx)
-            </a>
+            <button type="button" class="btn-demo" disabled style="width: 100%; justify-content: center; height: 44px; font-size: 14px; font-weight: 600; opacity: 0.65; cursor: not-allowed; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;">
+                <i class="fa-solid fa-lock" style="margin-right: 6px;"></i> Función de Exportar en Desarrollo
+            </button>
         </div>
 
-        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 12px; color: var(--color-texto-secundario);">
-                <i class="fa-solid fa-clock-rotate-left"></i> Incluye datos actualizados en tiempo real
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; color: #94a3b8;">
+                <i class="fa-solid fa-circle-exclamation" style="color:#f59e0b;"></i> Solo importación activa por el momento
             </span>
-            <span style="font-size: 12px; font-weight: 600; color: #059669;">Formato oficial UniFET</span>
+            <span style="font-size: 12px; font-weight: 700; color: #b45309;">Próxima actualización</span>
         </div>
     </div>
 </div>

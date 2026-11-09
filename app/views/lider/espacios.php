@@ -304,18 +304,13 @@ foreach ($espacios as $e) {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-    padding: 2px 10px;
-    border-radius: 999px;
-    margin-top: 2px;
-    display: inline-block;
-}
 
 /* =========================================================
    HERO BANNER INSTITUCIONAL UNIFET
    ========================================================= */
 .institucion-hero-banner {
-    background: linear-gradient(135deg, var(--color-primario, #3B0D8F) 0%, #24114f 65%, #180936 100%);
-    color: #fff;
+    background: linear-gradient(135deg, var(--color-primario, #3B0D8F) 0%, #24114f 65%, #180936 100%) !important;
+    color: #ffffff !important;
     border-radius: 14px;
     padding: 22px 28px;
     margin-bottom: 20px;
@@ -525,7 +520,7 @@ foreach ($espacios as $e) {
 </style>
 
 <!-- Hero Banner Institucional UniFET -->
-<div class="institucion-hero-banner">
+<div class="institucion-hero-banner" style="background: linear-gradient(135deg, var(--color-primario, #3B0D8F) 0%, #24114f 65%, #180936 100%); color: #fff; border-radius: 14px; padding: 22px 28px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; position: relative; overflow: hidden; box-shadow: 0 6px 22px rgba(59, 13, 143, 0.16);">
     <div class="institucion-hero-content">
         <span class="institucion-hero-tag">
             <i class="fa-solid fa-door-open"></i> Infraestructura y Capacidad
