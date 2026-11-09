@@ -1,7 +1,26 @@
 <?php
 $this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Espacios Físicos — UniFET']);
 $this->render('elementos_compartidos/sidebar_admin');
+?>
 
+<!-- Banner Institucional UniFET -->
+<div class="institucion-hero-banner" style="background: linear-gradient(135deg, var(--color-primario, #3B0D8F) 0%, #24114f 65%, #180936 100%); color: #fff; border-radius: 14px; padding: 22px 28px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; position: relative; overflow: hidden; box-shadow: 0 6px 22px rgba(59, 13, 143, 0.16);">
+    <div style="position: relative; z-index: 2;">
+        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; background: rgba(255, 255, 255, 0.12); color: #fff; padding: 3px 10px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+            <i class="fa-solid fa-door-open"></i> Infraestructura Universitaria UniFET
+        </span>
+        <h1 style="font-size: 21px; font-weight: 700; margin: 0 0 5px; color: #fff; display: flex; align-items: center; gap: 10px;">Gestión de Espacios Físicos</h1>
+        <p style="color: rgba(255, 255, 255, 0.82); font-size: 13.5px; margin: 0; line-height: 1.4;">Aulas, laboratorios, auditorios y salas disponibles para docencia, investigación y eventos académicos.</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; position: relative; z-index: 2; flex-shrink: 0;">
+        <div style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 14px; border-radius: 8px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #fff; backdrop-filter: blur(4px);">
+            <i class="fa-solid fa-layer-group" style="color: #6ee7b7;"></i>
+            <span>Total: <strong><?= count($espacios) ?> Espacios</strong></span>
+        </div>
+    </div>
+</div>
+
+<?php
 $tabs = [
     ['etiqueta' => 'Sedes', 'ruta' => 'admin/espacios/sedes', 'activa' => false],
     ['etiqueta' => 'Bloques', 'ruta' => 'admin/espacios/bloques', 'activa' => false],

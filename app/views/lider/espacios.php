@@ -230,12 +230,6 @@ foreach ($espacios as $e) {
     color: #2e0870;
     background: rgba(59, 13, 143, 0.12);
 }
-.busy-block.busy-own .busy-tooltip {
-    background: #2e0870;
-}
-.busy-block.busy-own .busy-tooltip::after {
-    border-color: #2e0870 transparent transparent transparent;
-}
 .busy-own-asig {
     font-size: 11px;
     font-weight: 600;
@@ -315,50 +309,93 @@ foreach ($espacios as $e) {
     margin-top: 2px;
     display: inline-block;
 }
-.busy-tooltip {
-    display: none;
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + 8px);
-    transform: translateX(-50%);
-    z-index: 50;
-    min-width: 230px;
-    background: #0B1F33;
+
+/* =========================================================
+   HERO BANNER INSTITUCIONAL UNIFET
+   ========================================================= */
+.institucion-hero-banner {
+    background: linear-gradient(135deg, var(--color-primario, #3B0D8F) 0%, #24114f 65%, #180936 100%);
     color: #fff;
-    border-radius: 8px;
-    padding: 10px 12px;
-    box-shadow: 0 10px 30px rgba(11,31,51,.3);
-    font-size: 12px;
-    text-align: left;
-    pointer-events: none;
+    border-radius: 14px;
+    padding: 22px 28px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 22px rgba(59, 13, 143, 0.16);
 }
-.busy-tooltip::after {
+.institucion-hero-banner::before {
     content: '';
     position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 6px;
-    border-style: solid;
-    border-color: #0B1F33 transparent transparent transparent;
+    right: -25px;
+    bottom: -25px;
+    width: 175px;
+    height: 175px;
+    background: url('assets/img/isotipo-blanco.png') no-repeat center/contain;
+    opacity: 0.06;
+    pointer-events: none;
 }
-.hour-row:first-child .busy-tooltip,
-.hour-row:nth-child(2) .busy-tooltip {
-    bottom: auto;
-    top: calc(100% + 8px);
+.institucion-hero-content {
+    position: relative;
+    z-index: 2;
 }
-.hour-row:first-child .busy-tooltip::after,
-.hour-row:nth-child(2) .busy-tooltip::after {
-    top: auto;
-    bottom: 100%;
-    border-color: transparent transparent #0B1F33 transparent;
+.institucion-hero-tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 99px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
 }
-.hour-row:first-child .busy-block.busy-own .busy-tooltip::after,
-.hour-row:nth-child(2) .busy-block.busy-own .busy-tooltip::after {
-    border-color: transparent transparent #2e0870 transparent;
+.institucion-hero-content h1 {
+    font-size: 21px;
+    font-weight: 700;
+    margin: 0 0 5px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
-.busy-block:hover .busy-tooltip {
-    display: block;
+.institucion-hero-content p {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 13.5px;
+    margin: 0;
+    line-height: 1.4;
+}
+.institucion-hero-pills {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+.institucion-stat-pill {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 14px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: #fff;
+    backdrop-filter: blur(4px);
+}
+@media (max-width: 860px) {
+    .institucion-hero-banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 .space-meta {
@@ -487,18 +524,43 @@ foreach ($espacios as $e) {
 }
 </style>
 
+<!-- Hero Banner Institucional UniFET -->
+<div class="institucion-hero-banner">
+    <div class="institucion-hero-content">
+        <span class="institucion-hero-tag">
+            <i class="fa-solid fa-door-open"></i> Infraestructura y Capacidad
+        </span>
+        <h1>Disponibilidad de Espacios</h1>
+        <p>Consulta en tiempo real la ocupación física cruzando los horarios registrados en el periodo académico activo.</p>
+    </div>
+    <div class="institucion-hero-pills">
+        <div class="institucion-stat-pill">
+            <i class="fa-solid fa-building" style="color: #6ee7b7;"></i>
+            <span>Sedes: <strong><?= count($sedes) ?></strong></span>
+        </div>
+        <div class="institucion-stat-pill">
+            <i class="fa-solid fa-layer-group" style="color: #93c5fd;"></i>
+            <span>Espacios: <strong><?= count($espacios) ?></strong></span>
+        </div>
+    </div>
+</div>
+
 <div class="panel">
-    <h1 style="font-size: 22px; margin-bottom: 6px; font-weight: 700; color: var(--color-oscuro);">Disponibilidad de Espacios</h1>
-    <p style="color: var(--color-texto-secundario); font-size: 13.5px;">Consulta dinámica de ocupación real. El calendario cruza contra los horarios registrados en el periodo académico activo.</p>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+        <div>
+            <h2 style="font-size: 17px; font-weight: 700; color: var(--color-oscuro); margin:0;">Filtros de Búsqueda</h2>
+            <p style="color: var(--color-texto-secundario); font-size: 12.5px; margin:2px 0 0;">Selecciona sede, bloque y aula para consultar su cronograma semanal.</p>
+        </div>
+    </div>
 
     <form method="GET" class="filter-grid" id="space-filter-form">
         <input type="hidden" name="ruta" value="lider/espacios">
         <div class="form-group">
-            <label>Buscar</label>
+            <label><i class="fa-solid fa-magnifying-glass" style="color:var(--color-primario);"></i> Buscar</label>
             <input type="search" id="space-search" class="form-control" placeholder="Aula, sede, bloque, tipo...">
         </div>
         <div class="form-group">
-            <label>Sede</label>
+            <label><i class="fa-solid fa-location-dot" style="color:var(--color-primario);"></i> Sede</label>
             <select id="sede-filter" class="form-control">
                 <option value="">Todas</option>
                 <?php foreach ($sedes as $sede): ?>
@@ -507,7 +569,7 @@ foreach ($espacios as $e) {
             </select>
         </div>
         <div class="form-group">
-            <label>Bloque</label>
+            <label><i class="fa-solid fa-building" style="color:var(--color-primario);"></i> Bloque</label>
             <select id="bloque-filter" class="form-control">
                 <option value="">Todos</option>
                 <?php foreach ($bloques as $bloque): ?>
@@ -516,11 +578,11 @@ foreach ($espacios as $e) {
             </select>
         </div>
         <div class="form-group">
-            <label>Fecha de referencia</label>
+            <label><i class="fa-regular fa-calendar" style="color:var(--color-primario);"></i> Fecha de referencia</label>
             <input type="date" name="fecha_ref" class="form-control" value="<?= htmlspecialchars($_GET['fecha_ref'] ?? date('Y-m-d')) ?>">
         </div>
         <div class="form-group">
-            <label>Espacio</label>
+            <label><i class="fa-solid fa-door-open" style="color:var(--color-primario);"></i> Espacio Físico</label>
             <select name="espacio_id" id="space-select" class="form-control">
                 <?php foreach ($espacios as $e): ?>
                     <option value="<?= (int)$e['id_espacio'] ?>"
@@ -583,13 +645,12 @@ foreach ($espacios as $e) {
                             $span = (int)$h['_rowspan']; 
                             $esMio = !empty($h['es_programa_lider']);
                         ?>
-                            <td class="time-cell cell-busy-td" rowspan="<?= $span ?>" data-occupied-detail="<?= htmlspecialchars(json_encode($detalle), ENT_QUOTES, 'UTF-8') ?>">
+                            <td class="time-cell cell-busy-td" rowspan="<?= $span ?>" data-occupied-detail="<?= htmlspecialchars(json_encode($detalle), ENT_QUOTES, 'UTF-8') ?>" title="Clic para ver detalle completo">
                                 <div class="busy-block <?= $esMio ? 'busy-own' : '' ?>" style="min-height: calc(<?= $span ?> * 64px - 8px);">
                                     <div class="busy-block-content">
                                         <?php if ($esMio): ?>
                                             <strong class="busy-title"><i class="fa-solid fa-bookmark" style="font-size: 11px;"></i> Mi Programa</strong>
-                                            <span class="busy-own-asig" title="<?= htmlspecialchars($h['asignatura_nombre'] ?? '') ?>"><?= htmlspecialchars($h['asignatura_nombre'] ?? '') ?></span>
-                                            <span class="busy-own-docente" title="<?= htmlspecialchars($h['docente_nombre'] ?? '') ?>"><i class="fa-solid fa-chalkboard-user" style="font-size: 10px;"></i> <?= htmlspecialchars($h['docente_nombre'] ?? '') ?></span>
+                                            <span class="busy-own-asig"><?= htmlspecialchars($h['asignatura_nombre'] ?? '') ?></span>
                                             <span class="busy-time"><?= htmlspecialchars($h['_hora_formato']) ?></span>
                                             <span class="busy-duration"><?= htmlspecialchars($h['_duracion_texto']) ?></span>
                                         <?php else: ?>
@@ -597,12 +658,6 @@ foreach ($espacios as $e) {
                                             <span class="busy-time"><?= htmlspecialchars($h['_hora_formato']) ?></span>
                                             <span class="busy-duration"><?= htmlspecialchars($h['_duracion_texto']) ?></span>
                                         <?php endif; ?>
-                                    </div>
-                                    <div class="busy-tooltip">
-                                        <strong><?= htmlspecialchars($detalle['programa']) ?></strong><br>
-                                        <?= htmlspecialchars($detalle['asignatura'] ?? '') ?><br>
-                                        <span style="opacity: 0.8;"><?= htmlspecialchars($detalle['espacio']) ?></span><br>
-                                        <strong><?= htmlspecialchars($h['_hora_formato']) ?></strong> (<?= htmlspecialchars($h['_duracion_texto']) ?>)
                                     </div>
                                 </div>
                             </td>
