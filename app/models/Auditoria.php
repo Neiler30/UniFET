@@ -167,7 +167,7 @@ class Auditoria {
                 asig.nombre AS asignatura_nombre,
                 asig.codigo AS asignatura_codigo,
                 asig.creditos AS asignatura_creditos,
-                asig.tipo AS asignatura_tipo,
+                aa.nombre AS asignatura_area,
                 CONCAT(doc.nombre, ' ', doc.apellido) AS docente_nombre,
                 doc.codigo AS docente_codigo,
                 doc.correo AS docente_correo,
@@ -182,6 +182,7 @@ class Auditoria {
             JOIN programa prog ON prog.id_programa = h.id_programa
             JOIN facultad fac ON fac.id_facultad = prog.id_facultad
             JOIN asignatura asig ON asig.id_asignatura = h.id_asignatura
+            LEFT JOIN area_academica aa ON aa.id_area_academica = asig.id_area_academica
             JOIN docente doc ON doc.id_docente = h.id_docente
             JOIN espacio esp ON esp.id_espacio = h.id_espacio
             JOIN bloque bl ON bl.id_bloque = esp.id_bloque

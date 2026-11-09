@@ -105,9 +105,10 @@ class ImportProcessor {
         $nombre = trim((string)($fila['nombre'] ?? ''));
         $creditos = (int)($fila['creditos'] ?? 0);
         $idArea = !empty($fila['id_area_academica']) ? (int)$fila['id_area_academica'] : null;
-        $tipo = trim((string)($fila['tipo'] ?? ($fila['area_academica'] ?? 'Teórico-Práctica')));
         $idPrograma = !empty($fila['id_programa']) ? (int)$fila['id_programa'] : null;
         $semestre = isset($fila['semestre']) && trim((string)$fila['semestre']) !== '' ? (int)$fila['semestre'] : null;
+        $idNivel = !empty($fila['id_nivel_academico']) ? (int)$fila['id_nivel_academico'] : null;
+        $tipo = trim((string)($fila['tipo'] ?? ($fila['area_academica'] ?? 'Teórico-Práctica')));
 
         // 1. Si no viene idExistente, buscar si ya existe por código (case-insensitive) o por nombre
         if (!$idExistente) {
@@ -129,19 +130,19 @@ class ImportProcessor {
             }
         }
 
-        $idAsignatura = null;
+        $idAsignatura = $idExistente;
 
-        if ($idExistente) {
+        if ($idAsignatura) {
             // Verificar si el código ya pertenece a OTRA asignatura en BD
             $codigoActualizar = $codigo !== '' ? $codigo : ($fila['codigo_bd'] ?? '');
             if ($codigo !== '') {
                 $stmtCheck = $db->prepare("SELECT id_asignatura FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(codigo)) = LOWER(TRIM(:cod)) AND id_asignatura != :id LIMIT 1");
-                $stmtCheck->execute([':inst' => $id_institucion, ':cod' => $codigo, ':id' => $idExistente]);
+                $stmtCheck->execute([':inst' => $id_institucion, ':cod' => $codigo, ':id' => $idAsignatura]);
                 $otroId = $stmtCheck->fetchColumn();
                 if ($otroId) {
                     if ($modoDuplicados === 'actualizar') {
-                        $idExistente = (int)$otroId;
-                    } else {
+                        $idAsignatura = (int)$otroId;
+                    } elseif ($modoDuplicados === 'omitir') {
                         // Conservar el código original de BD para no provocar error de clave duplicada
                         $codigoActualizar = $fila['codigo_bd'] ?? $codigo;
                     }
@@ -163,9 +164,8 @@ class ImportProcessor {
                 ':creditos' => $creditos,
                 ':area'     => $idArea,
                 ':tipo'     => $tipo,
-                ':id'       => $idExistente
+                ':id'       => $idAsignatura
             ]);
-            $idAsignatura = $idExistente;
         } else {
             $stmt = $db->prepare("
                 INSERT INTO asignatura (id_institucion, id_area_academica, codigo, nombre, creditos, tipo, estado)
@@ -193,18 +193,32 @@ class ImportProcessor {
             }
         }
 
-        // Vincular con el Programa Académico (asignatura_programa)
+        // 2. Asociar curricularmente al programa en asignatura_programa
         if ($idAsignatura && $idPrograma) {
             $stmtRel = $db->prepare("
                 INSERT INTO asignatura_programa (id_asignatura, id_programa, semestre)
                 VALUES (:asig, :prog, :sem)
-                ON DUPLICATE KEY UPDATE semestre = COALESCE(VALUES(semestre), semestre)
+                ON DUPLICATE KEY UPDATE 
+                    semestre = COALESCE(VALUES(semestre), semestre)
             ");
             $stmtRel->execute([
                 ':asig' => $idAsignatura,
                 ':prog' => $idPrograma,
-                ':sem'  => $semestre
+                ':sem'  => ($semestre && $semestre > 0) ? $semestre : 1
             ]);
+
+            // 3. Vincular Nivel Académico al Programa si fue especificado
+            if ($idNivel) {
+                $stmtNivel = $db->prepare("
+                    UPDATE programa 
+                    SET id_nivel_academico = :nivel 
+                    WHERE id_programa = :prog AND (id_nivel_academico IS NULL OR id_nivel_academico = 0)
+                ");
+                $stmtNivel->execute([
+                    ':nivel' => $idNivel,
+                    ':prog'  => $idPrograma
+                ]);
+            }
         }
     }
 

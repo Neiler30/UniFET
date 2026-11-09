@@ -143,7 +143,7 @@ class ImportExport {
 
         // Cargar asignaturas y relaciones existentes en memoria
         $db = Database::getConexion();
-        $stmtAsig = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, id_area_academica, tipo FROM asignatura WHERE id_institucion = :inst");
+        $stmtAsig = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, id_area_academica FROM asignatura WHERE id_institucion = :inst");
         $stmtAsig->execute([':inst' => $id_institucion]);
         $asignaturasBD = [];
         foreach ($stmtAsig->fetchAll(PDO::FETCH_ASSOC) as $a) {
@@ -443,8 +443,8 @@ class ImportExport {
             // Cache local para asignaturas que se van creando dentro del lote
             $stmtBuscarAsig = $db->prepare("SELECT id_asignatura FROM asignatura WHERE codigo = :cod AND id_institucion = :inst LIMIT 1");
             $stmtCrearAsig  = $db->prepare("
-                INSERT INTO asignatura (id_institucion, id_area_academica, codigo, nombre, creditos, tipo, estado)
-                VALUES (:inst, :area, :cod, :nom, :cred, :tipo, 'ACTIVO')
+                INSERT INTO asignatura (id_institucion, id_area_academica, codigo, nombre, creditos, estado)
+                VALUES (:inst, :area, :cod, :nom, :cred, 'ACTIVO')
             ");
 
             $stmtCrearRel = $db->prepare("
@@ -453,7 +453,7 @@ class ImportExport {
                 ON DUPLICATE KEY UPDATE semestre = VALUES(semestre)
             ");
             // Prepared statement to update missing fields for COMPLETAR rows
-            $stmtActualizarAsig = $db->prepare("UPDATE asignatura SET creditos = :cred, id_area_academica = :area, tipo = :tipo WHERE id_asignatura = :id");
+            $stmtActualizarAsig = $db->prepare("UPDATE asignatura SET creditos = :cred, id_area_academica = :area WHERE id_asignatura = :id");
 
             $cacheAsignaturas = [];
 
@@ -501,7 +501,6 @@ class ImportExport {
                             $stmtActualizarAsig->execute([
                                 ':cred' => max(0, (int)($f['creditos'] ?? 0)),
                                 ':area' => !empty($f['id_area_academica']) ? (int)$f['id_area_academica'] : null,
-                                ':tipo' => 'Teórico-Práctica',
                                 ':id'   => $idAsignatura,
                             ]);
                         }
@@ -514,7 +513,6 @@ class ImportExport {
                             ':cod'  => $codigo,
                             ':nom'  => trim((string)$f['asignatura']),
                             ':cred' => max(0, (int)($f['creditos'] ?? 0)),
-                            ':tipo' => 'Teórico-Práctica',
                         ]);
                         $idAsignatura = (int)$db->lastInsertId();
                         $asignaturasCreadas++;

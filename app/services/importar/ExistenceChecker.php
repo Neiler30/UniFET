@@ -129,13 +129,13 @@ class ExistenceChecker
 
                 // 1. Buscar por código (case-insensitive y tolerante a guiones/espacios)
                 if ($codigo !== '') {
-                    $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(codigo)) = LOWER(TRIM(:cod)) LIMIT 1");
+                    $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, id_area_academica FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(codigo)) = LOWER(TRIM(:cod)) LIMIT 1");
                     $stmt->execute([':inst' => $id_institucion, ':cod' => $codigo]);
                     $asigExistenteRow = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     if (!$asigExistenteRow) {
                         $codLimpio = str_replace(['-', ' '], '', mb_strtolower($codigo));
-                        $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND REPLACE(REPLACE(LOWER(codigo), '-', ''), ' ', '') = :cod LIMIT 1");
+                        $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, id_area_academica FROM asignatura WHERE id_institucion = :inst AND REPLACE(REPLACE(LOWER(codigo), '-', ''), ' ', '') = :cod LIMIT 1");
                         $stmt->execute([':inst' => $id_institucion, ':cod' => $codLimpio]);
                         $asigExistenteRow = $stmt->fetch(PDO::FETCH_ASSOC);
                     }
@@ -143,14 +143,14 @@ class ExistenceChecker
 
                 // 2. Si no se encontró por código, buscar por nombre directo (case-insensitive)
                 if (!$asigExistenteRow && $nombre !== '') {
-                    $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:nom)) LIMIT 1");
+                    $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, id_area_academica FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:nom)) LIMIT 1");
                     $stmt->execute([':inst' => $id_institucion, ':nom' => $nombre]);
                     $asigExistenteRow = $stmt->fetch(PDO::FETCH_ASSOC);
                 }
 
                 // 3. Si aún no se encontró, buscar por nombre normalizado (sin acentos)
                 if (!$asigExistenteRow && $nombre !== '') {
-                    $stmtAll = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst");
+                    $stmtAll = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, id_area_academica FROM asignatura WHERE id_institucion = :inst");
                     $stmtAll->execute([':inst' => $id_institucion]);
                     $todasAsig = $stmtAll->fetchAll(PDO::FETCH_ASSOC);
                     $nomLimpio = RelationshipResolver::limpiarTexto($nombre);

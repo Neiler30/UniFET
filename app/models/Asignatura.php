@@ -84,7 +84,6 @@ class Asignatura {
                 a.codigo,
                 a.nombre,
                 a.creditos,
-                a.tipo,
                 a.estado,
                 aa.nombre AS area_nombre,
                 ap.semestre
@@ -118,7 +117,6 @@ class Asignatura {
                         codigo = :codigo, 
                         nombre = :nombre, 
                         creditos = :creditos, 
-                        tipo = :tipo, 
                         estado = :estado
                     WHERE id_asignatura = :id
                 ");
@@ -127,14 +125,13 @@ class Asignatura {
                     ':codigo'   => $datos['codigo'], 
                     ':nombre'   => $datos['nombre'], 
                     ':creditos' => $datos['creditos'],
-                    ':tipo'     => $datos['tipo'], 
                     ':estado'   => $datos['estado'], 
                     ':id'       => (int)$id,
                 ]);
             } else {
                 $stmt = $db->prepare("
-                    INSERT INTO asignatura (id_institucion, id_area_academica, codigo, nombre, creditos, tipo, estado)
-                    VALUES (:inst, :area, :codigo, :nombre, :creditos, :tipo, :estado)
+                    INSERT INTO asignatura (id_institucion, id_area_academica, codigo, nombre, creditos, estado)
+                    VALUES (:inst, :area, :codigo, :nombre, :creditos, :estado)
                 ");
                 $stmt->execute([
                     ':inst'     => $datos['id_institucion'], 
@@ -142,7 +139,6 @@ class Asignatura {
                     ':codigo'   => $datos['codigo'], 
                     ':nombre'   => $datos['nombre'],
                     ':creditos' => $datos['creditos'], 
-                    ':tipo'     => $datos['tipo'], 
                     ':estado'   => $datos['estado'],
                 ]);
                 $id = (int)$db->lastInsertId();

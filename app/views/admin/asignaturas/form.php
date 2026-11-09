@@ -4,13 +4,6 @@ $this->render('elementos_compartidos/sidebar_admin');
 $this->render('elementos_compartidos/tabs_academico', ['activo' => 'asignaturas']);
 $esEdicion = !empty($asignatura['id_asignatura']);
 
-// Opciones de tipo de asignatura solicitadas
-$tiposAsignatura = [
-    'Teórico',
-    'Práctico',
-    'Teórico-Práctico',
-    'Transversal',
-];
 ?>
 
 <div class="form-shell">
@@ -58,29 +51,6 @@ $tiposAsignatura = [
                     <?php foreach (($areas ?? []) as $area): ?>
                         <option value="<?= (int)$area['id_area_academica'] ?>" <?= ((int)($asignatura['id_area_academica'] ?? 0) === (int)$area['id_area_academica']) ? 'selected' : '' ?>>
                             <?= htmlspecialchars($area['nombre']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <!-- Tipo -->
-            <div class="form-group input-icon">
-                <label>Tipo <span style="color:red;">*</span></label>
-                <i class="fa-solid fa-layer-group"></i>
-                <select class="form-control" name="tipo" required>
-                    <option value="">Seleccione el tipo...</option>
-                    <?php 
-                    $tipoActual = mb_strtolower(trim($asignatura['tipo'] ?? ''));
-                    // Normalizar acentos y guiones para comparación limpia
-                    $normActual = str_replace(['á','é','í','ó','ú','-','_',' '], ['a','e','i','o','u','','',''], $tipoActual);
-                    foreach ($tiposAsignatura as $opcion): 
-                        $normOpcion = str_replace(['á','é','í','ó','ú','-','_',' '], ['a','e','i','o','u','','',''], mb_strtolower($opcion));
-                        $isSelected = ($normActual === $normOpcion) 
-                                   || ($opcion === 'Teórico-Práctico' && str_contains($normActual, 'teoricopract'))
-                                   || ($opcion === 'Transversal' && str_contains($normActual, 'transv'));
-                    ?>
-                        <option value="<?= $opcion ?>" <?= $isSelected ? 'selected' : '' ?>>
-                            <?= $opcion ?>
                         </option>
                     <?php endforeach; ?>
                 </select>

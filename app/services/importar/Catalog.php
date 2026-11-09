@@ -47,6 +47,7 @@ class Catalog {
                         'requerido' => false,
                         'alias' => ['semestre', 'sem', 'semestre curricular', 'nivel semestre', 'semestre academico']
                     ],
+
                     'estado' => [
                         'label' => 'Estado',
                         'requerido' => false,
