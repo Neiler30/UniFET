@@ -139,8 +139,8 @@ $this->render('elementos_compartidos/sidebar_admin');
                         <span style="font-size: 11px; color: #10b981; font-weight: 700;">Recomendado</span>
                     </label>
                     <select name="modo_duplicados" id="select_modo_duplicados" class="form-control" style="font-size: 13px; padding: 8px 12px; font-weight: 600;">
-                        <option value="omitir" selected>🛡️ Omitir duplicados y continuar (No arrojar error)</option>
-                        <option value="actualizar">🔄 Sobrescribir / Actualizar registros existentes</option>
+                        <option value="actualizar" selected>🔄 Sobrescribir / Actualizar registros existentes</option>
+                        <option value="omitir">🛡️ Omitir duplicados y continuar (No arrojar error)</option>
                         <option value="estricto">⚠️ Modo estricto (Revertir todo si hay error)</option>
                     </select>
                     <small style="color: var(--color-texto-secundario); font-size: 11.5px; display: block; margin-top: 4px;">

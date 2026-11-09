@@ -84,7 +84,7 @@ class ImportExportController extends Controller {
             // 3. Mapear las columnas
             $mapeo = ColumnMapper::map($tipo, $headers);
 
-            $modoDuplicados = $_POST['modo_duplicados'] ?? 'omitir';
+            $modoDuplicados = $_POST['modo_duplicados'] ?? 'actualizar';
 
             // 4. Guardar en sesión
             $_SESSION['importacion_datos'] = [
@@ -130,7 +130,7 @@ class ImportExportController extends Controller {
 
         $tipo = $_POST['tipo_entidad'] ?? $sessionDatos['tipo'];
         $mapeoUsuario = $_POST['mapeo'] ?? []; // ['A' => 'codigo', 'B' => 'nombre', ...]
-        $modoDuplicados = $_POST['modo_duplicados'] ?? $sessionDatos['modo_duplicados'] ?? 'omitir';
+        $modoDuplicados = $_POST['modo_duplicados'] ?? $sessionDatos['modo_duplicados'] ?? 'actualizar';
 
         try {
             // Validar usando el nuevo DataValidator con soporte de id_institucion y modo_duplicados
@@ -190,7 +190,7 @@ class ImportExportController extends Controller {
 
         try {
             $accion = $_POST['accion'] ?? 'cargar_datos';
-            $modoDuplicados = $_POST['modo_duplicados'] ?? $datosPrevios['modo_duplicados'] ?? 'omitir';
+            $modoDuplicados = $_POST['modo_duplicados'] ?? $datosPrevios['modo_duplicados'] ?? 'actualizar';
             $filasParaProcesar = $datosPrevios['filas'];
 
             if ($accion === 'cargar_semestre') {

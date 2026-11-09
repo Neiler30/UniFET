@@ -89,7 +89,20 @@ class RelationshipResolver {
                 break;
 
             case 'ASIGNATURA':
-                // 1. Resolver Programa Académico
+                // 1. Resolver Área Académica (puede venir en 'area_academica', 'tipo' o 'area')
+                $areaInput = $filaEstructurada['area_academica'] ?? $filaEstructurada['tipo'] ?? null;
+                if (!empty($areaInput)) {
+                    $areaInfo = self::resolverAreaAcademica($db, (string)$areaInput, $id_institucion);
+                    if ($areaInfo) {
+                        $filaEstructurada['id_area_academica'] = (int)$areaInfo['id_area_academica'];
+                        $filaEstructurada['area_academica'] = $areaInfo['nombre'];
+                        if (empty($filaEstructurada['tipo'])) {
+                            $filaEstructurada['tipo'] = $areaInfo['nombre'];
+                        }
+                    }
+                }
+
+                // 2. Resolver Programa Académico
                 if (!empty($filaEstructurada['programa'])) {
                     $progRaw = trim((string)$filaEstructurada['programa']);
                     $prog = self::resolverPrograma($db, $progRaw, $id_institucion);
@@ -106,7 +119,7 @@ class RelationshipResolver {
                     }
                 }
 
-                // 2. Resolver Nivel Académico (ej. Profesional, Tecnólogo, etc.)
+                // 3. Resolver Nivel Académico (ej. Profesional, Tecnólogo, etc.)
                 if (!empty($filaEstructurada['nivel_academico'])) {
                     $nivelInfo = self::resolverNivelAcademico($db, (string)$filaEstructurada['nivel_academico']);
                     if ($nivelInfo) {
@@ -117,7 +130,7 @@ class RelationshipResolver {
                     }
                 }
 
-                // 3. Resolver Semestre (soporta romanos I, II, III o arábigos 1, 2, 3)
+                // 4. Resolver Semestre (soporta romanos I, II, III o arábigos 1, 2, 3 o textos tipo 'Semestre 1')
                 if (isset($filaEstructurada['semestre']) && trim((string)$filaEstructurada['semestre']) !== '') {
                     $semRaw = trim((string)$filaEstructurada['semestre']);
                     $semNum = self::resolverSemestre($semRaw);
@@ -245,7 +258,65 @@ class RelationshipResolver {
     }
 
     /**
+     * Resuelve el Área Académica mediante búsqueda flexible (insensible a mayúsculas y acentos).
+     * Si no existe en la base de datos, la crea automáticamente para evitar pérdida de datos.
+     */
+    public static function resolverAreaAcademica(PDO $db, string $texto, int $id_institucion = 1): ?array {
+        $textoOriginal = trim($texto);
+        if ($textoOriginal === '') {
+            return null;
+        }
+
+        // 1. Coincidencia directa SQL insensible a mayúsculas
+        $stmt = $db->prepare("SELECT id_area_academica, nombre FROM area_academica WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:txt)) LIMIT 1");
+        $stmt->execute([':inst' => $id_institucion, ':txt' => $textoOriginal]);
+        $area = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($area) {
+            return $area;
+        }
+
+        // 2. Coincidencia normalizada (sin tildes ni caracteres especiales)
+        $stmtAll = $db->prepare("SELECT id_area_academica, nombre FROM area_academica WHERE id_institucion = :inst");
+        $stmtAll->execute([':inst' => $id_institucion]);
+        $areasBd = $stmtAll->fetchAll(PDO::FETCH_ASSOC);
+
+        $limpioBuscado = self::limpiarTexto($textoOriginal);
+        foreach ($areasBd as $a) {
+            if (self::limpiarTexto($a['nombre']) === $limpioBuscado) {
+                return $a;
+            }
+        }
+
+        // 3. Coincidencia por contención de subcadena
+        if (mb_strlen($limpioBuscado) >= 4) {
+            foreach ($areasBd as $a) {
+                $limpioNom = self::limpiarTexto($a['nombre']);
+                if (str_contains($limpioNom, $limpioBuscado) || str_contains($limpioBuscado, $limpioNom)) {
+                    return $a;
+                }
+            }
+        }
+
+        // 4. Si no existe, crear el área automáticamente para preservar el dato
+        try {
+            $nombreFormateado = mb_convert_case($textoOriginal, MB_CASE_TITLE, 'UTF-8');
+            $stmtInsert = $db->prepare("INSERT INTO area_academica (id_institucion, nombre, estado) VALUES (:inst, :nom, 'ACTIVO')");
+            $stmtInsert->execute([':inst' => $id_institucion, ':nom' => $nombreFormateado]);
+            return [
+                'id_area_academica' => (int)$db->lastInsertId(),
+                'nombre'            => $nombreFormateado
+            ];
+        } catch (\PDOException $e) {
+            // Si hubo colisión de clave, buscar nuevamente
+            $stmtCheck = $db->prepare("SELECT id_area_academica, nombre FROM area_academica WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:txt)) LIMIT 1");
+            $stmtCheck->execute([':inst' => $id_institucion, ':txt' => $textoOriginal]);
+            return $stmtCheck->fetch(PDO::FETCH_ASSOC) ?: null;
+        }
+    }
+
+    /**
      * Resuelve el programa académico por código o nombre exacto/flexible.
+     * Soporta minúsculas, mayúsculas, diferencias de tildes, códigos sin guiones y palabras clave.
      */
     public static function resolverPrograma(PDO $db, string $texto, int $id_institucion = 1): ?array {
         $textoOriginal = trim($texto);
@@ -253,7 +324,7 @@ class RelationshipResolver {
             return null;
         }
 
-        // 1. Coincidencia directa por código o nombre
+        // 1. Coincidencia directa por código o nombre (case-insensitive)
         $stmt = $db->prepare("
             SELECT p.id_programa, p.codigo, p.nombre, p.id_nivel_academico, na.nombre AS nivel_nombre
             FROM programa p
@@ -269,7 +340,7 @@ class RelationshipResolver {
             return $prog;
         }
 
-        // 2. Coincidencia flexible (sin tildes ni caracteres especiales)
+        // 2. Traer todos los programas de la institución para comparaciones flexibles
         $stmtAll = $db->prepare("
             SELECT p.id_programa, p.codigo, p.nombre, p.id_nivel_academico, na.nombre AS nivel_nombre
             FROM programa p
@@ -281,14 +352,21 @@ class RelationshipResolver {
         $programas = $stmtAll->fetchAll(PDO::FETCH_ASSOC);
 
         $limpioBuscado = self::limpiarTexto($textoOriginal);
+        $limpioSinEspacios = str_replace(' ', '', $limpioBuscado);
+
+        // 2.1 Coincidencia exacta normalizada (sin tildes) o código sin guiones/espacios
         foreach ($programas as $p) {
             if (self::limpiarTexto($p['nombre']) === $limpioBuscado || self::limpiarTexto($p['codigo']) === $limpioBuscado) {
                 return $p;
             }
+            $codLimpio = str_replace([' ', '-'], '', mb_strtolower(trim($p['codigo'])));
+            if ($codLimpio !== '' && $codLimpio === $limpioSinEspacios) {
+                return $p;
+            }
         }
 
-        // 3. Coincidencia por contención de subcadena
-        if (mb_strlen($limpioBuscado) >= 5) {
+        // 2.2 Coincidencia por subcadena
+        if (mb_strlen($limpioBuscado) >= 4) {
             foreach ($programas as $p) {
                 $limpioNom = self::limpiarTexto($p['nombre']);
                 if (str_contains($limpioNom, $limpioBuscado) || str_contains($limpioBuscado, $limpioNom)) {
@@ -297,32 +375,69 @@ class RelationshipResolver {
             }
         }
 
+        // 2.3 Coincidencia semántica por palabras clave significativas (ignorando preposiciones)
+        $palabrasBuscadas = array_values(array_filter(
+            explode(' ', $limpioBuscado), 
+            fn($w) => mb_strlen($w) >= 3 && !in_array($w, ['de', 'en', 'la', 'el', 'los', 'las', 'del', 'por', 'con', 'para', 'y', 'a'], true)
+        ));
+
+        if (!empty($palabrasBuscadas)) {
+            $mejorMatch = null;
+            $maxCoincidencias = 0;
+            foreach ($programas as $p) {
+                $nomPalabras = explode(' ', self::limpiarTexto($p['nombre']));
+                $coincidencias = 0;
+                foreach ($palabrasBuscadas as $pb) {
+                    foreach ($nomPalabras as $np) {
+                        if ($np === $pb || (mb_strlen($pb) >= 4 && (str_contains($np, $pb) || str_contains($pb, $np)))) {
+                            $coincidencias++;
+                            break;
+                        }
+                    }
+                }
+                if ($coincidencias > $maxCoincidencias && ($coincidencias / count($palabrasBuscadas)) >= 0.5) {
+                    $maxCoincidencias = $coincidencias;
+                    $mejorMatch = $p;
+                }
+            }
+            if ($mejorMatch) {
+                return $mejorMatch;
+            }
+        }
+
         return null;
     }
 
     /**
      * Convierte número romano (I, II, ..., X) o arábigo a entero.
+     * Soporta también cadenas como "Semestre 1", "Sem 2", "3°", etc.
      */
     public static function resolverSemestre(string $texto): ?int {
-        $str = strtoupper(trim($texto));
+        $str = mb_strtoupper(trim($texto), 'UTF-8');
         if ($str === '') return null;
-        if (is_numeric($str)) {
-            $num = (int)$str;
+
+        // Limpiar prefijos comunes como 'SEMESTRE', 'SEM', 'NIVEL' y sufijos ordinales
+        $limpio = preg_replace('/^(SEMESTRE|SEM|NIVEL)\s*/i', '', $str);
+        $limpio = trim(str_replace(['°', 'º', 'RO', 'DO', 'ER', 'TO', 'ª'], '', $limpio));
+
+        if (is_numeric($limpio)) {
+            $num = (int)$limpio;
             return ($num >= 1 && $num <= 20) ? $num : null;
         }
+
         $romanos = [
             'I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5,
             'VI' => 6, 'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10,
             'XI' => 11, 'XII' => 12, 'XIII' => 13, 'XIV' => 14, 'XV' => 15,
             'XVI' => 16, 'XVII' => 17, 'XVIII' => 18, 'XIX' => 19, 'XX' => 20
         ];
-        return $romanos[$str] ?? null;
+        return $romanos[$limpio] ?? $romanos[$str] ?? null;
     }
 
     /**
      * Utilidad para limpiar y normalizar texto (minúsculas, sin acentos ni caracteres especiales).
      */
-    private static function limpiarTexto(string $str): string {
+    public static function limpiarTexto(string $str): string {
         $str = mb_strtolower(trim($str), 'UTF-8');
         $str = str_replace(
             ['á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ'],

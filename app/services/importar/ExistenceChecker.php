@@ -5,8 +5,9 @@ namespace App\Services\Importar;
 use App\Config\Database;
 use PDO;
 
-class ExistenceChecker {
-    
+class ExistenceChecker
+{
+
     /**
      * Verifica la existencia de una entidad en la base de datos y compara técnicamente sus campos.
      * Determina el estado:
@@ -21,7 +22,8 @@ class ExistenceChecker {
      * @param string $modoDuplicados 'omitir', 'actualizar', 'estricto'
      * @return array ['estado' => string, 'detalle' => string, 'id_existente' => ?int, 'codigo_bd' => ?string]
      */
-    public static function check(string $entityKey, array &$filaEstructurada, int $id_institucion = 1, string $modoDuplicados = 'omitir'): array {
+    public static function check(string $entityKey, array &$filaEstructurada, int $id_institucion = 1, string $modoDuplicados = 'omitir'): array
+    {
         $db = Database::getConexion();
         $estado = 'NUEVO';
         $detalle = 'Nuevo registro listo para insertar.';
@@ -30,9 +32,9 @@ class ExistenceChecker {
 
         switch ($entityKey) {
             case 'PROGRAMA':
-                $nombre = trim((string)($filaEstructurada['nombre'] ?? ''));
-                $codigo = trim((string)($filaEstructurada['codigo'] ?? ''));
-                $id_facultad = !empty($filaEstructurada['id_facultad']) ? (int)$filaEstructurada['id_facultad'] : null;
+                $nombre = trim((string) ($filaEstructurada['nombre'] ?? ''));
+                $codigo = trim((string) ($filaEstructurada['codigo'] ?? ''));
+                $id_facultad = !empty($filaEstructurada['id_facultad']) ? (int) $filaEstructurada['id_facultad'] : null;
 
                 // 1. Buscar si existe por nombre (dentro de la facultad si se conoce)
                 $dbRowNombre = null;
@@ -56,7 +58,7 @@ class ExistenceChecker {
                 }
 
                 if ($dbRowNombre) {
-                    $idExistente = (int)$dbRowNombre['id_programa'];
+                    $idExistente = (int) $dbRowNombre['id_programa'];
                     $codigoBd = $dbRowNombre['codigo'];
                     $filaEstructurada['id_existente'] = $idExistente;
                     $filaEstructurada['codigo_bd'] = $codigoBd;
@@ -71,12 +73,12 @@ class ExistenceChecker {
                         $detalle = "Coincidencia exacta: El código '{$codigo}' coincide con el registro activo en BD (ID #{$idExistente}). Registro sincronizado.";
                     } else {
                         // Conflicto de código: verificar si $codigo ya le pertenece a otro programa en BD
-                        if ($dbRowCodigo && (int)$dbRowCodigo['id_programa'] !== $idExistente) {
+                        if ($dbRowCodigo && (int) $dbRowCodigo['id_programa'] !== $idExistente) {
                             if ($modoDuplicados === 'omitir') {
                                 $estado = 'DUPLICADO';
                                 $detalle = "Código '{$codigo}' ya asignado en BD a '{$dbRowCodigo['nombre']}'. Omitido para evitar colisión.";
                             } elseif ($modoDuplicados === 'actualizar') {
-                                $idExistente = (int)$dbRowCodigo['id_programa'];
+                                $idExistente = (int) $dbRowCodigo['id_programa'];
                                 $filaEstructurada['id_existente'] = $idExistente;
                                 $estado = 'ACTUALIZAR';
                                 $detalle = "Código '{$codigo}' existente en BD. Habilitado para actualizar datos de '{$dbRowCodigo['nombre']}'.";
@@ -95,7 +97,7 @@ class ExistenceChecker {
                         }
                     }
                 } elseif ($dbRowCodigo) {
-                    $idExistente = (int)$dbRowCodigo['id_programa'];
+                    $idExistente = (int) $dbRowCodigo['id_programa'];
                     $codigoBd = $dbRowCodigo['codigo'];
                     $filaEstructurada['id_existente'] = $idExistente;
                     $filaEstructurada['codigo_bd'] = $codigoBd;
@@ -118,27 +120,50 @@ class ExistenceChecker {
                 break;
 
             case 'ASIGNATURA':
-                $nombre = trim((string)($filaEstructurada['nombre'] ?? ''));
-                $codigo = trim((string)($filaEstructurada['codigo'] ?? ''));
-                $idPrograma = !empty($filaEstructurada['id_programa']) ? (int)$filaEstructurada['id_programa'] : null;
-                $semestre = !empty($filaEstructurada['semestre']) ? (int)$filaEstructurada['semestre'] : null;
+                $nombre = trim((string) ($filaEstructurada['nombre'] ?? ''));
+                $codigo = trim((string) ($filaEstructurada['codigo'] ?? ''));
+                $idPrograma = !empty($filaEstructurada['id_programa']) ? (int) $filaEstructurada['id_programa'] : null;
+                $semestre = !empty($filaEstructurada['semestre']) ? (int) $filaEstructurada['semestre'] : null;
 
-                $dbRowNombre = null;
-                $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:nom)) LIMIT 1");
-                $stmt->execute([':inst' => $id_institucion, ':nom' => $nombre]);
-                $dbRowNombre = $stmt->fetch(PDO::FETCH_ASSOC);
+                $asigExistenteRow = null;
 
-                $dbRowCodigo = null;
+                // 1. Buscar por código (case-insensitive y tolerante a guiones/espacios)
                 if ($codigo !== '') {
-                    $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND codigo = :cod LIMIT 1");
+                    $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(codigo)) = LOWER(TRIM(:cod)) LIMIT 1");
                     $stmt->execute([':inst' => $id_institucion, ':cod' => $codigo]);
-                    $dbRowCodigo = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $asigExistenteRow = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    if (!$asigExistenteRow) {
+                        $codLimpio = str_replace(['-', ' '], '', mb_strtolower($codigo));
+                        $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND REPLACE(REPLACE(LOWER(codigo), '-', ''), ' ', '') = :cod LIMIT 1");
+                        $stmt->execute([':inst' => $id_institucion, ':cod' => $codLimpio]);
+                        $asigExistenteRow = $stmt->fetch(PDO::FETCH_ASSOC);
+                    }
                 }
 
-                $asigExistenteRow = $dbRowCodigo ?: $dbRowNombre;
+                // 2. Si no se encontró por código, buscar por nombre directo (case-insensitive)
+                if (!$asigExistenteRow && $nombre !== '') {
+                    $stmt = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:nom)) LIMIT 1");
+                    $stmt->execute([':inst' => $id_institucion, ':nom' => $nombre]);
+                    $asigExistenteRow = $stmt->fetch(PDO::FETCH_ASSOC);
+                }
+
+                // 3. Si aún no se encontró, buscar por nombre normalizado (sin acentos)
+                if (!$asigExistenteRow && $nombre !== '') {
+                    $stmtAll = $db->prepare("SELECT id_asignatura, codigo, nombre, creditos, tipo FROM asignatura WHERE id_institucion = :inst");
+                    $stmtAll->execute([':inst' => $id_institucion]);
+                    $todasAsig = $stmtAll->fetchAll(PDO::FETCH_ASSOC);
+                    $nomLimpio = RelationshipResolver::limpiarTexto($nombre);
+                    foreach ($todasAsig as $a) {
+                        if (RelationshipResolver::limpiarTexto($a['nombre']) === $nomLimpio) {
+                            $asigExistenteRow = $a;
+                            break;
+                        }
+                    }
+                }
 
                 if ($asigExistenteRow) {
-                    $idExistente = (int)$asigExistenteRow['id_asignatura'];
+                    $idExistente = (int) $asigExistenteRow['id_asignatura'];
                     $codigoBd = $asigExistenteRow['codigo'];
                     $filaEstructurada['id_existente'] = $idExistente;
                     $filaEstructurada['codigo_bd'] = $codigoBd;
@@ -150,22 +175,30 @@ class ExistenceChecker {
                         $relRow = $stmtRel->fetch(PDO::FETCH_ASSOC);
 
                         if ($relRow) {
-                            if ($semestre && (int)$relRow['semestre'] !== (int)$semestre) {
+                            if ($semestre && (int) $relRow['semestre'] !== (int) $semestre) {
                                 $estado = 'ACTUALIZAR';
                                 $detalle = "Asignatura vinculada a '{$filaEstructurada['programa']}'. Semestre se actualizará de '{$relRow['semestre']}' a '{$semestre}'.";
+                            } elseif ($modoDuplicados === 'actualizar') {
+                                $estado = 'ACTUALIZAR';
+                                $detalle = "Asignatura vinculada a '{$filaEstructurada['programa']}'. Habilitado para sobreescribir datos curriculares.";
                             } else {
                                 $estado = 'EXISTENTE';
                                 $detalle = "Asignatura y vinculación con programa '{$filaEstructurada['programa']}' ya sincronizadas en BD.";
                             }
                         } else {
                             $estado = 'NUEVO';
-                            $detalle = "Asignatura existente en BD [Código: '{$codigoBd}']. Se creará asociación curricular con el programa '{$filaEstructurada['programa']}'.";
+                            $detalle = "Asignatura existente en BD [Código: '{$codigoBd}']. Se creará asociación curricular con el programa '{$filaEstructurada['programa']}'" . ($semestre ? " (Semestre {$semestre})" : "") . ".";
                         }
                     } else {
                         // Caso sin programa
                         if ($codigo === '' || strcasecmp($codigo, $codigoBd) === 0) {
-                            $estado = 'EXISTENTE';
-                            $detalle = "Asignatura coincidente en BD [Código: '{$codigoBd}']. Registro sincronizado.";
+                            if ($modoDuplicados === 'actualizar') {
+                                $estado = 'ACTUALIZAR';
+                                $detalle = "Asignatura coincidente en BD [Código: '{$codigoBd}']. Habilitado para sobreescribir datos curriculares.";
+                            } else {
+                                $estado = 'EXISTENTE';
+                                $detalle = "Asignatura coincidente en BD [Código: '{$codigoBd}']. Registro sincronizado.";
+                            }
                         } else {
                             if ($modoDuplicados === 'omitir') {
                                 $estado = 'EXISTENTE';
@@ -179,15 +212,15 @@ class ExistenceChecker {
                 } else {
                     $estado = 'NUEVO';
                     $progTxt = !empty($filaEstructurada['programa']) ? " para el programa '{$filaEstructurada['programa']}'" : "";
-                    $detalle = $codigo !== '' 
-                        ? "Nueva asignatura con código '{$codigo}'{$progTxt}. Lista para registrar." 
+                    $detalle = $codigo !== ''
+                        ? "Nueva asignatura con código '{$codigo}'{$progTxt}. Lista para registrar."
                         : "Nueva asignatura sin código{$progTxt}. Se asignará código institucional.";
                 }
                 break;
 
             case 'DOCENTE':
-                $documento = trim((string)($filaEstructurada['documento'] ?? ''));
-                $nombre = trim((string)($filaEstructurada['nombre'] ?? ''));
+                $documento = trim((string) ($filaEstructurada['documento'] ?? ''));
+                $nombre = trim((string) ($filaEstructurada['nombre'] ?? ''));
 
                 $dbRowDoc = null;
                 if ($documento !== '') {
@@ -204,7 +237,7 @@ class ExistenceChecker {
                 }
 
                 if ($dbRowDoc) {
-                    $idExistente = (int)$dbRowDoc['id_docente'];
+                    $idExistente = (int) $dbRowDoc['id_docente'];
                     $codigoBd = $dbRowDoc['codigo'];
                     $filaEstructurada['id_existente'] = $idExistente;
                     $filaEstructurada['codigo_bd'] = $codigoBd;
@@ -223,7 +256,7 @@ class ExistenceChecker {
                         }
                     }
                 } elseif ($dbRowNom) {
-                    $idExistente = (int)$dbRowNom['id_docente'];
+                    $idExistente = (int) $dbRowNom['id_docente'];
                     $codigoBd = $dbRowNom['codigo'];
                     $filaEstructurada['id_existente'] = $idExistente;
                     $filaEstructurada['codigo_bd'] = $codigoBd;
@@ -237,7 +270,7 @@ class ExistenceChecker {
                                 $estado = 'DUPLICADO';
                                 $detalle = "Documento '{$documento}' ya pertenece a otro docente en BD. Omitido para evitar colisión.";
                             } elseif ($modoDuplicados === 'actualizar') {
-                                $idExistente = (int)$docColision['id_docente'];
+                                $idExistente = (int) $docColision['id_docente'];
                                 $filaEstructurada['id_existente'] = $idExistente;
                                 $estado = 'ACTUALIZAR';
                                 $detalle = "Documento '{$documento}' encontrado en BD. Actualizando registro correspondiente.";
@@ -260,8 +293,8 @@ class ExistenceChecker {
                 break;
 
             case 'ESPACIO':
-                $nombre = trim((string)($filaEstructurada['nombre'] ?? ''));
-                $id_bloque = !empty($filaEstructurada['id_bloque']) ? (int)$filaEstructurada['id_bloque'] : null;
+                $nombre = trim((string) ($filaEstructurada['nombre'] ?? ''));
+                $id_bloque = !empty($filaEstructurada['id_bloque']) ? (int) $filaEstructurada['id_bloque'] : null;
 
                 if ($id_bloque) {
                     $stmt = $db->prepare("SELECT id_espacio, codigo, nombre, tipo, capacidad FROM espacio WHERE id_bloque = :bloque AND (codigo = :cod OR LOWER(TRIM(nombre)) = LOWER(TRIM(:nom))) LIMIT 1");
@@ -269,13 +302,13 @@ class ExistenceChecker {
                     $dbRow = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     if ($dbRow) {
-                        $idExistente = (int)$dbRow['id_espacio'];
+                        $idExistente = (int) $dbRow['id_espacio'];
                         $codigoBd = $dbRow['codigo'];
                         $filaEstructurada['id_existente'] = $idExistente;
                         $filaEstructurada['codigo_bd'] = $codigoBd;
 
-                        $capacidadExcel = (int)($filaEstructurada['capacidad'] ?? 0);
-                        if ($capacidadExcel > 0 && $capacidadExcel != (int)$dbRow['capacidad']) {
+                        $capacidadExcel = (int) ($filaEstructurada['capacidad'] ?? 0);
+                        if ($capacidadExcel > 0 && $capacidadExcel != (int) $dbRow['capacidad']) {
                             $estado = 'ACTUALIZAR';
                             $detalle = "Espacio físico existente en el bloque. Capacidad en archivo ({$capacidadExcel}) difiere de BD ({$dbRow['capacidad']}). Habilitado para sobreescribir.";
                         } else {
@@ -293,13 +326,13 @@ class ExistenceChecker {
                 break;
 
             case 'FACULTAD':
-                $nombre = trim((string)($filaEstructurada['nombre'] ?? ''));
+                $nombre = trim((string) ($filaEstructurada['nombre'] ?? ''));
                 $stmt = $db->prepare("SELECT id_facultad, codigo, nombre FROM facultad WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:nom)) LIMIT 1");
                 $stmt->execute([':inst' => $id_institucion, ':nom' => $nombre]);
                 $dbRow = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($dbRow) {
-                    $idExistente = (int)$dbRow['id_facultad'];
+                    $idExistente = (int) $dbRow['id_facultad'];
                     $codigoBd = $dbRow['codigo'];
                     $filaEstructurada['id_existente'] = $idExistente;
                     $filaEstructurada['codigo_bd'] = $codigoBd;
@@ -313,19 +346,19 @@ class ExistenceChecker {
                 break;
 
             case 'SEDE':
-                $nombre = trim((string)($filaEstructurada['nombre'] ?? ''));
+                $nombre = trim((string) ($filaEstructurada['nombre'] ?? ''));
                 $stmt = $db->prepare("SELECT id_sede, codigo, nombre, direccion FROM sede WHERE id_institucion = :inst AND LOWER(TRIM(nombre)) = LOWER(TRIM(:nom)) LIMIT 1");
                 $stmt->execute([':inst' => $id_institucion, ':nom' => $nombre]);
                 $dbRow = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($dbRow) {
-                    $idExistente = (int)$dbRow['id_sede'];
+                    $idExistente = (int) $dbRow['id_sede'];
                     $codigoBd = $dbRow['codigo'];
                     $filaEstructurada['id_existente'] = $idExistente;
                     $filaEstructurada['codigo_bd'] = $codigoBd;
 
-                    $dirExcel = trim((string)($filaEstructurada['direccion'] ?? ''));
-                    if ($dirExcel !== '' && strcasecmp($dirExcel, (string)$dbRow['direccion']) !== 0) {
+                    $dirExcel = trim((string) ($filaEstructurada['direccion'] ?? ''));
+                    if ($dirExcel !== '' && strcasecmp($dirExcel, (string) $dbRow['direccion']) !== 0) {
                         $estado = 'ACTUALIZAR';
                         $detalle = "Sede existente [Código: '{$codigoBd}']. Dirección en archivo difiere de BD. Habilitado para sobreescribir dirección.";
                     } else {
@@ -339,8 +372,8 @@ class ExistenceChecker {
                 break;
 
             case 'BLOQUE':
-                $nombre = trim((string)($filaEstructurada['nombre'] ?? ''));
-                $id_sede = !empty($filaEstructurada['id_sede']) ? (int)$filaEstructurada['id_sede'] : null;
+                $nombre = trim((string) ($filaEstructurada['nombre'] ?? ''));
+                $id_sede = !empty($filaEstructurada['id_sede']) ? (int) $filaEstructurada['id_sede'] : null;
 
                 if ($id_sede) {
                     $stmt = $db->prepare("SELECT id_bloque, codigo, nombre FROM bloque WHERE id_sede = :sede AND LOWER(TRIM(nombre)) = LOWER(TRIM(:nom)) LIMIT 1");
@@ -348,7 +381,7 @@ class ExistenceChecker {
                     $dbRow = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     if ($dbRow) {
-                        $idExistente = (int)$dbRow['id_bloque'];
+                        $idExistente = (int) $dbRow['id_bloque'];
                         $codigoBd = $dbRow['codigo'];
                         $filaEstructurada['id_existente'] = $idExistente;
                         $filaEstructurada['codigo_bd'] = $codigoBd;
@@ -367,10 +400,10 @@ class ExistenceChecker {
         }
 
         return [
-            'estado'       => $estado,
-            'detalle'      => $detalle,
+            'estado' => $estado,
+            'detalle' => $detalle,
             'id_existente' => $idExistente,
-            'codigo_bd'    => $codigoBd
+            'codigo_bd' => $codigoBd
         ];
     }
 }

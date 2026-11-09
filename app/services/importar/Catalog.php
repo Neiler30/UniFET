@@ -27,6 +27,11 @@ class Catalog {
                         'requerido' => true,
                         'alias' => ['creditos', 'n creditos', 'num creditos', 'cantidad creditos']
                     ],
+                    'area_academica' => [
+                        'label' => 'Área Académica',
+                        'requerido' => false,
+                        'alias' => ['area academica', 'area', 'area de formacion', 'area curricular', 'departamento', 'tipo', 'tipo materia', 'componente', 'modalidad', 'clasificacion']
+                    ],
                     'programa' => [
                         'label' => 'Programa Académico',
                         'requerido' => false,
@@ -41,11 +46,6 @@ class Catalog {
                         'label' => 'Semestre',
                         'requerido' => false,
                         'alias' => ['semestre', 'sem', 'semestre curricular', 'nivel semestre', 'semestre academico']
-                    ],
-                    'tipo' => [
-                        'label' => 'Tipo / Componente',
-                        'requerido' => false,
-                        'alias' => ['tipo', 'tipo materia', 'modalidad', 'clasificacion', 'componente', 'area']
                     ],
                     'estado' => [
                         'label' => 'Estado',

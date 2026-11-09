@@ -76,7 +76,6 @@ $this->render('elementos_compartidos/tabs_academico', ['activo' => 'asignaturas'
                 <th>Nombre</th>
                 <th>Creditos</th>
                 <th>Area Academica</th>
-                <th>Tipo</th>
                 <th>Programas</th>
                 <th>Estado</th>
                 <th style="text-align:right;">Acciones</th>
@@ -84,7 +83,7 @@ $this->render('elementos_compartidos/tabs_academico', ['activo' => 'asignaturas'
         </thead>
         <tbody>
         <?php if (empty($asignaturas)): ?>
-            <tr><td colspan="8" style="text-align:center;">No hay asignaturas registradas.</td></tr>
+            <tr><td colspan="7" style="text-align:center;">No hay asignaturas registradas.</td></tr>
         <?php endif; ?>
         <?php foreach ($asignaturas as $a): ?>
             <tr class="fila-asignatura" data-programas="<?= htmlspecialchars($a['programas'] ?? '') ?>">
@@ -99,14 +98,16 @@ $this->render('elementos_compartidos/tabs_academico', ['activo' => 'asignaturas'
                         <?= (int)$a['creditos'] ?>
                     <?php endif; ?>
                 </td>
-                <td><?= htmlspecialchars($a['area_nombre'] ?? 'Sin area') ?></td>
                 <td>
-                    <?php if (!empty($a['tipo'])): ?>
+                    <?php 
+                    $areaDisplay = !empty($a['area_nombre']) ? $a['area_nombre'] : (!empty($a['tipo']) ? $a['tipo'] : null);
+                    if ($areaDisplay): 
+                    ?>
                         <span style="display:inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #e0f2fe; color: #0369a1; white-space: nowrap;">
-                            <?= htmlspecialchars($a['tipo']) ?>
+                            <?= htmlspecialchars($areaDisplay) ?>
                         </span>
                     <?php else: ?>
-                        <span style="color:var(--color-texto-secundario); font-size:12px;">—</span>
+                        <span style="color:var(--color-texto-secundario); font-size:12px;">Sin área</span>
                     <?php endif; ?>
                 </td>
                 <td>

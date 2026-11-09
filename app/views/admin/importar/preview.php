@@ -102,8 +102,8 @@ $totalValidas = (int)(($stats['nuevos'] ?? 0) + ($stats['completar'] ?? 0) + ($s
                         <i class="fa-solid fa-sliders" style="color: var(--color-primario);"></i> Duplicados:
                     </label>
                     <select name="modo_duplicados" id="modo_duplicados" style="border: none; background: transparent; font-size: 12.5px; font-weight: 600; color: var(--color-oscuro); padding: 6px 4px; cursor: pointer; outline: none;">
-                        <option value="omitir" <?= ($modo_duplicados ?? 'omitir') === 'omitir' ? 'selected' : '' ?>>🛡️ Omitir (Sin error)</option>
-                        <option value="actualizar" <?= ($modo_duplicados ?? '') === 'actualizar' ? 'selected' : '' ?>>🔄 Sobrescribir</option>
+                        <option value="actualizar" <?= ($modo_duplicados ?? 'actualizar') === 'actualizar' ? 'selected' : '' ?>>🔄 Sobrescribir</option>
+                        <option value="omitir" <?= ($modo_duplicados ?? '') === 'omitir' ? 'selected' : '' ?>>🛡️ Omitir (Sin error)</option>
                         <option value="estricto" <?= ($modo_duplicados ?? '') === 'estricto' ? 'selected' : '' ?>>⚠️ Modo estricto</option>
                     </select>
                 </div>
