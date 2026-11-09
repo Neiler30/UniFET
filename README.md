@@ -1572,28 +1572,24 @@ El sistema solo tendrá dos roles:
 -   Administrador
 -   Líder de Programa
 
-## RB-02 --- Docentes
-
-Un docente académico no necesita ser usuario del sistema.
-
-## RB-03 --- Líder
+## RB-02 --- Líder
 
 El líder trabaja sobre uno o los programas que tenga autorizados.
 
-## RB-04 --- Docentes compartidos
+## RB-03 --- Docentes compartidos
 
 Un docente puede pertenecer a varios programas.
 
-## RB-05 --- Asignaturas compartidas
+## RB-04 --- Asignaturas compartidas
 
 Una asignatura puede pertenecer a varios programas.
 
-## RB-06 --- Compatibilidad
+## RB-05 --- Compatibilidad
 
 Solo deben poder asignarse docentes compatibles con la asignatura según
 las relaciones configuradas.
 
-## RB-07 --- Espacios
+## RB-06 --- Espacios
 
 Un mismo espacio no puede utilizarse simultáneamente para dos clases
 dentro del mismo periodo.
