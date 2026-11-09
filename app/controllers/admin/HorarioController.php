@@ -23,6 +23,7 @@ class HorarioController extends Controller {
         $periodoActivo = PeriodoAcademico::getActivo();
         $programas = Programa::obtenerTodos($this->id_institucion);
         $espacios = Espacio::obtenerTodos($this->id_institucion);
+        $docentes = \App\Models\Docente::obtenerTodos($this->id_institucion);
 
         $filtros = [
             'programa' => $_GET['programa'] ?? '',
@@ -32,6 +33,21 @@ class HorarioController extends Controller {
         ];
 
         $horarios = Horario::obtenerConFiltros($filtros);
+
+        // Datos para pestaña "Ver Horario Semanal" (cuadrícula / tabla con días)
+        $idPeriodoHorario = !empty($_GET['periodo_id']) ? (int)$_GET['periodo_id'] : ($periodoActivo['id_periodo'] ?? ($periodos[0]['id_periodo'] ?? null));
+        $idProgramaHorario = !empty($_GET['programa_id']) ? (int)$_GET['programa_id'] : (isset($_GET['programa_id']) && $_GET['programa_id'] === '0' ? null : ($programas[5]['id_programa'] ?? ($programas[0]['id_programa'] ?? null)));
+        $idDocenteHorario = !empty($_GET['docente_id']) ? (int)$_GET['docente_id'] : null;
+        $idEspacioHorario = !empty($_GET['espacio_id']) ? (int)$_GET['espacio_id'] : null;
+        $semestreHorario = !empty($_GET['semestre']) ? (int)$_GET['semestre'] : null;
+
+        $horariosCuadricula = Horario::obtenerHorariosDetallados([
+            'id_periodo'  => $idPeriodoHorario,
+            'id_programa' => $idProgramaHorario,
+            'id_docente'  => $idDocenteHorario,
+            'id_espacio'  => $idEspacioHorario,
+            'semestre'    => $semestreHorario
+        ]);
 
         // Si la pestaña es FET, obtener la última propuesta y sus detalles
         $propuestaFet = null;
@@ -91,6 +107,13 @@ class HorarioController extends Controller {
             'periodoActivo' => $periodoActivo,
             'programas' => $programas,
             'espacios' => $espacios,
+            'docentes' => $docentes,
+            'horariosCuadricula' => $horariosCuadricula,
+            'idPeriodoHorario' => $idPeriodoHorario,
+            'idProgramaHorario' => $idProgramaHorario,
+            'idDocenteHorario' => $idDocenteHorario,
+            'idEspacioHorario' => $idEspacioHorario,
+            'semestreHorario' => $semestreHorario,
             'propuestaFet' => $propuestaFet,
             'detallesFet' => $detallesFet,
             'propuestasFetGeneradas' => $propuestasFetGeneradas,

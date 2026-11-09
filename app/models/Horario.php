@@ -9,7 +9,10 @@ class Horario {
     public static function obtenerConFiltros($filtros) {
         $db = Database::getConexion();
         
-        $sql = "SELECT * FROM vista_horario_completo WHERE 1=1";
+        $sql = "SELECT v.*, h.id_programa, h.id_periodo, h.id_asignatura, h.id_docente, h.id_espacio 
+                FROM vista_horario_completo v 
+                JOIN horario h ON h.id_horario = v.id_horario 
+                WHERE 1=1";
         $params = [];
         
         if (!empty($filtros['programa'])) {
@@ -41,6 +44,70 @@ class Horario {
         $stmt->execute();
         
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Obtiene el listado enriquecido de clases programadas con IDs y nombres para la cuadrícula semanal.
+     */
+    public static function obtenerHorariosDetallados($filtros = []) {
+        $db = Database::getConexion();
+        $sql = "
+            SELECT h.*, 
+                   per.codigo AS periodo_codigo, 
+                   per.nombre AS periodo_nombre,
+                   prog.nombre AS programa_nombre, 
+                   prog.codigo AS programa_codigo,
+                   asig.nombre AS asignatura_nombre, 
+                   asig.codigo AS asignatura_codigo,
+                   asig.creditos,
+                   CONCAT(doc.nombre, ' ', doc.apellido) AS docente_nombre,
+                   esp.nombre AS espacio_nombre, 
+                   esp.codigo AS espacio_codigo, 
+                   esp.tipo AS espacio_tipo,
+                   bl.nombre AS bloque_nombre, 
+                   sede.nombre AS sede_nombre,
+                   ap.semestre
+            FROM horario h
+            JOIN periodo_academico per ON per.id_periodo = h.id_periodo
+            JOIN programa prog ON prog.id_programa = h.id_programa
+            JOIN asignatura asig ON asig.id_asignatura = h.id_asignatura
+            JOIN docente doc ON doc.id_docente = h.id_docente
+            JOIN espacio esp ON esp.id_espacio = h.id_espacio
+            JOIN bloque bl ON bl.id_bloque = esp.id_bloque
+            JOIN sede ON sede.id_sede = bl.id_sede
+            LEFT JOIN asignatura_programa ap ON (ap.id_asignatura = h.id_asignatura AND ap.id_programa = h.id_programa)
+            WHERE h.estado != 'ELIMINADO'
+        ";
+        $params = [];
+        if (!empty($filtros['id_periodo'])) {
+            $sql .= " AND h.id_periodo = :periodo";
+            $params[':periodo'] = (int)$filtros['id_periodo'];
+        }
+        if (!empty($filtros['id_programa'])) {
+            $sql .= " AND h.id_programa = :programa";
+            $params[':programa'] = (int)$filtros['id_programa'];
+        }
+        if (!empty($filtros['id_docente'])) {
+            $sql .= " AND h.id_docente = :docente";
+            $params[':docente'] = (int)$filtros['id_docente'];
+        }
+        if (!empty($filtros['id_espacio'])) {
+            $sql .= " AND h.id_espacio = :espacio";
+            $params[':espacio'] = (int)$filtros['id_espacio'];
+        }
+        if (!empty($filtros['dia_semana'])) {
+            $sql .= " AND h.dia_semana = :dia";
+            $params[':dia'] = $filtros['dia_semana'];
+        }
+        if (!empty($filtros['semestre'])) {
+            $sql .= " AND ap.semestre = :semestre";
+            $params[':semestre'] = (int)$filtros['semestre'];
+        }
+
+        $sql .= " ORDER BY h.dia_semana ASC, h.hora_inicio ASC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public static function verificarSolapamientoDocente($id_periodo, $dia_semana, $id_docente, $hora_inicio, $hora_fin, $id_horario = null) {
