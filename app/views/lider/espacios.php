@@ -22,6 +22,7 @@ $detalleOcupacion = function ($h) {
         'hora' => date('H:i', strtotime($h['hora_inicio'])) . ' - ' . date('H:i', strtotime($h['hora_fin'])),
         'estado' => $h['estado'] ?? '',
         'origen' => $h['origen'] ?? '',
+        'es_mio' => !empty($h['es_programa_lider']),
     ];
 };
 $horas = [];
@@ -204,6 +205,56 @@ foreach ($espacios as $e) {
     box-shadow: 0 6px 18px rgba(217, 54, 54, 0.18);
     transform: translateY(-1px);
 }
+
+/* Variante MORADO para "Mi Programa" */
+.busy-block.busy-own {
+    background: rgba(59, 13, 143, 0.08);
+    border: 1.5px solid rgba(59, 13, 143, 0.28);
+    border-left: 4.5px solid var(--color-primario, #3b0d8f);
+    color: #3b0d8f;
+    box-shadow: 0 1px 3px rgba(59, 13, 143, 0.06);
+}
+.busy-block.busy-own:hover {
+    background: rgba(59, 13, 143, 0.14);
+    border-color: var(--color-primario, #3b0d8f);
+    box-shadow: 0 6px 18px rgba(59, 13, 143, 0.18);
+    transform: translateY(-1px);
+}
+.busy-block.busy-own .busy-title {
+    color: #3b0d8f;
+}
+.busy-block.busy-own .busy-time {
+    color: #2e0870;
+}
+.busy-block.busy-own .busy-duration {
+    color: #2e0870;
+    background: rgba(59, 13, 143, 0.12);
+}
+.busy-block.busy-own .busy-tooltip {
+    background: #2e0870;
+}
+.busy-block.busy-own .busy-tooltip::after {
+    border-color: #2e0870 transparent transparent transparent;
+}
+.busy-own-asig {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #4c1d95;
+    margin-top: 4px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.busy-own-docente {
+    font-size: 10.5px;
+    color: #6d28d9;
+    margin-top: 1px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 .busy-block-content {
     display: flex;
     flex-direction: column;
@@ -270,6 +321,10 @@ foreach ($espacios as $e) {
     bottom: 100%;
     border-color: transparent transparent #0B1F33 transparent;
 }
+.hour-row:first-child .busy-block.busy-own .busy-tooltip::after,
+.hour-row:nth-child(2) .busy-block.busy-own .busy-tooltip::after {
+    border-color: transparent transparent #2e0870 transparent;
+}
 .busy-block:hover .busy-tooltip {
     display: block;
 }
@@ -286,6 +341,39 @@ foreach ($espacios as $e) {
     padding: 5px 10px;
     font-size: 12px;
     color: var(--color-texto-secundario);
+}
+.space-legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: var(--color-texto-secundario);
+}
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 500;
+}
+.legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+}
+.legend-dot.dot-own {
+    background: rgba(59, 13, 143, 0.15);
+    border: 1.5px solid var(--color-primario, #3b0d8f);
+}
+.legend-dot.dot-other {
+    background: rgba(217, 54, 54, 0.15);
+    border: 1.5px solid #d93636;
+}
+.legend-dot.dot-free {
+    background: #f8fafc;
+    border: 1.5px dashed #94a3b8;
 }
 .occupied-swal-container { text-align: left !important; }
 .occupied-detail { text-align: left; color: #0B1F33; }
@@ -428,6 +516,12 @@ foreach ($espacios as $e) {
             <span><i class="fa-solid fa-users"></i> Capacidad <?= (int)$espacioSeleccionado['capacidad'] ?></span>
         </div>
     <?php endif; ?>
+
+    <div class="space-legend">
+        <span class="legend-item"><span class="legend-dot dot-own"></span> Ocupado por mi programa</span>
+        <span class="legend-item"><span class="legend-dot dot-other"></span> Ocupado por otro programa</span>
+        <span class="legend-item"><span class="legend-dot dot-free"></span> Espacio libre</span>
+    </div>
 </div>
 
 <div class="availability">
@@ -452,13 +546,25 @@ foreach ($espacios as $e) {
                     <?php foreach ($dias as $dia): ?>
                         <?php if (!empty($celdasOmitidas[$dia][$horaInt])) continue; ?>
                         <?php $h = $eventosPorInicio[$dia][$horaInt] ?? null; ?>
-                        <?php if ($h): $detalle = $detalleOcupacion($h); $span = (int)$h['_rowspan']; ?>
+                        <?php if ($h): 
+                            $detalle = $detalleOcupacion($h); 
+                            $span = (int)$h['_rowspan']; 
+                            $esMio = !empty($h['es_programa_lider']);
+                        ?>
                             <td class="time-cell cell-busy-td" rowspan="<?= $span ?>" data-occupied-detail="<?= htmlspecialchars(json_encode($detalle), ENT_QUOTES, 'UTF-8') ?>">
-                                <div class="busy-block" style="min-height: calc(<?= $span ?> * 64px - 8px);">
+                                <div class="busy-block <?= $esMio ? 'busy-own' : '' ?>" style="min-height: calc(<?= $span ?> * 64px - 8px);">
                                     <div class="busy-block-content">
-                                        <strong class="busy-title"><i class="fa-solid fa-lock" style="font-size: 11px;"></i> Ocupado</strong>
-                                        <span class="busy-time"><?= htmlspecialchars($h['_hora_formato']) ?></span>
-                                        <span class="busy-duration"><?= htmlspecialchars($h['_duracion_texto']) ?></span>
+                                        <?php if ($esMio): ?>
+                                            <strong class="busy-title"><i class="fa-solid fa-bookmark" style="font-size: 11px;"></i> Mi Programa</strong>
+                                            <span class="busy-own-asig" title="<?= htmlspecialchars($h['asignatura_nombre'] ?? '') ?>"><?= htmlspecialchars($h['asignatura_nombre'] ?? '') ?></span>
+                                            <span class="busy-own-docente" title="<?= htmlspecialchars($h['docente_nombre'] ?? '') ?>"><i class="fa-solid fa-chalkboard-user" style="font-size: 10px;"></i> <?= htmlspecialchars($h['docente_nombre'] ?? '') ?></span>
+                                            <span class="busy-time"><?= htmlspecialchars($h['_hora_formato']) ?></span>
+                                            <span class="busy-duration"><?= htmlspecialchars($h['_duracion_texto']) ?></span>
+                                        <?php else: ?>
+                                            <strong class="busy-title"><i class="fa-solid fa-lock" style="font-size: 11px;"></i> Ocupado</strong>
+                                            <span class="busy-time"><?= htmlspecialchars($h['_hora_formato']) ?></span>
+                                            <span class="busy-duration"><?= htmlspecialchars($h['_duracion_texto']) ?></span>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="busy-tooltip">
                                         <strong><?= htmlspecialchars($detalle['programa']) ?></strong><br>
@@ -510,19 +616,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-occupied-detail]').forEach(cell => {
         cell.addEventListener('click', () => {
             const detail = JSON.parse(cell.dataset.occupiedDetail || '{}');
+            const esMio = Boolean(detail.es_mio);
             const html = `
                 <div class="occupied-detail">
-                <div class="occupied-header">
+                <div class="occupied-header" ${esMio ? 'style="border-bottom: 2px solid #3b0d8f;"' : ''}>
                     <div class="modal-logo"><img src="assets/img/isotipo-color.png" alt="UniFET"></div>
                     <div>
-                        <h2>Espacio ocupado</h2>
+                        <h2>${esMio ? '<span style="color: #3b0d8f;"><i class="fa-solid fa-bookmark"></i> Mi Asignación</span>' : 'Espacio ocupado'}</h2>
                         <p>${esc(detail.programa)}</p>
                     </div>
                 </div>
                 <div class="detail-chips">
                     <span class="detail-chip"><i class="fa-solid fa-calendar-day"></i>${esc(detail.dia) || '-'}</span>
                     <span class="detail-chip"><i class="fa-regular fa-clock"></i>${esc(detail.hora) || '-'}</span>
-                    <span class="detail-chip"><i class="fa-solid fa-lock"></i>${esc(detail.estado) || '-'}</span>
+                    ${esMio 
+                        ? '<span class="detail-chip" style="background: rgba(59, 13, 143, 0.12); color: #3b0d8f; border-color: rgba(59, 13, 143, 0.3); font-weight: 600;"><i class="fa-solid fa-bookmark"></i> Mi Programa</span>'
+                        : `<span class="detail-chip"><i class="fa-solid fa-lock"></i>${esc(detail.estado) || 'Ocupado'}</span>`
+                    }
                 </div>
                 <div class="detail-sections">
                     <section class="detail-section">
