@@ -23,17 +23,22 @@ class SistemaController extends Controller {
     public function guardarPersonalizacion() {
         Auth::requerirRol('ADMINISTRADOR');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $dominio = trim($_POST['dominio_correo'] ?? '@unicaribe.edu.co');
+            if ($dominio !== '' && !str_starts_with($dominio, '@')) {
+                $dominio = '@' . $dominio;
+            }
             Institucion::actualizar($this->id_institucion, [
                 'nombre' => trim($_POST['nombre'] ?? ''),
                 'nombre_sistema' => trim($_POST['nombre_sistema'] ?? ''),
                 'lema' => trim($_POST['lema'] ?? ''),
+                'dominio_correo' => $dominio,
                 'logo_url' => trim($_POST['logo_url'] ?? ''),
                 'favicon_url' => trim($_POST['favicon_url'] ?? ''),
                 'color_principal' => trim($_POST['color_principal'] ?? '#3B0D8F'),
                 'color_secundario' => trim($_POST['color_secundario'] ?? '#0F9D58'),
                 'color_acento' => trim($_POST['color_acento'] ?? '#F5B301'),
             ]);
-            $_SESSION['swal_alerta'] = ['icon' => 'success', 'title' => 'Identidad actualizada', 'text' => 'La personalizacion institucional fue guardada.'];
+            $_SESSION['swal_alerta'] = ['icon' => 'success', 'title' => 'Identidad actualizada', 'text' => 'La personalización institucional fue guardada.'];
         }
         $this->redirect('?ruta=admin/sistema/personalizacion');
     }
@@ -51,6 +56,7 @@ class SistemaController extends Controller {
         Auth::requerirRol('ADMINISTRADOR');
         $this->render('admin/sistema/lideres', [
             'titulo' => 'Lideres de Programa',
+            'institucion' => Institucion::obtener($this->id_institucion),
             'usuarios' => Usuario::obtenerTodos($this->id_institucion),
             'programas' => Programa::obtenerTodos($this->id_institucion),
         ]);
@@ -93,6 +99,7 @@ class SistemaController extends Controller {
         Auth::requerirRol('ADMINISTRADOR');
         $this->render('admin/sistema/usuarios_form', [
             'titulo' => $id ? 'Editar Usuario' : 'Nuevo Usuario',
+            'institucion' => Institucion::obtener($this->id_institucion),
             'usuario' => $id ? Usuario::obtenerPorId($id) : null,
             'programasAsignados' => $id ? Usuario::programas($id) : [],
             'programas' => Programa::obtenerTodos($this->id_institucion),

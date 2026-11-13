@@ -7,14 +7,65 @@ $this->render('elementos_compartidos/tabs', ['tabs' => [
     ['etiqueta' => 'Lideres de Programa', 'ruta' => 'admin/sistema/lideres', 'activa' => true],
 ]]);
 $lideres = array_filter($usuarios ?? [], fn($u) => ($u['rol'] ?? '') === 'LIDER_PROGRAMA');
+$dominioInstitucional = !empty($institucion['dominio_correo']) ? $institucion['dominio_correo'] : '@unicaribe.edu.co';
+if (!str_starts_with($dominioInstitucional, '@')) {
+    $dominioInstitucional = '@' . $dominioInstitucional;
+}
 ?>
 <style>
+.lideres-hero {
+    background: linear-gradient(135deg, var(--color-primario) 0%, #200654 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 22px rgba(59, 13, 143, 0.16);
+}
+.lideres-hero::after {
+    content: '';
+    position: absolute;
+    right: -20px;
+    bottom: -30px;
+    width: 220px;
+    height: 220px;
+    background-image: url('assets/img/isotipo-blanco.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    opacity: 0.08;
+    pointer-events: none;
+}
+.lideres-hero h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px; position: relative; z-index: 1; }
+.lideres-hero p { color: rgba(255,255,255,.82); font-size: 13.5px; margin: 0; position: relative; z-index: 1; }
+.lideres-hero .hero-stats { display: flex; gap: 12px; z-index: 2; }
+.lideres-hero .hero-stat {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 10px;
+    padding: 10px 18px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+}
+.lideres-hero .hero-stat strong { display: block; font-size: 20px; font-weight: 700; }
+.lideres-hero .hero-stat span { font-size: 11px; color: rgba(255,255,255,.75); text-transform: uppercase; }
+
 .leader-layout{display:grid;grid-template-columns:minmax(280px,420px) 1fr;gap:20px;align-items:start}.wizard-card{position:sticky;top:86px}.wizard-steps{display:grid;gap:10px;margin-bottom:18px}.wizard-step{display:flex;gap:10px;align-items:center;padding:10px;border:1px solid var(--color-borde);border-radius:8px;color:var(--color-texto-secundario);font-size:13px}.wizard-step.active{border-color:var(--color-primario);background:rgba(59,13,143,.06);color:var(--color-primario);font-weight:700}.step-dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#f1f3f5}.wizard-step.active .step-dot{background:var(--color-primario);color:#fff}.wizard-panel{display:none}.wizard-panel.active{display:block}.program-preview{border:1px solid var(--color-borde);border-radius:8px;padding:14px;background:#fafbfc;margin-top:10px}.table-wrap{overflow-x:auto}@media(max-width:980px){.leader-layout{grid-template-columns:1fr}.wizard-card{position:static}}
 </style>
-<div class="header-acciones">
+<div class="lideres-hero">
     <div>
-        <h1>Lideres de Programa</h1>
-        <p style="color:var(--color-texto-secundario);font-size:13px;">Creacion guiada con asociacion obligatoria a un programa existente.</p>
+        <h1><i class="fa-solid fa-user-tie" style="margin-right:10px;opacity:.85;"></i> Líderes de Programa</h1>
+        <p>Creación guiada con asociación obligatoria a un programa académico activo.</p>
+    </div>
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <strong><?= count($lideres) ?></strong>
+            <span>Líderes</span>
+        </div>
     </div>
 </div>
 <div class="leader-layout">
@@ -48,8 +99,8 @@ $lideres = array_filter($usuarios ?? [], fn($u) => ($u['rol'] ?? '') === 'LIDER_
                 <div class="form-group"><label>Apellido</label><input class="form-control" name="apellido" id="leader-lastname" required></div>
                 <div class="form-group">
                     <label>Correo institucional</label>
-                    <input type="email" class="form-control" name="correo" id="leader-email" required>
-                    <small style="display:block;margin-top:6px;color:var(--color-texto-secundario);">Se genera automaticamente con dominio @unicaribe.edu.co, pero puedes editarlo antes de guardar.</small>
+                    <input type="email" class="form-control" name="correo" id="leader-email" placeholder="usuario<?= htmlspecialchars($dominioInstitucional) ?>" required>
+                    <small style="display:block;margin-top:6px;color:var(--color-texto-secundario);">Se genera automáticamente con dominio <?= htmlspecialchars($dominioInstitucional) ?>, pero puedes editarlo antes de guardar.</small>
                 </div>
                 <p style="color:var(--color-texto-secundario);font-size:13px;margin-bottom:12px;">El sistema generara una contrasena temporal y la mostrara una sola vez al guardar.</p>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;"><button type="button" class="btn-demo" data-prev>Volver</button><button type="button" class="btn-primario" data-next>Continuar</button></div>
@@ -99,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .replace(/ñ/g, 'n')
         .replace(/[^a-z0-9]+/g, '.')
         .replace(/^\.+|\.+$/g, '');
+    const DOMINIO_INSTITUCIONAL = '<?= addslashes($dominioInstitucional) ?>';
     const updateEmail = () => {
         if (emailTouched) return;
         const nombre = slug(nameInput.value).split('.')[0] || '';
@@ -107,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             emailInput.value = '';
             return;
         }
-        emailInput.value = `${nombre}.${apellido}@unicaribe.edu.co`;
+        emailInput.value = `${nombre}.${apellido}${DOMINIO_INSTITUCIONAL}`;
     };
     const show = (next) => {
         step = next;

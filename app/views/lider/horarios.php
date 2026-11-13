@@ -11,25 +11,48 @@ $tabs = [
 ?>
 <style>
     .horarios-hero {
-        background: linear-gradient(135deg, var(--color-primario), #24114f);
+        background: linear-gradient(135deg, var(--color-primario) 0%, #200654 100%);
         color: #fff;
-        border-radius: 8px;
-        padding: 24px;
-        margin-bottom: 18px;
+        border-radius: 14px;
+        padding: 28px 32px;
+        margin-bottom: 22px;
         display: flex;
         justify-content: space-between;
-        gap: 18px;
-        align-items: center
+        gap: 20px;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 6px 22px rgba(59, 13, 143, 0.16);
+    }
+
+    .horarios-hero::after {
+        content: '';
+        position: absolute;
+        right: -20px;
+        bottom: -30px;
+        width: 220px;
+        height: 220px;
+        background-image: url('assets/img/isotipo-blanco.png');
+        background-repeat: no-repeat;
+        background-size: contain;
+        opacity: 0.08;
+        pointer-events: none;
     }
 
     .horarios-hero h1 {
-        font-size: 24px;
-        margin-bottom: 6px
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        position: relative;
+        z-index: 1;
     }
 
     .horarios-hero p {
         color: rgba(255, 255, 255, .82);
-        margin: 0
+        margin: 0;
+        font-size: 13.5px;
+        position: relative;
+        z-index: 1;
     }
 
     .metric-strip {

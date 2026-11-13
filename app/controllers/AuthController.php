@@ -6,20 +6,24 @@ use App\Core\Controller;
 use App\Core\Auth;
 use App\Models\Usuario;
 
-class AuthController extends Controller {
+class AuthController extends Controller
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         Auth::init();
     }
 
-    public function mostrarLogin() {
+    public function mostrarLogin()
+    {
         if (Auth::isLogged()) {
             $this->redirigirPorRol(Auth::getRol());
         }
         $this->render('auth/login', ['error' => '']);
     }
 
-    public function procesarLogin() {
+    public function procesarLogin()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->mostrarLogin();
             return;
@@ -64,7 +68,8 @@ class AuthController extends Controller {
         $this->render('auth/login', ['error' => 'Credenciales invalidas.']);
     }
 
-    public function cambiarPasswordTemporal() {
+    public function cambiarPasswordTemporal()
+    {
         Auth::init();
         if (!Auth::isLogged()) {
             $this->redirect('?ruta=login');
@@ -94,16 +99,21 @@ class AuthController extends Controller {
         $this->redirect($this->dashboardUrl());
     }
 
-    public function logout() {
+    public function logout()
+    {
         Auth::logout();
         $this->redirect('?ruta=login');
     }
 
-    private function redirigirPorRol($rol) {
+    private function redirigirPorRol($rol)
+    {
         $this->redirect($rol === 'ADMINISTRADOR' ? '?ruta=admin/dashboard' : ($rol === 'LIDER_PROGRAMA' ? '?ruta=lider/dashboard' : '?ruta=logout'));
     }
 
-    private function dashboardUrl() {
+    private function dashboardUrl()
+    {
         return Auth::getRol() === 'ADMINISTRADOR' ? '?ruta=admin/dashboard' : '?ruta=lider/dashboard';
     }
 }
+
+//este proyecto fue desarrolado por deklan dev, raul estuío ahi

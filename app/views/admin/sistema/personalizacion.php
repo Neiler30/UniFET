@@ -13,6 +13,7 @@ $colorAcento = !empty($institucion['color_acento']) ? $institucion['color_acento
 $nombreInstitucion = !empty($institucion['nombre']) ? $institucion['nombre'] : 'Fundación de Educación Superior del Caribe';
 $nombreSistema = 'UniFET'; // El nombre del software es UniFET de forma inmutable
 $lema = !empty($institucion['lema']) ? $institucion['lema'] : 'Gestión Académica Inteligente';
+$dominioCorreo = !empty($institucion['dominio_correo']) ? $institucion['dominio_correo'] : '@unicaribe.edu.co';
 $logoUrl = !empty($institucion['logo_url']) ? $institucion['logo_url'] : 'assets/img/isotipo-color.png';
 $faviconUrl = !empty($institucion['favicon_url']) ? $institucion['favicon_url'] : 'assets/img/isotipo-color.png';
 
@@ -623,6 +624,19 @@ $colorPrimarioDeep = darkenHex($colorPrimario, 55);
                             <input class="form-control" name="lema" id="input_lema"
                                    value="<?= htmlspecialchars($lema) ?>"
                                    placeholder="Ej: Gestión Académica Inteligente">
+                        </div>
+
+                        <div class="field-block">
+                            <label for="input_dominio_correo">
+                                <i class="fa-solid fa-at"></i> Dominio de Correo Institucional
+                            </label>
+                            <input class="form-control" name="dominio_correo" id="input_dominio_correo"
+                                   value="<?= htmlspecialchars($dominioCorreo) ?>"
+                                   placeholder="Ej: @unicaribe.edu.co o @unifet.edu.co"
+                                   required>
+                            <small style="color:var(--color-texto-secundario); font-size:11px; margin-top:2px; display:block;">
+                                Este dominio institucional se usará automáticamente para generar los correos de líderes de programa y usuarios.
+                            </small>
                         </div>
 
                         <div class="field-block">

@@ -23,11 +23,11 @@ class AuditoriaController extends Controller {
         $programaActivo = LiderPanel::resolverProgramaActivo($usuario['id_usuario'], $_GET['programa_id'] ?? null);
         $periodoActivo = PeriodoAcademico::getActivo();
 
-        // Fecha seleccionada o fecha actual
-        $fechaSeleccionada = trim($_GET['fecha'] ?? date('Y-m-d'));
-        // Validar formato de fecha
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaSeleccionada)) {
-            $fechaSeleccionada = date('Y-m-d');
+        // Fecha seleccionada: por defecto todas (''), salvo que el usuario especifique una fecha concreta
+        $fechaInput = trim($_GET['fecha'] ?? '');
+        $fechaSeleccionada = '';
+        if ($fechaInput !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaInput)) {
+            $fechaSeleccionada = $fechaInput;
         }
 
         $filtroEstado = trim($_GET['estado'] ?? '');
@@ -74,7 +74,7 @@ class AuditoriaController extends Controller {
             }
         }
 
-        $diaSemanaNombre = Auditoria::obtenerDiaSemanaEsp($fechaSeleccionada);
+        $diaSemanaNombre = $fechaSeleccionada ? Auditoria::obtenerDiaSemanaEsp($fechaSeleccionada) : 'Todas las fechas';
 
         $this->render('lider/auditoria/index', [
             'titulo'            => 'Auditoría de Clases',

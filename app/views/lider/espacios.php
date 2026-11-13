@@ -30,37 +30,65 @@ for ($h = 6; $h < 22; $h++) {
     $horas[] = sprintf('%02d:00:00', $h);
 }
 
+$esTodosLosEspacios = empty($idEspacio);
+$clasesPorEspacio = [];
+foreach ($ocupacion as $o) {
+    if (!empty($o['id_espacio'])) {
+        $clasesPorEspacio[$o['id_espacio']][] = $o;
+    }
+}
+
 // Mapeo dinámico de ocupación continua por día y hora de inicio
 $eventosPorInicio = [];
 $celdasOmitidas = [];
-foreach ($ocupadoPorDia as $dia => $eventos) {
-    foreach ($eventos as $evento) {
-        $iniTs = strtotime($evento['hora_inicio']);
-        $finTs = strtotime($evento['hora_fin']);
-        $duracionSeg = max(0, $finTs - $iniTs);
-        $duracionHoras = $duracionSeg / 3600;
 
-        // Número de filas (horas) continuas que debe abarcar
-        // Ej: 08:00–09:00 -> 1 fila, 08:00–10:00 -> 2 filas, 15:00–19:00 -> 4 filas, 18:30–20:30 -> 2 filas
-        $span = (int)round($duracionHoras);
-        if ($span < 1) $span = 1;
+if (!$esTodosLosEspacios) {
+    foreach ($ocupadoPorDia as $dia => $eventos) {
+        foreach ($eventos as $evento) {
+            $iniTs = strtotime($evento['hora_inicio']);
+            $finTs = strtotime($evento['hora_fin']);
+            $duracionSeg = max(0, $finTs - $iniTs);
+            $duracionHoras = $duracionSeg / 3600;
 
-        $inicioHora = (int)date('H', $iniTs);
-        // Respetar escala de la grilla (hasta las 22:00)
-        if ($inicioHora + $span > 22) {
-            $span = max(1, 22 - $inicioHora);
-        }
+            $span = (int)round($duracionHoras);
+            if ($span < 1) $span = 1;
 
-        $duracionTexto = ($span === 1) ? '1 hora' : $span . ' horas';
-        $evento['_rowspan'] = $span;
-        $evento['_duracion_texto'] = $duracionTexto;
-        $evento['_hora_formato'] = date('H:i', $iniTs) . ' - ' . date('H:i', $finTs);
-
-        if (!isset($eventosPorInicio[$dia][$inicioHora])) {
-            $eventosPorInicio[$dia][$inicioHora] = $evento;
-            for ($i = 1; $i < $span; $i++) {
-                $celdasOmitidas[$dia][$inicioHora + $i] = true;
+            $inicioHora = (int)date('H', $iniTs);
+            if ($inicioHora + $span > 22) {
+                $span = max(1, 22 - $inicioHora);
             }
+
+            $duracionTexto = ($span === 1) ? '1 hora' : $span . ' horas';
+            $evento['_rowspan'] = $span;
+            $evento['_duracion_texto'] = $duracionTexto;
+            $evento['_hora_formato'] = date('H:i', $iniTs) . ' - ' . date('H:i', $finTs);
+
+            if (!isset($eventosPorInicio[$dia][$inicioHora])) {
+                $eventosPorInicio[$dia][$inicioHora] = $evento;
+                for ($i = 1; $i < $span; $i++) {
+                    $celdasOmitidas[$dia][$inicioHora + $i] = true;
+                }
+            }
+        }
+    }
+} else {
+    foreach ($ocupadoPorDia as $dia => $eventos) {
+        foreach ($eventos as $evento) {
+            $iniTs = strtotime($evento['hora_inicio']);
+            $finTs = strtotime($evento['hora_fin']);
+            $duracionSeg = max(0, $finTs - $iniTs);
+            $duracionHoras = $duracionSeg / 3600;
+
+            $span = (int)round($duracionHoras);
+            if ($span < 1) $span = 1;
+            $inicioHora = (int)date('H', $iniTs);
+
+            $duracionTexto = ($span === 1) ? '1 hora' : $span . ' horas';
+            $evento['_rowspan'] = 1;
+            $evento['_duracion_texto'] = $duracionTexto;
+            $evento['_hora_formato'] = date('H:i', $iniTs) . ' - ' . date('H:i', $finTs);
+
+            $eventosPorInicio[$dia][$inicioHora][] = $evento;
         }
     }
 }
@@ -543,55 +571,72 @@ foreach ($espacios as $e) {
 <div class="panel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
         <div>
-            <h2 style="font-size: 17px; font-weight: 700; color: var(--color-oscuro); margin:0;">Filtros de Búsqueda</h2>
-            <p style="color: var(--color-texto-secundario); font-size: 12.5px; margin:2px 0 0;">Selecciona sede, bloque y aula para consultar su cronograma semanal.</p>
+            <h2 style="font-size: 17px; font-weight: 700; color: var(--color-oscuro); margin:0;">Filtros de Búsqueda de Espacios</h2>
+            <p style="color: var(--color-texto-secundario); font-size: 12.5px; margin:2px 0 0;">Selecciona sede, bloque y aula para consultar su cronograma de ocupación semanal.</p>
         </div>
     </div>
 
-    <form method="GET" class="filter-grid" id="space-filter-form">
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px; padding:10px 14px; background:rgba(59,13,143,0.04); border:1px solid rgba(59,13,143,0.15); border-radius:10px;">
+        <span style="font-size:12px; font-weight:700; color:var(--color-primario); display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-filter"></i> Acceso rápido:
+        </span>
+        <a href="?ruta=lider/espacios&espacio_id=0" class="btn-demo" style="padding:4px 12px; font-size:12px; font-weight:600; text-decoration:none; border-radius:6px; transition:all .2s; <?= empty($idEspacio) ? 'background:var(--color-primario); color:#fff; border-color:var(--color-primario); box-shadow:0 2px 6px rgba(59,13,143,0.25);' : 'background:#fff;' ?>">
+            <i class="fa-solid fa-layer-group"></i> Todos los espacios
+        </a>
+        <?php foreach ($espaciosDelPrograma as $ep): ?>
+            <a href="?ruta=lider/espacios&espacio_id=<?= (int)$ep['id_espacio'] ?>" class="btn-demo" style="padding:4px 12px; font-size:12px; font-weight:600; text-decoration:none; border-radius:6px; transition:all .2s; <?= ($idEspacio === (int)$ep['id_espacio']) ? 'background:var(--color-primario); color:#fff; border-color:var(--color-primario); box-shadow:0 2px 6px rgba(59,13,143,0.25);' : 'background:#fff;' ?>">
+                <i class="fa-solid fa-door-open"></i> <?= htmlspecialchars($ep['nombre']) ?> <span style="opacity:0.85; font-size:11px;">(<?= $ep['total_clases'] ?> clase<?= $ep['total_clases'] > 1 ? 's' : '' ?>)</span>
+            </a>
+        <?php endforeach; ?>
+    </div>
+
+    <form method="GET" class="filter-grid" id="space-filter-form" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
         <input type="hidden" name="ruta" value="lider/espacios">
-        <div class="form-group">
-            <label><i class="fa-solid fa-magnifying-glass" style="color:var(--color-primario);"></i> Buscar</label>
-            <input type="search" id="space-search" class="form-control" placeholder="Aula, sede, bloque, tipo...">
-        </div>
-        <div class="form-group">
+        
+        <div class="form-group" style="margin-bottom:0;">
             <label><i class="fa-solid fa-location-dot" style="color:var(--color-primario);"></i> Sede</label>
-            <select id="sede-filter" class="form-control">
-                <option value="">Todas</option>
+            <select id="sede-filter" name="sede" class="form-control" style="height:38px;">
+                <option value="">Todas las sedes</option>
                 <?php foreach ($sedes as $sede): ?>
-                    <option value="<?= htmlspecialchars($sede) ?>"><?= htmlspecialchars($sede) ?></option>
+                    <option value="<?= htmlspecialchars($sede) ?>" <?= ($sedeFiltro === $sede || ($espacioSeleccionado && $espacioSeleccionado['sede_nombre'] === $sede)) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($sede) ?>
+                    </option>
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="form-group">
+
+        <div class="form-group" style="margin-bottom:0;">
             <label><i class="fa-solid fa-building" style="color:var(--color-primario);"></i> Bloque</label>
-            <select id="bloque-filter" class="form-control">
-                <option value="">Todos</option>
+            <select id="bloque-filter" name="bloque" class="form-control" style="height:38px;">
+                <option value="">Todos los bloques</option>
                 <?php foreach ($bloques as $bloque): ?>
-                    <option value="<?= htmlspecialchars($bloque) ?>"><?= htmlspecialchars($bloque) ?></option>
+                    <option value="<?= htmlspecialchars($bloque) ?>" <?= ($bloqueFiltro === $bloque || ($espacioSeleccionado && $espacioSeleccionado['bloque_nombre'] === $bloque)) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($bloque) ?>
+                    </option>
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="form-group">
-            <label><i class="fa-regular fa-calendar" style="color:var(--color-primario);"></i> Fecha de referencia</label>
-            <input type="date" name="fecha_ref" class="form-control" value="<?= htmlspecialchars($_GET['fecha_ref'] ?? date('Y-m-d')) ?>">
-        </div>
-        <div class="form-group">
-            <label><i class="fa-solid fa-door-open" style="color:var(--color-primario);"></i> Espacio Físico</label>
-            <select name="espacio_id" id="space-select" class="form-control">
+
+        <div class="form-group" style="margin-bottom:0;">
+            <label><i class="fa-solid fa-door-open" style="color:var(--color-primario);"></i> Espacio Físico / Aula</label>
+            <select name="espacio_id" id="space-select" class="form-control" style="height:38px;" onchange="this.form.submit()">
+                <option value="0" data-sede="" data-bloque="" <?= empty($idEspacio) ? 'selected' : '' ?>>
+                    🌐 — Mostrar todos los espacios —
+                </option>
                 <?php foreach ($espacios as $e): ?>
                     <option value="<?= (int)$e['id_espacio'] ?>"
                             data-search="<?= htmlspecialchars(strtolower($e['sede_nombre'].' '.$e['bloque_nombre'].' '.$e['nombre'].' '.$e['tipo'])) ?>"
                             data-sede="<?= htmlspecialchars($e['sede_nombre']) ?>"
                             data-bloque="<?= htmlspecialchars($e['bloque_nombre']) ?>"
                             <?= $idEspacio == $e['id_espacio'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($e['sede_nombre'].' / '.$e['bloque_nombre'].' / '.$e['nombre']) ?>
+                        <?= htmlspecialchars($e['nombre'] . ' (' . $e['bloque_nombre'] . ')') ?>
                     </option>
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="form-group">
-            <button class="btn-primario" style="width: 100%;">
+
+        <div class="form-group" style="margin-bottom:0;">
+            <button type="submit" class="btn-primario" style="width: 100%; height: 38px; font-weight: 600;">
                 <i class="fa-solid fa-magnifying-glass"></i> Consultar
             </button>
         </div>
@@ -602,7 +647,15 @@ foreach ($espacios as $e) {
             <span><i class="fa-solid fa-location-dot"></i> <?= htmlspecialchars($espacioSeleccionado['sede_nombre']) ?></span>
             <span><i class="fa-solid fa-building"></i> <?= htmlspecialchars($espacioSeleccionado['bloque_nombre']) ?></span>
             <span><i class="fa-solid fa-door-open"></i> <?= htmlspecialchars($espacioSeleccionado['nombre']) ?></span>
-            <span><i class="fa-solid fa-users"></i> Capacidad <?= (int)$espacioSeleccionado['capacidad'] ?></span>
+            <span><i class="fa-solid fa-users"></i> Capacidad: <strong><?= (int)$espacioSeleccionado['capacidad'] ?></strong></span>
+        </div>
+    <?php else: ?>
+        <div class="space-meta" style="background: rgba(59,13,143,0.04); border-color: rgba(59,13,143,0.15);">
+            <span style="font-weight:700; color:var(--color-primario);"><i class="fa-solid fa-layer-group"></i> Viendo: Todos los espacios<?= !empty($sedeFiltro) ? ' (' . htmlspecialchars($sedeFiltro) . ')' : '' ?><?= !empty($bloqueFiltro) ? ' (' . htmlspecialchars($bloqueFiltro) . ')' : '' ?></span>
+            <span><i class="fa-solid fa-calendar-check"></i> Total: <strong><?= count($ocupacion) ?></strong> clases programadas</span>
+            <span style="color:var(--color-primario); font-weight:600;"><i class="fa-solid fa-bookmark"></i> Mi programa: <strong><?= count(array_filter($ocupacion, fn($x) => !empty($x['es_programa_lider']))) ?></strong></span>
+            <span style="color:#d93636; font-weight:600;"><i class="fa-solid fa-lock"></i> Otros programas: <strong><?= count(array_filter($ocupacion, fn($x) => empty($x['es_programa_lider']))) ?></strong></span>
+            <span><i class="fa-solid fa-door-open"></i> Aulas en uso: <strong><?= count($clasesPorEspacio) ?></strong> de <?= count($espacios) ?></span>
         </div>
     <?php endif; ?>
 
@@ -624,76 +677,132 @@ foreach ($espacios as $e) {
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($horas as $hora): $horaInt = (int)date('H', strtotime($hora)); ?>
-                <tr class="hour-row">
-                    <td class="hour-cell">
-                        <div><?= htmlspecialchars($formatoHora($hora)) ?></div>
-                        <?php if ($horaInt === 12): ?>
-                            <span class="midday-pill">Mediodía</span>
-                        <?php endif; ?>
-                    </td>
-                    <?php foreach ($dias as $dia): ?>
-                        <?php if (!empty($celdasOmitidas[$dia][$horaInt])) continue; ?>
-                        <?php $h = $eventosPorInicio[$dia][$horaInt] ?? null; ?>
-                        <?php if ($h): 
-                            $detalle = $detalleOcupacion($h); 
-                            $span = (int)$h['_rowspan']; 
-                            $esMio = !empty($h['es_programa_lider']);
-                        ?>
-                            <td class="time-cell cell-busy-td" rowspan="<?= $span ?>" data-occupied-detail="<?= htmlspecialchars(json_encode($detalle), ENT_QUOTES, 'UTF-8') ?>" title="Clic para ver detalle completo">
-                                <div class="busy-block <?= $esMio ? 'busy-own' : '' ?>" style="min-height: calc(<?= $span ?> * 64px - 8px);">
-                                    <div class="busy-block-content">
-                                        <?php if ($esMio): ?>
-                                            <strong class="busy-title"><i class="fa-solid fa-bookmark" style="font-size: 11px;"></i> Mi Programa</strong>
-                                            <span class="busy-own-asig"><?= htmlspecialchars($h['asignatura_nombre'] ?? '') ?></span>
-                                            <span class="busy-time"><?= htmlspecialchars($h['_hora_formato']) ?></span>
-                                            <span class="busy-duration"><?= htmlspecialchars($h['_duracion_texto']) ?></span>
-                                        <?php else: ?>
-                                            <strong class="busy-title"><i class="fa-solid fa-lock" style="font-size: 11px;"></i> Ocupado</strong>
-                                            <span class="busy-time"><?= htmlspecialchars($h['_hora_formato']) ?></span>
-                                            <span class="busy-duration"><?= htmlspecialchars($h['_duracion_texto']) ?></span>
-                                        <?php endif; ?>
+            <?php if ($esTodosLosEspacios): ?>
+                <?php foreach ($horas as $hora): $horaInt = (int)date('H', strtotime($hora)); ?>
+                    <tr class="hour-row">
+                        <td class="hour-cell">
+                            <div><?= htmlspecialchars($formatoHora($hora)) ?></div>
+                            <?php if ($horaInt === 12): ?>
+                                <span class="midday-pill">Mediodía</span>
+                            <?php endif; ?>
+                        </td>
+                        <?php foreach ($dias as $dia): ?>
+                            <?php $clasesCelda = $eventosPorInicio[$dia][$horaInt] ?? []; ?>
+                            <td class="time-cell" style="vertical-align: top; padding: 4px;">
+                                <?php if (!empty($clasesCelda)): ?>
+                                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                                        <?php foreach ($clasesCelda as $h): 
+                                            $detalle = $detalleOcupacion($h);
+                                            $esMio = !empty($h['es_programa_lider']);
+                                        ?>
+                                            <div class="busy-block <?= $esMio ? 'busy-own' : '' ?>" 
+                                                 data-occupied-detail="<?= htmlspecialchars(json_encode($detalle), ENT_QUOTES, 'UTF-8') ?>" 
+                                                 title="Clic para ver detalle completo" 
+                                                 style="cursor: pointer; padding: 8px 6px; text-align: left; align-items: flex-start;">
+                                                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 4px; margin-bottom: 3px;">
+                                                    <span style="background: <?= $esMio ? 'var(--color-primario)' : '#b42318' ?>; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
+                                                        <i class="fa-solid fa-door-open"></i> <?= htmlspecialchars($h['espacio_nombre']) ?>
+                                                    </span>
+                                                    <span style="font-size: 10px; font-weight: 600; opacity: .85;"><?= htmlspecialchars($h['_hora_formato']) ?></span>
+                                                </div>
+                                                <strong style="font-size: 11.5px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 2px; color: <?= $esMio ? '#2e0870' : '#7f1d1d' ?>;">
+                                                    <?= htmlspecialchars($h['asignatura_nombre']) ?>
+                                                </strong>
+                                                <div style="font-size: 10.5px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;">
+                                                    <i class="fa-solid fa-user-tie" style="font-size: 9px;"></i> <?= htmlspecialchars($h['docente_nombre']) ?>
+                                                </div>
+                                                <div style="margin-top: 4px; display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                                    <span style="font-size: 9.5px; font-weight: 700; padding: 1px 5px; border-radius: 999px; <?= $esMio ? 'background: rgba(59,13,143,0.12); color: #3b0d8f;' : 'background: rgba(217,54,54,0.12); color: #b42318;' ?>">
+                                                        <?= $esMio ? 'Mi Programa' : htmlspecialchars($h['programa_codigo']) ?>
+                                                    </span>
+                                                    <span style="font-size: 9.5px; opacity: .7;"><?= htmlspecialchars($h['_duracion_texto']) ?></span>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
                                     </div>
-                                </div>
+                                <?php else: ?>
+                                    <div class="free-summary" style="min-height: 48px; font-size: 11px; opacity: 0.45; display: flex; align-items: center; justify-content: center;">-</div>
+                                <?php endif; ?>
                             </td>
-                        <?php else: ?>
-                            <td class="time-cell">
-                                <div class="free-summary">Libre</div>
-                            </td>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </tr>
-            <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <?php foreach ($horas as $hora): $horaInt = (int)date('H', strtotime($hora)); ?>
+                    <tr class="hour-row">
+                        <td class="hour-cell">
+                            <div><?= htmlspecialchars($formatoHora($hora)) ?></div>
+                            <?php if ($horaInt === 12): ?>
+                                <span class="midday-pill">Mediodía</span>
+                            <?php endif; ?>
+                        </td>
+                        <?php foreach ($dias as $dia): ?>
+                            <?php if (!empty($celdasOmitidas[$dia][$horaInt])) continue; ?>
+                            <?php $h = $eventosPorInicio[$dia][$horaInt] ?? null; ?>
+                            <?php if ($h): 
+                                $detalle = $detalleOcupacion($h); 
+                                $span = (int)$h['_rowspan']; 
+                                $esMio = !empty($h['es_programa_lider']);
+                            ?>
+                                <td class="time-cell cell-busy-td" rowspan="<?= $span ?>" data-occupied-detail="<?= htmlspecialchars(json_encode($detalle), ENT_QUOTES, 'UTF-8') ?>" title="Clic para ver detalle completo">
+                                    <div class="busy-block <?= $esMio ? 'busy-own' : '' ?>" style="min-height: calc(<?= $span ?> * 64px - 8px);">
+                                        <div class="busy-block-content">
+                                            <?php if ($esMio): ?>
+                                                <strong class="busy-title"><i class="fa-solid fa-bookmark" style="font-size: 11px;"></i> Mi Programa</strong>
+                                                <span class="busy-own-asig"><?= htmlspecialchars($h['asignatura_nombre'] ?? '') ?></span>
+                                                <span class="busy-time"><?= htmlspecialchars($h['_hora_formato']) ?></span>
+                                                <span class="busy-duration"><?= htmlspecialchars($h['_duracion_texto']) ?></span>
+                                            <?php else: ?>
+                                                <strong class="busy-title"><i class="fa-solid fa-lock" style="font-size: 11px;"></i> Ocupado</strong>
+                                                <span class="busy-time"><?= htmlspecialchars($h['_hora_formato']) ?></span>
+                                                <span class="busy-duration"><?= htmlspecialchars($h['_duracion_texto']) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </td>
+                            <?php else: ?>
+                                <td class="time-cell">
+                                    <div class="free-summary">Libre</div>
+                                </td>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </tbody>
     </table>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const search = document.getElementById('space-search');
     const sede = document.getElementById('sede-filter');
     const bloque = document.getElementById('bloque-filter');
     const select = document.getElementById('space-select');
     const allOptions = [...select.options].map(option => option.cloneNode(true));
-    const normalize = value => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const esc = value => String(value || '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
     
     const applyFilters = () => {
-        const text = normalize(search.value);
-        const sedeValue = sede.value;
-        const bloqueValue = bloque.value;
-        const current = select.value;
+        const sedeValue = sede ? sede.value : '';
+        const bloqueValue = bloque ? bloque.value : '';
+        const valorActual = select.value;
         select.innerHTML = '';
         allOptions.forEach(option => {
-            const matchesText = !text || normalize(option.dataset.search).includes(text);
+            if (option.value === '0') {
+                select.appendChild(option.cloneNode(true));
+                return;
+            }
             const matchesSede = !sedeValue || option.dataset.sede === sedeValue;
             const matchesBloque = !bloqueValue || option.dataset.bloque === bloqueValue;
-            if (matchesText && matchesSede && matchesBloque) select.appendChild(option.cloneNode(true));
+            if (matchesSede && matchesBloque) select.appendChild(option.cloneNode(true));
         });
-        if ([...select.options].some(option => option.value === current)) select.value = current;
+        if ([...select.options].some(opt => opt.value === valorActual)) {
+            select.value = valorActual;
+        } else {
+            select.value = '0';
+        }
     };
-    search.addEventListener('input', applyFilters);
-    [sede, bloque].forEach(input => input.addEventListener('change', applyFilters));
+    if (sede) sede.addEventListener('change', applyFilters);
+    if (bloque) bloque.addEventListener('change', applyFilters);
 
     document.querySelectorAll('[data-occupied-detail]').forEach(cell => {
         cell.addEventListener('click', () => {

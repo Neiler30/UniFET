@@ -7,7 +7,8 @@ $diasEsp = [
     'JUEVES' => 'Jueves', 'VIERNES' => 'Viernes', 'SABADO' => 'Sábado', 'DOMINGO' => 'Domingo'
 ];
 $diaLabel = $diasEsp[$diaSemanaNombre] ?? $diaSemanaNombre;
-$fechaFormateada = date('d/m/Y', strtotime($fechaSeleccionada));
+$fechaFormateada = !empty($fechaSeleccionada) ? date('d/m/Y', strtotime($fechaSeleccionada)) : 'Todas las fechas';
+$fechaAuditarDefecto = !empty($fechaSeleccionada) ? $fechaSeleccionada : date('Y-m-d');
 ?>
 
 <style>
@@ -259,7 +260,7 @@ $fechaFormateada = date('d/m/Y', strtotime($fechaSeleccionada));
 <div class="audit-hero">
     <div>
         <h1><i class="fa-solid fa-clipboard-check" style="margin-right: 8px;"></i> Auditoría de Clases</h1>
-        <p><?= htmlspecialchars($programaActivo['nombre'] ?? 'Sin programa') ?> — <?= $diaLabel ?>, <?= $fechaFormateada ?></p>
+        <p><?= htmlspecialchars($programaActivo['nombre'] ?? 'Sin programa') ?> &bull; <?= !empty($fechaSeleccionada) ? "$diaLabel, $fechaFormateada" : 'Todas las clases del programa' ?></p>
     </div>
     <div class="audit-metrics">
         <div class="audit-metric metric-total">
@@ -291,10 +292,15 @@ $fechaFormateada = date('d/m/Y', strtotime($fechaSeleccionada));
         <label><i class="fa-solid fa-calendar-day"></i> Fecha de consulta</label>
         <input type="date" name="fecha" class="form-control" value="<?= htmlspecialchars($fechaSeleccionada) ?>">
     </div>
-    <div class="form-group">
-        <button type="submit" class="btn-primario" style="padding: 10px 20px; font-size: 14px;">
-            <i class="fa-solid fa-search"></i> Consultar
+    <div class="form-group" style="display:flex;gap:8px;">
+        <button type="submit" class="btn-primario" style="padding: 10px 18px; font-size: 14px;">
+            <i class="fa-solid fa-search"></i> Filtrar fecha
         </button>
+        <?php if (!empty($fechaSeleccionada)): ?>
+            <a href="?ruta=lider/auditoria<?= $programaActivo ? '&programa_id='.(int)$programaActivo['id_programa'] : '' ?>" class="btn-demo" style="padding: 10px 14px; font-size: 13px; text-decoration:none;" title="Ver todas las clases">
+                <i class="fa-solid fa-arrows-rotate"></i> Ver todas
+            </a>
+        <?php endif; ?>
     </div>
     <div style="margin-left: auto;">
         <a href="?ruta=lider/auditoria/historial<?= $programaActivo ? '&programa_id='.(int)$programaActivo['id_programa'] : '' ?>" class="btn-historial-link">
@@ -381,6 +387,10 @@ $fechaFormateada = date('d/m/Y', strtotime($fechaSeleccionada));
 
             <div class="clase-card-meta">
                 <div class="meta-item">
+                    <i class="fa-solid fa-calendar-day" style="color:var(--color-primario);"></i>
+                    <span style="font-weight:700;color:var(--color-primario);"><?= htmlspecialchars($clase['dia_semana']) ?></span>
+                </div>
+                <div class="meta-item">
                     <i class="fa-solid fa-barcode"></i>
                     <span><strong><?= htmlspecialchars($clase['asignatura_codigo']) ?></strong></span>
                 </div>
@@ -408,14 +418,14 @@ $fechaFormateada = date('d/m/Y', strtotime($fechaSeleccionada));
 
             <div class="clase-card-actions">
                 <?php if ($estado === 'PENDIENTE'): ?>
-                    <a class="btn-auditar" href="?ruta=lider/auditoria/auditar&id_horario=<?= (int)$clase['id_horario'] ?>&fecha=<?= urlencode($fechaSeleccionada) ?>">
+                    <a class="btn-auditar" href="?ruta=lider/auditoria/auditar&id_horario=<?= (int)$clase['id_horario'] ?>&fecha=<?= urlencode($fechaAuditarDefecto) ?>">
                         <i class="fa-solid fa-clipboard-check"></i> Auditar esta clase
                     </a>
                 <?php else: ?>
                     <a class="btn-ver-detalle" href="?ruta=lider/auditoria/detalle&id=<?= (int)$clase['id_auditoria'] ?>">
                         <i class="fa-solid fa-eye"></i> Ver auditoría
                     </a>
-                    <a class="btn-auditar" href="?ruta=lider/auditoria/auditar&id_horario=<?= (int)$clase['id_horario'] ?>&fecha=<?= urlencode($fechaSeleccionada) ?>" style="background:rgba(59,13,143,.08); color:var(--color-primario); font-size:12px; padding:6px 12px;">
+                    <a class="btn-auditar" href="?ruta=lider/auditoria/auditar&id_horario=<?= (int)$clase['id_horario'] ?>&fecha=<?= urlencode($fechaAuditarDefecto) ?>" style="background:rgba(59,13,143,.08); color:var(--color-primario); font-size:12px; padding:6px 12px;">
                         <i class="fa-solid fa-pen"></i> Re-auditar
                     </a>
                     <?php if (!empty($clase['auditor_nombre'])): ?>

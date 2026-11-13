@@ -16,7 +16,7 @@ class Institucion {
         $db = Database::getConexion();
         $stmt = $db->prepare("
             UPDATE institucion
-            SET nombre = :nombre, nombre_sistema = :nombre_sistema, lema = :lema,
+            SET nombre = :nombre, nombre_sistema = :nombre_sistema, lema = :lema, dominio_correo = :dominio_correo,
                 logo_url = :logo_url, favicon_url = :favicon_url,
                 color_principal = :color_principal, color_secundario = :color_secundario, color_acento = :color_acento
             WHERE id_institucion = :id
@@ -25,6 +25,7 @@ class Institucion {
             ':nombre' => $datos['nombre'],
             ':nombre_sistema' => $datos['nombre_sistema'],
             ':lema' => $datos['lema'],
+            ':dominio_correo' => $datos['dominio_correo'] ?? '@unicaribe.edu.co',
             ':logo_url' => $datos['logo_url'],
             ':favicon_url' => $datos['favicon_url'],
             ':color_principal' => $datos['color_principal'],

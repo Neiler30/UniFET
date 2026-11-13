@@ -3,16 +3,71 @@ $this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Importar 
 $this->render('elementos_compartidos/sidebar_admin');
 ?>
 
-<div class="header-acciones">
+<style>
+.importar-hero {
+    background: linear-gradient(135deg, var(--color-primario) 0%, #200654 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 22px rgba(59, 13, 143, 0.16);
+}
+.importar-hero::after {
+    content: '';
+    position: absolute;
+    right: -20px;
+    bottom: -30px;
+    width: 220px;
+    height: 220px;
+    background-image: url('assets/img/isotipo-blanco.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    opacity: 0.08;
+    pointer-events: none;
+}
+.importar-hero h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px; position: relative; z-index: 1; }
+.importar-hero p { color: rgba(255,255,255,.82); font-size: 13.5px; margin: 0; position: relative; z-index: 1; max-width: 650px; }
+.importar-hero .hero-actions { display: flex; gap: 12px; z-index: 2; flex-wrap: wrap; }
+.importar-hero .btn-hero-plantilla {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+.importar-hero .btn-hero-plantilla:hover {
+    background: rgba(255, 255, 255, 0.28);
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: #fff;
+}
+@media (max-width: 768px) {
+    .importar-hero { flex-direction: column; align-items: stretch; padding: 22px; }
+}
+</style>
+
+<div class="importar-hero">
     <div>
-        <h1 style="font-size: 24px; font-weight: 700; color: var(--color-oscuro);">Importar / Exportar Datos</h1>
-        <p style="color: var(--color-texto-secundario); font-size: 13.5px; margin-top: 4px;">
-            Gestión masiva y sincronización curricular mediante archivos Microsoft Excel (.xlsx / .xls).
-        </p>
+        <h1><i class="fa-solid fa-file-import" style="margin-right:10px;opacity:.85;"></i> Importar / Exportar Datos</h1>
+        <p>Gestión masiva y sincronización curricular mediante archivos Microsoft Excel (.xlsx / .xls).</p>
     </div>
-    <div style="display: flex; gap: 10px;">
-        <a class="btn-demo" href="?ruta=admin/importar/plantilla" style="display: inline-flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Descargar Plantilla Oficial
+    <div class="hero-actions">
+        <a class="btn-hero-plantilla" href="?ruta=admin/importar/plantilla">
+            <i class="fa-solid fa-file-excel" style="color: #34d399;"></i> Descargar Plantilla Oficial
         </a>
     </div>
 </div>

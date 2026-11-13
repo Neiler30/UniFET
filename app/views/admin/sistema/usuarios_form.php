@@ -1,4 +1,12 @@
-<?php $this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Usuario']); $this->render('elementos_compartidos/sidebar_admin'); $esEdicion = !empty($usuario['id_usuario']); ?>
+<?php 
+$this->render('elementos_compartidos/header', ['titulo' => $titulo ?? 'Usuario']); 
+$this->render('elementos_compartidos/sidebar_admin'); 
+$esEdicion = !empty($usuario['id_usuario']); 
+$dominioInstitucional = !empty($institucion['dominio_correo']) ? $institucion['dominio_correo'] : '@unicaribe.edu.co';
+if (!str_starts_with($dominioInstitucional, '@')) {
+    $dominioInstitucional = '@' . $dominioInstitucional;
+}
+?>
 <div class="header-acciones"><h1><?= htmlspecialchars($titulo) ?></h1><a class="btn-demo" href="?ruta=admin/sistema/usuarios">Volver</a></div>
 <div class="panel"><form method="POST" action="?ruta=admin/sistema/usuarios/<?= $esEdicion ? 'actualizar' : 'guardar' ?>" style="display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:16px;">
 <?php if ($esEdicion): ?><input type="hidden" name="id_usuario" value="<?= (int)$usuario['id_usuario'] ?>"><?php endif; ?>
@@ -27,11 +35,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .replace(/ñ/g, 'n')
         .replace(/[^a-z0-9]+/g, '.')
         .replace(/^\.+|\.+$/g, '');
+    const DOMINIO_INSTITUCIONAL = '<?= addslashes($dominioInstitucional) ?>';
     const syncCorreo = () => {
-        if (correoTouched || rol.value !== 'LIDER_PROGRAMA') return;
+        if (correoTouched) return;
         const nom = slug(nombre.value).split('.')[0] || '';
         const ape = slug(apellido.value).split('.')[0] || '';
-        correo.value = nom && ape ? `${nom}.${ape}@unicaribe.edu.co` : '';
+        correo.value = nom && ape ? `${nom}.${ape}${DOMINIO_INSTITUCIONAL}` : '';
     };
     const syncPassword = () => {
         if (!esEdicion && rol.value === 'LIDER_PROGRAMA') {
@@ -39,13 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
             passwordInput.value = '';
             passwordInput.disabled = true;
             help.textContent = 'El sistema generara una contrasena temporal y la mostrara una sola vez al guardar.';
-            correoHelp.textContent = 'El correo se genera automaticamente con dominio @unicaribe.edu.co, pero puedes editarlo.';
+            correoHelp.textContent = `El correo se genera automáticamente con dominio ${DOMINIO_INSTITUCIONAL}, pero puedes editarlo.`;
             syncCorreo();
         } else {
             passwordInput.disabled = false;
             passwordInput.required = !esEdicion;
             help.textContent = esEdicion ? 'Dejalo vacio si no deseas cambiarla.' : '';
-            correoHelp.textContent = '';
+            correoHelp.textContent = `El correo se sugiere automáticamente con dominio ${DOMINIO_INSTITUCIONAL}.`;
         }
     };
     rol.addEventListener('change', syncPassword);

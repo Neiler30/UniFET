@@ -16,26 +16,49 @@ $tabsHorario = [
 
 <style>
     .horarios-hero {
-        background: linear-gradient(135deg, var(--color-primario), #24114f);
+        background: linear-gradient(135deg, var(--color-primario) 0%, #200654 100%);
         color: #fff;
-        border-radius: 8px;
-        padding: 24px;
-        margin-bottom: 18px;
+        border-radius: 14px;
+        padding: 28px 32px;
+        margin-bottom: 22px;
         display: flex;
         justify-content: space-between;
-        gap: 18px;
+        gap: 20px;
         align-items: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 6px 22px rgba(59, 13, 143, 0.16);
+    }
+
+    .horarios-hero::after {
+        content: '';
+        position: absolute;
+        right: -20px;
+        bottom: -30px;
+        width: 220px;
+        height: 220px;
+        background-image: url('assets/img/isotipo-blanco.png');
+        background-repeat: no-repeat;
+        background-size: contain;
+        opacity: 0.08;
+        pointer-events: none;
     }
 
     .horarios-hero h1 {
-        font-size: 24px;
+        font-size: 22px;
+        font-weight: 700;
         margin-bottom: 6px;
+        position: relative;
+        z-index: 1;
     }
 
     .horarios-hero p {
         color: rgba(255, 255, 255, .82);
-        font-size: 14px;
+        font-size: 13.5px;
         max-width: 760px;
+        position: relative;
+        z-index: 1;
+        margin: 0;
     }
 
     .metric-strip {
@@ -1114,81 +1137,123 @@ $tabsHorario = [
         </form>
     </div>
 
-    <div class="panel">
-        <div class="section-title">
+    <div class="panel" style="border-radius:14px; box-shadow:var(--sombra-tarjeta); border:1px solid var(--color-borde); padding:24px;">
+        <div class="section-title" style="margin-bottom:18px;">
             <div>
-                <h2>Listado general</h2>
-                <p>Vista consolidada desde <span class="code-pill">vista_horario_completo</span>.</p>
+                <h2 style="font-size:18px; font-weight:700; color:var(--color-oscuro); margin:0 0 4px 0;">
+                    <i class="fa-solid fa-list-check" style="color:var(--color-primario); margin-right:8px;"></i> Listado General de Clases
+                </h2>
+                <p style="color:var(--color-texto-secundario); font-size:13px; margin:0;">
+                    Planificación académica consolidada en tiempo real.
+                </p>
             </div>
-            <a href="?ruta=admin/horarios&tab=ver_horario" class="btn-primario" style="font-size:13px; padding:8px 14px; display:inline-flex; align-items:center; gap:8px;">
+            <a href="?ruta=admin/horarios&tab=ver_horario" class="btn-primario" style="font-size:13px; padding:9px 16px; display:inline-flex; align-items:center; gap:8px; border-radius:8px;">
                 <i class="fa-solid fa-calendar-week"></i> Ver en Cuadrícula Semanal
             </a>
         </div>
-        <form action="" method="GET" class="filter-grid" style="margin-bottom:16px;">
+
+        <form action="" method="GET" class="filter-grid" style="margin-bottom:20px; background:#F8FAFC; padding:16px; border-radius:10px; border:1px solid #E2E8F0;">
             <input type="hidden" name="ruta" value="admin/horarios">
             <input type="hidden" name="tab" value="general">
-            <div class="form-group"><label>Programa</label><input type="text" name="programa" class="form-control"
-                    value="<?= htmlspecialchars($filtros['programa'] ?? '') ?>"></div>
-            <div class="form-group"><label>Docente</label><input type="text" name="docente" class="form-control"
-                    value="<?= htmlspecialchars($filtros['docente'] ?? '') ?>"></div>
-            <div class="form-group"><label>Espacio</label><input type="text" name="espacio" class="form-control"
-                    value="<?= htmlspecialchars($filtros['espacio'] ?? '') ?>"></div>
-            <div class="form-group">
-                <label>Estado</label>
-                <select name="estado" class="form-control">
-                    <option value="">Todos</option>
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px; font-weight:600; color:var(--color-texto-secundario); margin-bottom:4px; display:block;">Programa</label>
+                <input type="text" name="programa" class="form-control" placeholder="Nombre o código..." value="<?= htmlspecialchars($filtros['programa'] ?? '') ?>" style="height:38px;">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px; font-weight:600; color:var(--color-texto-secundario); margin-bottom:4px; display:block;">Docente</label>
+                <input type="text" name="docente" class="form-control" placeholder="Docente..." value="<?= htmlspecialchars($filtros['docente'] ?? '') ?>" style="height:38px;">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px; font-weight:600; color:var(--color-texto-secundario); margin-bottom:4px; display:block;">Espacio</label>
+                <input type="text" name="espacio" class="form-control" placeholder="Aula, bloque o sede..." value="<?= htmlspecialchars($filtros['espacio'] ?? '') ?>" style="height:38px;">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px; font-weight:600; color:var(--color-texto-secundario); margin-bottom:4px; display:block;">Estado</label>
+                <select name="estado" class="form-control" style="height:38px;">
+                    <option value="">Todos los estados</option>
                     <?php foreach ($estadosHorario as $estado): ?>
                         <option value="<?= $estado ?>" <?= (($filtros['estado'] ?? '') === $estado) ? 'selected' : '' ?>>
-                            <?= $estado ?></option><?php endforeach; ?>
+                            <?= $estado ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
-            <div class="form-group"><button class="btn-primario" type="submit">Filtrar</button> <a
-                    href="?ruta=admin/horarios" class="btn-demo">Limpiar</a></div>
+            <div class="form-group" style="margin-bottom:0; display:flex; gap:8px;">
+                <button class="btn-primario" type="submit" style="height:38px; padding:0 18px; font-size:13px; font-weight:600;">
+                    <i class="fa-solid fa-filter"></i> Filtrar
+                </button>
+                <a href="?ruta=admin/horarios" class="btn-demo" style="height:38px; padding:0 14px; font-size:13px; text-decoration:none; display:inline-flex; align-items:center;">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </a>
+            </div>
         </form>
+
         <div class="table-wrap">
-            <table class="table">
+            <table class="table" style="width:100%; border-collapse:separate; border-spacing:0;">
                 <thead>
-                    <tr>
-                        <th>Periodo</th>
-                        <th>Facultad</th>
-                        <th>Programa</th>
-                        <th>Asignatura</th>
-                        <th>Docente</th>
-                        <th>Sede</th>
-                        <th>Bloque</th>
-                        <th>Espacio</th>
-                        <th>Dia</th>
-                        <th>Hora</th>
-                        <th>Estado</th>
-                        <th>Origen</th>
-                        <th>Acciones</th>
+                    <tr style="background:#F8FAFC;">
+                        <th style="padding:12px 14px; font-size:12px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-oscuro); border-bottom:2px solid var(--color-borde);">Asignatura</th>
+                        <th style="padding:12px 14px; font-size:12px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-oscuro); border-bottom:2px solid var(--color-borde);">Programa / Facultad</th>
+                        <th style="padding:12px 14px; font-size:12px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-oscuro); border-bottom:2px solid var(--color-borde);">Docente</th>
+                        <th style="padding:12px 14px; font-size:12px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-oscuro); border-bottom:2px solid var(--color-borde);">Espacio y Ubicación</th>
+                        <th style="padding:12px 14px; font-size:12px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-oscuro); border-bottom:2px solid var(--color-borde);">Horario</th>
+                        <th style="padding:12px 14px; font-size:12px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-oscuro); border-bottom:2px solid var(--color-borde);">Estado</th>
+                        <th style="padding:12px 14px; font-size:12px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-oscuro); border-bottom:2px solid var(--color-borde); text-align:right;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($horarios)): ?>
                         <tr>
-                            <td colspan="13" style="text-align:center; padding:24px;">No hay horarios con los filtros
-                                seleccionados.</td>
+                            <td colspan="7" style="text-align:center; padding:36px; color:var(--color-texto-secundario);">
+                                <i class="fa-regular fa-calendar-xmark" style="font-size:32px; opacity:.4; display:block; margin-bottom:10px;"></i>
+                                No se encontraron clases con los filtros seleccionados.
+                            </td>
                         </tr>
                     <?php else:
                         foreach ($horarios as $h): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($h['periodo'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($h['facultad'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($h['programa'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($h['asignatura'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($h['docente'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($h['sede'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($h['bloque'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($h['espacio'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($h['dia_semana'] ?? '') ?></td>
-                                <td><?= htmlspecialchars(date('H:i', strtotime($h['hora_inicio']))) ?> -
-                                    <?= htmlspecialchars(date('H:i', strtotime($h['hora_fin']))) ?></td>
-                                <td><span
-                                        class="badge <?= strtolower($h['estado'] ?? '') ?>"><?= htmlspecialchars($h['estado'] ?? '') ?></span>
+                            <tr style="transition:background .15s;">
+                                <td style="padding:12px 14px; border-bottom:1px solid #F1F5F9;">
+                                    <strong><?= htmlspecialchars($h['asignatura'] ?? '') ?></strong>
+                                    <div style="font-size:11px; color:var(--color-texto-secundario); margin-top:2px;">
+                                        Periodo: <span class="code-pill" style="font-size:11px; padding:1px 6px;"><?= htmlspecialchars($h['periodo'] ?? '') ?></span>
+                                    </div>
                                 </td>
-                                <td><?= htmlspecialchars($h['origen'] ?? '') ?></td>
-                                <td>
+                                <td style="padding:12px 14px; border-bottom:1px solid #F1F5F9;">
+                                    <div style="font-weight:600; color:var(--color-oscuro);"><?= htmlspecialchars($h['programa'] ?? '') ?></div>
+                                    <div style="font-size:11.5px; color:var(--color-texto-secundario);"><?= htmlspecialchars($h['facultad'] ?? '') ?></div>
+                                </td>
+                                <td style="padding:12px 14px; border-bottom:1px solid #F1F5F9;">
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <i class="fa-solid fa-chalkboard-user" style="color:var(--color-primario); font-size:12px;"></i>
+                                        <span><?= htmlspecialchars($h['docente'] ?? 'Sin docente asignado') ?></span>
+                                    </div>
+                                </td>
+                                <td style="padding:12px 14px; border-bottom:1px solid #F1F5F9;">
+                                    <div style="font-weight:600; color:var(--color-oscuro);">
+                                        <i class="fa-solid fa-door-open" style="color:var(--color-secundario); font-size:12px; margin-right:4px;"></i>
+                                        <?= htmlspecialchars($h['espacio'] ?? '') ?>
+                                    </div>
+                                    <div style="font-size:11.5px; color:var(--color-texto-secundario);">
+                                        <?= htmlspecialchars(($h['sede'] ?? '') . ' / ' . ($h['bloque'] ?? '')) ?>
+                                    </div>
+                                </td>
+                                <td style="padding:12px 14px; border-bottom:1px solid #F1F5F9; white-space:nowrap;">
+                                    <span style="display:inline-block; font-weight:700; color:var(--color-primario); font-size:12px;">
+                                        <?= htmlspecialchars($h['dia_semana'] ?? '') ?>
+                                    </span>
+                                    <div style="font-size:12px; color:var(--color-oscuro); font-weight:500;">
+                                        <?= htmlspecialchars(date('H:i', strtotime($h['hora_inicio']))) ?> – <?= htmlspecialchars(date('H:i', strtotime($h['hora_fin']))) ?>
+                                    </div>
+                                </td>
+                                <td style="padding:12px 14px; border-bottom:1px solid #F1F5F9;">
+                                    <span class="badge <?= strtolower($h['estado'] ?? '') ?>"><?= htmlspecialchars($h['estado'] ?? '') ?></span>
+                                    <?php if (!empty($h['origen'])): ?>
+                                        <div style="font-size:10.5px; color:var(--color-texto-secundario); margin-top:3px; text-transform:uppercase;">
+                                            <?= htmlspecialchars($h['origen']) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
+                                <td style="padding:12px 14px; border-bottom:1px solid #F1F5F9; text-align:right;">
                                     <div class="actions-inline">
                                         <a href="?ruta=admin/horarios&tab=ver_horario&periodo_id=<?= (int)($h['id_periodo'] ?? ($periodoActivo['id_periodo'] ?? 0)) ?>&programa_id=<?= (int)($h['id_programa'] ?? 0) ?>"
                                             class="btn-accion btn-accion-editar" title="Ver horario semanal en cuadrícula">
@@ -1196,7 +1261,7 @@ $tabsHorario = [
                                         </a>
                                         <?php if (($h['estado'] ?? '') !== 'CERRADO'): ?>
                                             <a href="?ruta=admin/horarios/cerrar&id=<?= (int) $h['id_horario'] ?>"
-                                                class="btn-accion btn-accion-desactivar" title="Cerrar"
+                                                class="btn-accion btn-accion-desactivar" title="Cerrar clase"
                                                 onclick="return confirmarCerrarHorario(event, this.href);">
                                                 <i class="fa-solid fa-lock"></i>
                                             </a>
@@ -1363,7 +1428,7 @@ $tabsHorario = [
             <div class="form-group">
                 <label>Programa Académico</label>
                 <select name="programa_id" class="form-control" onchange="this.form.submit()">
-                    <option value="0" <?= ($idProgramaHorario === null || $idProgramaHorario === 0) ? 'selected' : '' ?>>Todos los programas</option>
+                    <option value="" <?= empty($idProgramaHorario) ? 'selected' : '' ?>>Todos los programas</option>
                     <?php foreach ($programas as $prog): ?>
                         <option value="<?= (int)$prog['id_programa'] ?>" <?= ((int)$idProgramaHorario === (int)$prog['id_programa']) ? 'selected' : '' ?>>
                             <?= htmlspecialchars(($prog['codigo'] ? $prog['codigo'].' - ' : '').$prog['nombre']) ?>

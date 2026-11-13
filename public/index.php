@@ -13,18 +13,18 @@ if (file_exists($features)) {
 spl_autoload_register(function ($clase) {
     // Prefix base: App\
     $prefijo = 'App\\';
-    
+
     // Directorio base para el prefijo
     $directorio_base = __DIR__ . '/../app/';
-    
+
     $len = strlen($prefijo);
     if (strncmp($prefijo, $clase, $len) !== 0) {
         return;
     }
-    
+
     $clase_relativa = substr($clase, $len);
     $archivo = $directorio_base . str_replace('\\', '/', $clase_relativa) . '.php';
-    
+
     if (file_exists($archivo)) {
         require $archivo;
     }
@@ -224,4 +224,6 @@ $router->agregarRuta('lider/auditoria/historial', LiderAuditoria::class, 'histor
 $ruta = $_GET['ruta'] ?? 'login';
 $ruta = str_replace('.', '/', $ruta);
 $router->despachar($ruta);
+
+//este proyfueto es desarrollado@ por deklan dev, raul estúvo ahi
 

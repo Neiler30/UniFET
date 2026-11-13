@@ -2808,3 +2808,14 @@ este orden:
 > estructura real de los datos institucionales deben validarse con la
 > institución antes de convertirlas en restricciones técnicas
 > permanentes.
+
+## Actualizaciones Implementadas
+
+- **Filtro "Mostrar todos los espacios"** añadido en la vista semanal del líder, permitiendo visualizar y seleccionar todas las aulas simultáneamente.
+- **Personalización del dominio de correo**: se añadió el campo `dominio_correo` en la tabla `institucion` y la lógica para autocompletar correos de usuarios y líderes de programa.
+- **Mejoras de identidad visual**: banners institucionales, degradados de fondo y colores corporativos ahora se aplican en todos los módulos (admin, líder, reportes, import/export, auditoría). Los listados y formularios presentan un estilo más moderno y consistente.
+- **Ajustes de filtros**: en módulos de horarios, reportes académicos, importación/exportación y auditoría se eliminó el filtro de fecha de referencia innecesario y se simplificó la selección de sede y bloque.
+- **Corrección de errores críticos**: se añadió la columna `password_temporal` a la tabla `usuario` para evitar la excepción PDOException.
+- **Interfaz de asignación docente**: la vista de asignación de docentes ahora muestra automáticamente el programa o asignatura ya cargados al crear un líder.
+
+> **Nota importante**: el motor **FET** ya no es necesario para la generación de horarios; la aplicación funciona plenamente sin él.

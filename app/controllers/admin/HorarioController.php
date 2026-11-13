@@ -36,7 +36,7 @@ class HorarioController extends Controller {
 
         // Datos para pestaña "Ver Horario Semanal" (cuadrícula / tabla con días)
         $idPeriodoHorario = !empty($_GET['periodo_id']) ? (int)$_GET['periodo_id'] : ($periodoActivo['id_periodo'] ?? ($periodos[0]['id_periodo'] ?? null));
-        $idProgramaHorario = !empty($_GET['programa_id']) ? (int)$_GET['programa_id'] : (isset($_GET['programa_id']) && $_GET['programa_id'] === '0' ? null : ($programas[5]['id_programa'] ?? ($programas[0]['id_programa'] ?? null)));
+        $idProgramaHorario = !empty($_GET['programa_id']) ? (int)$_GET['programa_id'] : null;
         $idDocenteHorario = !empty($_GET['docente_id']) ? (int)$_GET['docente_id'] : null;
         $idEspacioHorario = !empty($_GET['espacio_id']) ? (int)$_GET['espacio_id'] : null;
         $semestreHorario = !empty($_GET['semestre']) ? (int)$_GET['semestre'] : null;

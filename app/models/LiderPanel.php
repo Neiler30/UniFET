@@ -213,9 +213,9 @@ class LiderPanel {
         return $stmt->fetchAll();
     }
 
-    public static function ocupacionEspacio($id_programa, $id_periodo, $id_espacio) {
+    public static function ocupacionEspacio($id_programa, $id_periodo, $id_espacio = 0, $sede = null, $bloque = null) {
         $db = Database::getConexion();
-        $stmt = $db->prepare("
+        $sql = "
             SELECT h.*, a.nombre AS asignatura_nombre, CONCAT(d.nombre, ' ', d.apellido) AS docente_nombre,
                    e.nombre AS espacio_nombre, b.nombre AS bloque_nombre, s.nombre AS sede_nombre,
                    p.codigo AS programa_codigo, p.nombre AS programa_nombre, f.nombre AS facultad_nombre,
@@ -232,12 +232,34 @@ class LiderPanel {
             LEFT JOIN programa_lider pl ON pl.id_programa = p.id_programa
             LEFT JOIN usuario u ON u.id_usuario = pl.id_usuario AND u.estado = 'ACTIVO'
             WHERE h.id_periodo = :periodo
-              AND h.id_espacio = :espacio
               AND h.estado != 'ELIMINADO'
+        ";
+        $params = [
+            ':programa' => $id_programa,
+            ':periodo' => $id_periodo
+        ];
+
+        if (!empty($id_espacio)) {
+            $sql .= " AND h.id_espacio = :espacio";
+            $params[':espacio'] = (int)$id_espacio;
+        } else {
+            if (!empty($sede)) {
+                $sql .= " AND s.nombre = :sede";
+                $params[':sede'] = $sede;
+            }
+            if (!empty($bloque)) {
+                $sql .= " AND b.nombre = :bloque";
+                $params[':bloque'] = $bloque;
+            }
+        }
+
+        $sql .= "
             GROUP BY h.id_horario
             ORDER BY FIELD(h.dia_semana,'LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'), h.hora_inicio
-        ");
-        $stmt->execute([':programa' => $id_programa, ':periodo' => $id_periodo, ':espacio' => $id_espacio]);
+        ";
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
@@ -374,22 +396,38 @@ class LiderPanel {
 
     public static function asignacionesDocente($id_programa, $id_periodo = null) {
         $db = Database::getConexion();
+        $wherePeriodoAD = $id_periodo ? " AND ad.id_periodo = :periodo" : "";
+        $wherePeriodoH  = $id_periodo ? " AND h.id_periodo = :periodo"  : "";
+
         $sql = "
-            SELECT ad.*, pa.codigo AS periodo_codigo,
+            SELECT ad.id_asignacion, ad.id_periodo, ad.id_docente, ad.id_asignatura, ad.id_programa,
+                   ad.estado, pa.codigo AS periodo_codigo,
                    a.codigo AS asignatura_codigo, a.nombre AS asignatura_nombre,
                    CONCAT(d.nombre, ' ', d.apellido) AS docente_nombre, d.codigo AS docente_codigo
             FROM asignacion_docente ad
             JOIN periodo_academico pa ON pa.id_periodo = ad.id_periodo
             JOIN asignatura a ON a.id_asignatura = ad.id_asignatura
             JOIN docente d ON d.id_docente = ad.id_docente
-            WHERE ad.id_programa = :programa
+            WHERE ad.id_programa = :programa $wherePeriodoAD
+
+            UNION
+
+            SELECT h.id_horario AS id_asignacion, h.id_periodo, h.id_docente, h.id_asignatura, h.id_programa,
+                   'ACTIVA' AS estado, pa.codigo AS periodo_codigo,
+                   a.codigo AS asignatura_codigo, a.nombre AS asignatura_nombre,
+                   CONCAT(d.nombre, ' ', d.apellido) AS docente_nombre, d.codigo AS docente_codigo
+            FROM horario h
+            JOIN periodo_academico pa ON pa.id_periodo = h.id_periodo
+            JOIN asignatura a ON a.id_asignatura = h.id_asignatura
+            JOIN docente d ON d.id_docente = h.id_docente
+            WHERE h.id_programa = :programa AND h.estado != 'ELIMINADO' $wherePeriodoH
+
+            ORDER BY periodo_codigo DESC, asignatura_nombre, docente_nombre
         ";
         $params = [':programa' => $id_programa];
         if ($id_periodo) {
-            $sql .= " AND ad.id_periodo = :periodo";
             $params[':periodo'] = $id_periodo;
         }
-        $sql .= " ORDER BY pa.codigo DESC, a.nombre, d.apellido";
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();

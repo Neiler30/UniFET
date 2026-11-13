@@ -41,9 +41,20 @@ class Auditoria {
      * Obtener las clases programadas para una fecha y un programa (o lista de programas),
      * cruzadas con la auditoría registrada si existe para ese día y horario.
      */
-    public static function obtenerClasesParaAuditar($idPrograma, $fecha, $idPeriodo = null, $filtroEstado = '') {
+    public static function obtenerClasesParaAuditar($idPrograma, $fecha = null, $idPeriodo = null, $filtroEstado = '') {
         $db = Database::getConexion();
-        $diaSemana = self::obtenerDiaSemanaEsp($fecha);
+        $filtrarPorFecha = !empty($fecha) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha);
+        $diaSemana = $filtrarPorFecha ? self::obtenerDiaSemanaEsp($fecha) : null;
+
+        $joinAuditoria = $filtrarPorFecha
+            ? "LEFT JOIN auditoria_clase ac ON ac.id_horario = h.id_horario AND ac.fecha_auditoria = :fecha"
+            : "LEFT JOIN (
+                SELECT a1.* FROM auditoria_clase a1
+                INNER JOIN (
+                    SELECT id_horario, MAX(fecha_auditoria) as max_fecha 
+                    FROM auditoria_clase GROUP BY id_horario
+                ) a2 ON a1.id_horario = a2.id_horario AND a1.fecha_auditoria = a2.max_fecha
+            ) ac ON ac.id_horario = h.id_horario";
 
         $sql = "
             SELECT 
@@ -86,18 +97,21 @@ class Auditoria {
             JOIN espacio esp ON esp.id_espacio = h.id_espacio
             JOIN bloque bl ON bl.id_bloque = esp.id_bloque
             JOIN sede sede ON sede.id_sede = bl.id_sede
-            LEFT JOIN auditoria_clase ac ON ac.id_horario = h.id_horario AND ac.fecha_auditoria = :fecha
+            $joinAuditoria
             LEFT JOIN usuario u ON u.id_usuario = ac.id_usuario_auditor
             WHERE h.id_programa = :id_programa
-              AND h.dia_semana = :dia_semana
               AND h.estado != 'ELIMINADO'
         ";
 
         $params = [
-            ':id_programa' => (int)$idPrograma,
-            ':dia_semana'  => $diaSemana,
-            ':fecha'       => $fecha
+            ':id_programa' => (int)$idPrograma
         ];
+
+        if ($filtrarPorFecha) {
+            $sql .= " AND h.dia_semana = :dia_semana";
+            $params[':dia_semana'] = $diaSemana;
+            $params[':fecha'] = $fecha;
+        }
 
         if ($idPeriodo) {
             $sql .= " AND h.id_periodo = :id_periodo";
@@ -115,7 +129,11 @@ class Auditoria {
             $sql .= " AND ac.resultado = 'CON_NOVEDAD'";
         }
 
-        $sql .= " ORDER BY h.hora_inicio ASC";
+        if ($filtrarPorFecha) {
+            $sql .= " ORDER BY h.hora_inicio ASC";
+        } else {
+            $sql .= " ORDER BY FIELD(h.dia_semana, 'LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'), h.hora_inicio ASC";
+        }
 
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
